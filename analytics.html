@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AI Risk Analytics – CoalGuard</title>
+  <link rel="stylesheet" href="css/main.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    .layout-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; margin-bottom: 24px; }
+    
+    .kpi-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+    .kpi-card { background: white; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px; display: flex; align-items: center; justify-content: space-between; }
+    .kpi-text { font-size: 13px; font-weight: 800; color: var(--text-primary); }
+    .kpi-sub { font-size: 11px; color: var(--text-secondary); margin-top: 4px; }
+    
+    .chart-box { height: 280px; background: white; display: flex; align-items: center; justify-content: center; position: relative; }
+    
+    /* Radar SVG Mock */
+    .radar-svg { width: 240px; height: 240px; }
+    
+    /* Risk List */
+    .risk-list { display: flex; flex-direction: column; gap: 12px; }
+    .risk-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #F5F7F6; border-radius: var(--radius-sm); border: 1px solid var(--border); }
+    .risk-item:nth-child(1) { border-left: 4px solid var(--danger); background: var(--danger-bg); }
+    .risk-item:nth-child(2) { border-left: 4px solid var(--danger); }
+    .risk-item:nth-child(3) { border-left: 4px solid var(--amber); }
+    
+    .ri-name { font-size: 13px; font-weight: 800; color: var(--text-primary); margin-bottom: 2px; }
+    .ri-meta { font-size: 11px; color: var(--text-secondary); }
+    .ri-score { font-size: 18px; font-weight: 900; }
+    
+    /* Anomalies */
+    .anomaly-card { background: white; border: 1px solid var(--border); border-left: 4px solid var(--info); border-radius: var(--radius-md); padding: 16px; margin-bottom: 12px; }
+    .ac-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .ac-title { font-size: 13px; font-weight: 800; color: var(--text-primary); }
+    .ac-conf { font-size: 11px; font-weight: 700; color: var(--info); background: var(--info-bg); padding: 2px 8px; border-radius: 12px; }
+    .ac-desc { font-size: 12px; color: var(--text-secondary); margin-bottom: 12px; line-height: 1.4; }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <div id="sidebar-mount"></div>
+
+    <div class="main-content">
+      <header class="top-header">
+        <div class="header-search">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="text" placeholder="Search analytics models...">
+        </div>
+        <div class="header-links">
+          <a href="dashboard.html" class="header-link">HQ Dashboard</a>
+          <a href="#" class="header-link active">SECL Operational Zone</a>
+        </div>
+        <div class="system-status-pill"><div class="status-dot"></div> AI Engine Operational</div>
+        <div class="header-time">09 Sep 2026<br>03:35 IST</div>
+        <button class="btn-emergency">Emergency Dispatch</button>
+      </header>
+
+      <main class="page-wrapper">
+        <div class="control-bar">
+          <div>
+            <h1 class="page-title">Strategic AI Risk Analytics</h1>
+            <div class="page-subtitle">Aggregate machine learning risk vectors across the national network.</div>
+          </div>
+          <div class="controls-right">
+            <button class="btn btn-outline-grey">Export AI Report (PDF)</button>
+          </div>
+        </div>
+
+        <!-- SECTION 1: AI ENGINE STATUS -->
+        <h3 class="text-sm font-bold mb-4">ML Model Pipeline Status</h3>
+        <div class="kpi-grid-4">
+          <div class="kpi-card">
+            <div><div class="kpi-text">Combustion (SA-SVM)</div><div class="kpi-sub">98.4% Accuracy</div></div>
+            <div class="badge badge-success">ONLINE</div>
+          </div>
+          <div class="kpi-card">
+            <div><div class="kpi-text">Strata Fall (GBM)</div><div class="kpi-sub">96.1% Accuracy</div></div>
+            <div class="badge badge-success">ONLINE</div>
+          </div>
+          <div class="kpi-card">
+            <div><div class="kpi-text">Ventilation (GNN/DRL)</div><div class="kpi-sub">Optimizing 41 Nodes</div></div>
+            <div class="badge badge-success">ONLINE</div>
+          </div>
+          <div class="kpi-card">
+            <div><div class="kpi-text">HEMM (Random Forest)</div><div class="kpi-sub">89.2% Accuracy</div></div>
+            <div class="badge badge-success">ONLINE</div>
+          </div>
+        </div>
+
+        <div class="layout-grid">
+          <!-- SECTION 2: RISK RADAR -->
+          <div class="card-light">
+            <h3 class="text-sm font-bold mb-4">Regional Risk Vectors (SECL vs MCL)</h3>
+            <div style="height:280px; position:relative; width:100%; display:flex; justify-content:center;">
+              <canvas id="radarChart"></canvas>
+            </div>
+          </div>
+
+          <!-- SECTION 3: HIGHEST RISK MINES -->
+          <div class="card-light">
+            <h3 class="text-sm font-bold mb-4">Highest Risk Mines (AI Aggregate)</h3>
+            <div class="risk-list" id="risk-list-container">
+              <!-- Dynamically populated via JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 4: ANOMALY DETECTION -->
+        <h3 class="text-sm font-bold mb-4">Recent ML Anomalies Detected</h3>
+        <div class="layout-grid" style="grid-template-columns: 1fr 1fr 1fr; gap:16px;">
+          <div class="anomaly-card">
+            <div class="ac-header">
+              <div class="ac-title">Unplanned Ventilation Drop</div>
+              <div class="ac-conf">94% Confidence</div>
+            </div>
+            <div class="ac-desc">Main fan flow rate at Gevra Shaft 2 dropped by 18% over a 3-minute window without manual operator input.</div>
+            <button class="btn btn-secondary btn-sm" style="width:100%">Investigate Log</button>
+          </div>
+
+          <div class="anomaly-card" style="border-left-color:var(--danger)">
+            <div class="ac-header">
+              <div class="ac-title">Gas Ratio Deviation</div>
+              <div class="ac-conf" style="background:var(--danger-bg);color:var(--danger)">98% Confidence</div>
+            </div>
+            <div class="ac-desc">Graham's Ratio crossing critical threshold (0.6) at Kusmunda. High probability of spontaneous heating stage progression.</div>
+            <button class="btn btn-secondary btn-sm" style="width:100%" onclick="location.href='ai-prediction.html'">Go to Prediction Engine</button>
+          </div>
+
+          <div class="anomaly-card" style="border-left-color:var(--amber)">
+            <div class="ac-header">
+              <div class="ac-title">Contractor Fatigue Pattern</div>
+              <div class="ac-conf" style="background:var(--warning-bg);color:var(--amber)">82% Confidence</div>
+            </div>
+            <div class="ac-desc">ABC Mining crew at Sector 4 showing clustered erratic equipment telemetry suggestive of operator fatigue.</div>
+            <button class="btn btn-secondary btn-sm" style="width:100%">Alert Shift Manager</button>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/mines-db.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // 1. Populate Top Risk Mines from DB
+      const riskContainer = document.getElementById('risk-list-container');
+      if (typeof REAL_MINES !== 'undefined' && riskContainer) {
+        const sortedMines = [...REAL_MINES].sort((a,b) => b.riskScore - a.riskScore).slice(0, 5);
+        
+        sortedMines.forEach(m => {
+          let scoreClass = 'text-success';
+          let borderStyle = 'border-left: 4px solid var(--border);';
+          
+          if(m.riskScore >= 75) { scoreClass = 'text-danger'; borderStyle = ''; }
+          else if(m.riskScore >= 40) { scoreClass = ''; borderStyle = ''; } // will use amber via inline style if needed, but css handles it if we don't override. Let's just hardcode style.
+          
+          let scoreStyle = m.riskScore >= 40 && m.riskScore < 75 ? 'color:var(--amber)' : '';
+          
+          const item = document.createElement('div');
+          item.className = 'risk-item';
+          item.style = borderStyle;
+          item.innerHTML = `
+            <div>
+              <div class="ri-name">${m.name}</div>
+              <div class="ri-meta">${m.reason.substring(0,40)}...</div>
+            </div>
+            <div class="ri-score ${scoreClass}" style="${scoreStyle}">${Math.round(m.riskScore)}%</div>
+          `;
+          riskContainer.appendChild(item);
+        });
+      }
+
+      // Radar Chart
+      const ctxRadar = document.getElementById('radarChart').getContext('2d');
+      new Chart(ctxRadar, {
+        type: 'radar',
+        data: {
+          labels: ['Spontaneous Combustion', 'Strata Control', 'Ventilation', 'Equipment Degradation', 'Safety Compliance', 'Production Efficiency'],
+          datasets: [{
+            label: 'SECL Network',
+            data: [85, 70, 60, 45, 90, 75],
+            backgroundColor: 'rgba(201, 54, 43, 0.2)',
+            borderColor: '#C9362B',
+            pointBackgroundColor: '#C9362B',
+            pointBorderColor: '#fff',
+            pointHoverBackgroundColor: '#fff',
+            pointHoverBorderColor: '#C9362B'
+          }, {
+            label: 'MCL Network',
+            data: [40, 50, 45, 60, 85, 80],
+            backgroundColor: 'rgba(23, 126, 175, 0.2)',
+            borderColor: '#177EAF',
+            pointBackgroundColor: '#177EAF',
+            pointBorderColor: '#fff',
+            pointHoverBackgroundColor: '#fff',
+            pointHoverBorderColor: '#177EAF'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          elements: { line: { borderWidth: 2 } },
+          plugins: { legend: { position: 'bottom' } }
+        }
+      });
+    });
+  </script>
+</body>
+</html>

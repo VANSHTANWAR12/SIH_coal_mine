@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>CoalGuard | Smart Governance & Compliance</title>
+  <link rel="stylesheet" href="css/main.css">
+  <style>
+    body { background: var(--bg-primary); display: flex; align-items: center; justify-content: center; min-height: 100vh; overflow: hidden; margin: 0; }
+    
+    .login-container {
+      display: flex; width: 100%; height: 100vh; background: #FFF;
+    }
+    
+    /* Left Side - Branding / Imagery */
+    .login-left {
+      flex: 1; position: relative; background: #111827; display: flex; flex-direction: column; justify-content: flex-end; padding: 60px; color: white;
+      overflow: hidden;
+    }
+    .login-left::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      /* Simulated subtle mining/industrial topology gradient */
+      background: linear-gradient(135deg, rgba(23,107,69,0.9) 0%, rgba(15,79,53,0.95) 100%), url('data:image/svg+xml;utf8,<svg width="400" height="400" xmlns="http://www.w3.org/2000/svg"><path d="M0 0h400v400H0z" fill="none"/><path d="M0 200Q100 100 200 200T400 200" stroke="rgba(255,255,255,0.05)" fill="none" stroke-width="2"/><path d="M0 250Q100 150 200 250T400 250" stroke="rgba(255,255,255,0.05)" fill="none" stroke-width="2"/><path d="M0 300Q100 200 200 300T400 300" stroke="rgba(255,255,255,0.05)" fill="none" stroke-width="2"/></svg>');
+      background-size: cover, 400px 400px; z-index: 1;
+    }
+    .brand-content { position: relative; z-index: 2; max-width: 500px; }
+    .brand-logo { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+    .logo-icon-lg { width: 48px; height: 48px; background: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--brand-primary); }
+    .brand-title { font-size: 32px; font-weight: 900; letter-spacing: -1px; margin-bottom: 4px; }
+    .brand-sub { font-size: 16px; font-weight: 600; opacity: 0.9; margin-bottom: 24px; }
+    .brand-tagline { font-size: 14px; line-height: 1.6; opacity: 0.8; }
+    
+    /* Right Side - Login Panel */
+    .login-right {
+      flex: 0 0 540px; background: #FFFFFF; display: flex; flex-direction: column; justify-content: center; padding: 60px; position: relative;
+    }
+    
+    .login-header { margin-bottom: 32px; }
+    .login-header h2 { font-size: 24px; font-weight: 800; color: var(--text-primary); margin-bottom: 8px; }
+    .login-header p { font-size: 14px; color: var(--text-secondary); }
+    
+    .role-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 32px; }
+    .role-card {
+      border: 1px solid var(--border); border-radius: var(--radius-md); padding: 12px; cursor: pointer;
+      display: flex; align-items: center; gap: 12px; transition: all var(--trans-fast); background: #F5F7F6;
+    }
+    .role-card:hover { border-color: var(--brand-primary); background: white; }
+    .role-card.active { border: 2px solid var(--brand-primary); background: var(--success-bg); }
+    .role-icon { width: 32px; height: 32px; border-radius: 4px; background: white; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; color: var(--text-secondary); }
+    .role-card.active .role-icon { color: var(--brand-primary); border-color: var(--border-success); }
+    .role-name { font-size: 13px; font-weight: 700; color: var(--text-primary); }
+    
+    .login-form .form-group { margin-bottom: 20px; }
+    .login-form label { display: block; font-size: 12px; font-weight: 700; color: var(--text-secondary); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .login-form input { width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 14px; background: #F5F7F6; transition: all var(--trans-fast); }
+    .login-form input:focus { background: white; border-color: var(--brand-primary); outline: none; box-shadow: 0 0 0 3px var(--success-bg); }
+    
+    .form-options { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; font-size: 13px; }
+    .form-options label { display: flex; align-items: center; gap: 8px; text-transform: none; letter-spacing: 0; margin: 0; cursor: pointer; color: var(--text-primary); font-weight: 500; }
+    .form-options input[type="checkbox"] { width: auto; margin: 0; }
+    .forgot-link { color: var(--brand-primary); font-weight: 600; text-decoration: none; }
+    
+    .btn-submit { width: 100%; padding: 14px; background: var(--brand-primary); color: white; border: none; border-radius: var(--radius-sm); font-size: 15px; font-weight: 700; cursor: pointer; transition: background var(--trans-fast); }
+    .btn-submit:hover { background: var(--brand-dark); }
+    
+    /* System Status Footer */
+    .system-footer {
+      position: absolute; bottom: 0; left: 0; right: 0; background: #F5F7F6; border-top: 1px solid var(--border); padding: 12px 24px; display: flex; gap: 24px; justify-content: center; font-size: 11px; font-weight: 700; color: var(--text-secondary);
+    }
+    .status-item { display: flex; align-items: center; gap: 6px; }
+    .dot { width: 6px; height: 6px; border-radius: 50%; }
+    .dot.green { background: var(--success); }
+    .dot.amber { background: var(--amber); }
+
+    /* For auth script */
+    #auth-error { color: var(--danger); font-size: 13px; font-weight: 600; margin-bottom: 16px; display: none; background: var(--danger-bg); padding: 10px; border-radius: 4px; border: 1px solid rgba(201,54,43,0.2); }
+  </style>
+</head>
+<body>
+
+  <div class="login-container">
+    
+    <!-- Branding Side -->
+    <div class="login-left">
+      <div class="brand-content">
+        <div class="brand-logo">
+          <div class="logo-icon-lg">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+          </div>
+          <div>
+            <div class="brand-title">CoalGuard</div>
+          </div>
+        </div>
+        <div class="brand-sub">Smart Governance & Compliance Platform</div>
+        <div class="brand-tagline">
+          One digital command center for safer, more transparent and accountable mining operations. Connecting field data to national oversight.
+        </div>
+      </div>
+    </div>
+
+    <!-- Login Form Side -->
+    <div class="login-right">
+      <div class="login-header">
+        <h2>Secure Login</h2>
+        <p>Select your authorized role to access the platform.</p>
+      </div>
+
+      <div class="role-grid">
+        <div class="role-card active" onclick="selectRole('Mine Official', this)">
+          <div class="role-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+          <div class="role-name">Mine Official</div>
+        </div>
+        <div class="role-card" onclick="selectRole('Corp Mgmt', this)">
+          <div class="role-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></div>
+          <div class="role-name">Corp Mgmt</div>
+        </div>
+        <div class="role-card" onclick="selectRole('Regulatory', this)">
+          <div class="role-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+          <div class="role-name">Regulatory Auth.</div>
+        </div>
+        <div class="role-card" onclick="selectRole('Field Inspector', this)">
+          <div class="role-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg></div>
+          <div class="role-name">Field Inspector</div>
+        </div>
+      </div>
+
+      <div id="auth-error">Invalid credentials.</div>
+
+      <form class="login-form" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label>Employee ID / Username</label>
+          <input type="text" id="username" placeholder="Enter your credentials" value="user_official" required>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="password" placeholder="••••••••" value="demo123" required>
+        </div>
+        
+        <div class="form-options">
+          <label><input type="checkbox" checked> Remember me on this device</label>
+          <a href="#" class="forgot-link">Forgot password?</a>
+        </div>
+
+        <button type="submit" class="btn-submit">Sign In to Command Center</button>
+      </form>
+
+      <div class="system-footer">
+        <div class="status-item"><div class="dot green"></div> 79 Mines Connected</div>
+        <div class="status-item"><div class="dot amber"></div> 23 Active Alerts</div>
+        <div class="status-item"><div class="dot green"></div> AI Engine Operational</div>
+        <div class="status-item"><div class="dot green"></div> GIS Services Operational</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script>
+    let selectedRole = 'Mine Official';
+
+    function selectRole(role, el) {
+      selectedRole = role;
+      document.querySelectorAll('.role-card').forEach(c => c.classList.remove('active'));
+      el.classList.add('active');
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      const u = document.getElementById('username').value;
+      const p = document.getElementById('password').value;
+      
+      try {
+        if(typeof Auth !== 'undefined' && Auth.login) {
+          await Auth.login(u, p);
+        } else {
+          throw new Error('Auth API not connected');
+        }
+      } catch (err) {
+        console.warn('Backend unavailable, falling back to local demo mode.', err);
+        if(typeof Auth === 'undefined') window.Auth = {};
+        Auth.currentUser = { id: 1, username: u, role: 'Official', name: 'Demo User' };
+      }
+      
+      // Explicitly set role
+      const user = Auth.currentUser || { id: 1, username: u };
+      user.role = selectedRole;
+      if(selectedRole === 'Corp Mgmt') user.name = 'Director Tech';
+      else if(selectedRole === 'Regulatory') user.name = 'DGMS Inspector';
+      else if(selectedRole === 'Field Inspector') user.name = 'Field Officer';
+      else user.name = 'Ranjan Kumar';
+      
+      localStorage.setItem('auth_user', JSON.stringify(user));
+      window.location.href = 'dashboard.html';
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AI Prediction Engine & Digital Mine Twin – CoalGuard</title>
+  <link rel="stylesheet" href="css/main.css">
+  <style>
+    /* ── Component Specific Overrides ─────────────────────────────── */
+    .sidebar-logo .logo-name {
+      background: none;
+      -webkit-text-fill-color: var(--text-primary);
+      color: var(--text-primary);
+    }
+    .nav-item {
+      color: var(--text-secondary);
+    }
+    .nav-item:hover {
+      background: rgba(0,0,0,0.03);
+      color: var(--text-primary);
+    }
+    .nav-item.active {
+      background: var(--success-bg);
+      color: var(--success);
+      border: 1px solid rgba(22, 131, 75, 0.2);
+    }
+    .nav-item.active::before {
+      background: var(--success);
+    }
+
+    /* Government-Grade Header */
+    .top-header {
+      background: #FFFFFF;
+      height: 60px;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      gap: 20px;
+    }
+    
+    .header-search {
+      display: flex;
+      align-items: center;
+      background: #F5F7F6;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 6px 12px;
+      width: 280px;
+      color: var(--text-secondary);
+      font-size: 13px;
+    }
+    .header-search input {
+      border: none; background: transparent; width: 100%; margin-left: 8px; color: var(--text-primary);
+    }
+    .header-search .shortcut {
+      background: #FFFFFF; border: 1px solid var(--border); border-radius: 3px; padding: 2px 4px; font-size: 10px; font-weight: 600; color: var(--text-muted);
+    }
+
+    .header-links {
+      display: flex; gap: 24px; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-right: auto;
+    }
+    .header-link.active {
+      color: var(--text-primary); border-bottom: 2px solid var(--success); padding-bottom: 18px; margin-bottom: -20px;
+    }
+
+    .system-status-pill {
+      display: flex; align-items: center; gap: 6px; background: var(--success-bg); border: 1px solid rgba(22,131,75,0.2); padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; color: var(--success);
+    }
+    .status-dot { width: 6px; height: 6px; background: var(--success); border-radius: 50%; box-shadow: 0 0 4px var(--success); }
+
+    .header-time { font-size: 12px; color: var(--text-secondary); line-height: 1.2; text-align: right; }
+    
+    .btn-emergency {
+      background: var(--danger); color: white; border-radius: 4px; padding: 6px 14px; font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 6px; border: none; box-shadow: 0 2px 4px rgba(201,54,43,0.3);
+    }
+
+    /* Page Layout */
+    .page-wrapper { padding: 20px 24px; display: flex; flex-direction: column; gap: 16px; max-width: 1440px; margin: 0 auto; }
+    
+    .card-light {
+      background: #FFFFFF; border: 1px solid var(--border); border-radius: 6px; padding: 16px;
+    }
+    
+    /* Control Bar */
+    .control-bar { display: flex; justify-content: space-between; align-items: flex-start; }
+    .page-title { font-size: 22px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
+    .page-subtitle { font-size: 13px; color: var(--text-secondary); }
+    .controls-right { display: flex; flex-direction: column; align-items: flex-end; gap: 12px; }
+    .controls-row { display: flex; gap: 10px; align-items: center; }
+    
+    .dgms-badge { background: var(--success-bg); border: 1px solid rgba(22,131,75,0.2); color: var(--success); font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 4px; }
+    .select-box { border: 1px solid var(--border); background: #F5F7F6; padding: 6px 12px; font-size: 12px; font-weight: 600; border-radius: 4px; color: var(--text-primary); display: flex; align-items: center; gap: 6px; }
+    
+    .btn-action-green { background: var(--success); color: white; padding: 8px 16px; border-radius: 4px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; border: none; }
+    .btn-outline-grey { border: 1px solid var(--border); background: white; padding: 8px 16px; border-radius: 4px; font-size: 13px; font-weight: 600; color: var(--text-secondary); display: flex; align-items: center; gap: 6px; cursor: pointer; }
+    .update-text { font-size: 11px; font-weight: 600; color: var(--text-primary); }
+
+    /* Gauges Grid */
+    .gauges-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
+    .gauge-card { position: relative; padding: 12px; display: flex; flex-direction: column; align-items: center; border-top: 3px solid transparent; }
+    .gauge-card.danger { border-top-color: var(--danger); }
+    .gauge-card.success { border-top-color: var(--success); }
+    .gauge-card.warning { border-top-color: var(--cyan); }
+    .gauge-card.muted { border-top-color: var(--border); }
+    
+    .gauge-header { width: 100%; display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+    .gauge-title { font-size: 10px; font-weight: 700; color: var(--text-primary); width: 60px; line-height: 1.2; }
+    
+    .gauge-badge { font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 2px; text-transform: uppercase; }
+    .gb-danger { background: var(--danger); color: white; }
+    .gb-success { background: var(--success-bg); color: var(--success); }
+    .gb-warning { background: var(--cyan-glow); color: var(--cyan); }
+    .gb-muted { background: #F0F3F1; color: var(--text-secondary); }
+
+    .gauge-circle { width: 80px; height: 80px; position: relative; margin: 10px 0; }
+    .gauge-circle svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+    .gauge-circle circle { fill: none; stroke-width: 6; stroke-linecap: round; }
+    .gauge-bg { stroke: #F0F3F1; }
+    .gauge-value { stroke-dasharray: 226; stroke-dashoffset: 226; transition: stroke-dashoffset 1s ease; }
+    .val-danger { stroke: var(--danger); }
+    .val-success { stroke: var(--success); }
+    .val-warning { stroke: var(--cyan); }
+    .val-muted { stroke: var(--text-muted); }
+    
+    .gauge-center { position: absolute; top:0; left:0; right:0; bottom:0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .g-num { font-size: 16px; font-weight: 800; color: var(--text-primary); line-height: 1; margin-bottom: 2px; }
+    .g-unit { font-size: 9px; font-weight: 600; color: var(--text-secondary); }
+    
+    .gauge-footer { width: 100%; display: flex; justify-content: space-between; font-size: 9px; font-weight: 600; color: var(--text-muted); border-top: 1px solid var(--border); padding-top: 8px; margin-top: auto; }
+    .gf-red { color: var(--danger); }
+
+    /* Mid Panels */
+    .mid-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .panel-header { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; margin-bottom: 16px; color: var(--text-primary); }
+    .panel-header svg { width: 16px; height: 16px; color: var(--danger); }
+    
+    /* Spontaneous Combustion */
+    .sev-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 12px; }
+    .sev-left { display: flex; align-items: baseline; gap: 8px; }
+    .sev-percent { font-size: 32px; font-weight: 800; color: var(--danger); }
+    .sev-label { font-size: 12px; font-weight: 700; color: var(--danger); }
+    .sev-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.4; }
+    .time-flash { text-align: right; }
+    .tf-label { font-size: 10px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; }
+    .tf-val { font-size: 18px; font-weight: 800; color: var(--danger); }
+
+    .stage-progression { margin-top: 16px; margin-bottom: 16px; }
+    .sp-title { font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 8px; }
+    .stages-row { display: flex; gap: 4px; }
+    .stage-box { flex: 1; background: #F5F7F6; border: 1px solid var(--border); padding: 8px 4px; text-align: center; border-radius: 4px; }
+    .stage-box.active { background: var(--danger); border-color: var(--danger); color: white; box-shadow: 0 4px 12px rgba(201,54,43,0.2); }
+    .sb-num { font-size: 10px; font-weight: 700; margin-bottom: 2px; }
+    .sb-name { font-size: 11px; }
+
+    .ratio-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    .ratio-table th { text-align: left; background: #F5F7F6; padding: 6px 8px; font-weight: 700; color: var(--text-secondary); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .ratio-table td { padding: 8px; border-bottom: 1px solid var(--border); font-weight: 600; color: var(--text-primary); }
+    .ratio-table .val-red { color: var(--danger); }
+    .ratio-table .val-cyan { color: var(--cyan); }
+
+    /* Strata Predictor */
+    .strata-top { display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 16px; margin-bottom: 16px; }
+    .strata-val { font-size: 32px; font-weight: 800; color: var(--cyan); }
+    .strata-desc { font-size: 12px; color: var(--text-secondary); }
+    .micro-val { font-size: 16px; font-weight: 800; color: var(--danger); text-align: right;}
+    
+    .multi-param-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; font-size: 11px; font-weight: 600; }
+    .mp-label { width: 160px; color: var(--text-secondary); }
+    .mp-bar-bg { flex: 1; height: 6px; background: #F0F3F1; border-radius: 3px; overflow: hidden; }
+    .mp-bar { height: 100%; border-radius: 3px; transition: width 0.5s; }
+    .mp-bar.red { background: var(--danger); }
+    .mp-bar.teal { background: var(--cyan); }
+    .mp-bar.green { background: var(--success); }
+    .mp-val { width: 30px; text-align: right; }
+    .mp-val.red { color: var(--danger); }
+    .mp-val.teal { color: var(--cyan); }
+    
+    .strata-action { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); padding-top: 12px; margin-top: 12px; }
+
+    /* Lower Grid */
+    .prescriptive-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    
+    /* Vent Optimizer */
+    .vent-boxes { display: flex; gap: 12px; margin-bottom: 16px; }
+    .vent-box { flex: 1; background: #F5F7F6; border: 1px solid var(--border); border-radius: 4px; padding: 12px; }
+    .vent-box.target { background: var(--success-bg); border-color: rgba(22,131,75,0.3); }
+    .vb-title { font-size: 10px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 4px; }
+    .vb-val { font-size: 24px; font-weight: 800; color: var(--text-primary); }
+    .vent-box.target .vb-val { color: var(--success); }
+    .vb-sub { font-size: 11px; color: var(--text-secondary); font-weight: 600; }
+    
+    .vent-impact { font-size: 12px; margin-bottom: 16px; }
+    .vi-row { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px dashed var(--border); color: var(--text-secondary); }
+    .vi-val { font-weight: 700; color: var(--text-primary); }
+    .vi-val.bold { color: var(--success); }
+    
+    .vent-actions { display: flex; gap: 12px; }
+    .vent-actions button { flex: 1; padding: 10px; border-radius: 4px; font-size: 12px; font-weight: 700; cursor: pointer; }
+    .btn-apply { background: var(--success); color: white; border: none; display: flex; align-items: center; justify-content: center; gap: 6px; }
+    .btn-override { background: white; color: var(--text-primary); border: 1px solid var(--border); }
+
+    /* HEMM Fleet */
+    .hemm-card { border: 1px solid var(--border); border-radius: 4px; padding: 12px; margin-bottom: 12px; }
+    .hc-top { display: flex; justify-content: space-between; margin-bottom: 4px; }
+    .hc-type { font-size: 10px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; }
+    .hc-id { font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: 12px; }
+    .hc-stats { display: flex; justify-content: space-between; font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 8px; }
+    .hc-val { font-size: 13px; font-weight: 800; color: var(--text-primary); text-transform: none; display: block; margin-top: 2px; }
+    .hc-val.red { color: var(--danger); }
+    .hc-desc { font-size: 11px; color: var(--text-secondary); background: #F5F7F6; padding: 8px; border-radius: 4px; border-left: 2px solid var(--border); }
+    .hc-desc.red-border { border-left-color: var(--danger); color: var(--danger); font-weight: 500; }
+
+    /* Digital Twin */
+    .dt-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .dt-controls { display: flex; gap: 8px; }
+    .dt-toggle { display: flex; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; font-size: 11px; font-weight: 700; }
+    .dt-toggle div { padding: 6px 12px; background: #F5F7F6; color: var(--text-secondary); cursor: pointer; }
+    .dt-toggle div.active { background: white; color: var(--text-primary); }
+    .btn-dt-run { background: #111827; color: white; border: none; padding: 6px 16px; border-radius: 4px; font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 6px; cursor: pointer; }
+    
+    .dt-svg-container { background: #1c2120; border-radius: 6px; height: 260px; position: relative; overflow: hidden; font-family: monospace; }
+    .dt-overlay { position: absolute; top: 12px; left: 12px; color: white; font-size: 9px; font-weight: 700; border: 1px solid rgba(255,255,255,0.2); padding: 6px; background: rgba(0,0,0,0.5); line-height: 1.4; border-radius: 2px; }
+    .dt-overlay span { color: #A0B2AC; }
+    .dt-footer { position: absolute; bottom: 0; left: 0; right: 0; display: flex; gap: 24px; padding: 8px 12px; font-size: 9px; font-weight: 700; color: #A0B2AC; background: rgba(0,0,0,0.6); }
+    .dt-footer span { color: white; }
+    .dt-footer .purge-text { color: var(--danger); margin-left: auto; }
+
+    .hotspot-label { position: absolute; bottom: 50px; right: 280px; background: white; padding: 6px 10px; border-radius: 2px; border-left: 3px solid var(--danger); box-shadow: 0 4px 12px rgba(0,0,0,0.3); font-family: sans-serif; }
+    .hs-title { font-size: 10px; font-weight: 800; color: var(--danger); display: flex; align-items: center; gap: 4px; }
+    .hs-data { font-size: 11px; font-weight: 700; color: var(--text-primary); margin-top: 2px; }
+    .hs-sub { font-size: 8px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-top: 2px; letter-spacing: 0.5px; }
+
+    .fan-label { position: absolute; top: 90px; left: 240px; background: white; padding: 4px 8px; border-radius: 2px; border-left: 3px solid var(--cyan); box-shadow: 0 4px 12px rgba(0,0,0,0.3); font-family: sans-serif; display: flex; align-items: center; gap: 6px; }
+    .fl-icon { font-size: 14px; }
+    .fl-text { font-size: 9px; font-weight: 800; color: var(--text-primary); }
+    .fl-sub { font-size: 8px; color: var(--text-muted); }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <!-- Sidebar -->
+    <div id="sidebar-mount"></div>
+
+    <div class="main-content">
+      <!-- Government-Grade Header -->
+      <header class="top-header">
+        <div class="header-search">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="text" placeholder="Search parameters, telemetry">
+          <span class="shortcut">⌘K</span>
+        </div>
+        <div class="header-links">
+          <a href="dashboard.html" class="header-link">HQ Dashboard</a>
+          <a href="#" class="header-link active">SECL Operational Zone</a>
+          <a href="#" class="header-link">DGMS Regulatory Portal</a>
+        </div>
+        <div class="system-status-pill">
+          <div class="status-dot"></div> System Operational
+        </div>
+        <div class="header-time">
+          09 Sep 2026<br>03:35 IST
+        </div>
+        <button class="btn-outline-grey" style="padding: 6px; width: 32px; height: 32px; justify-content:center;">🔔</button>
+        <button class="btn-emergency">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          Emergency Dispatch
+        </button>
+      </header>
+
+      <!-- Main Layout -->
+      <main class="page-wrapper">
+        
+        <!-- Top Controls -->
+        <div class="control-bar">
+          <div>
+            <div style="display:flex; align-items:center; gap: 12px;">
+              <h1 class="page-title">AI Prediction Engine & Digital Mine Twin</h1>
+              <span class="dgms-badge">DGMS Model SA-SVM v2.4 Active</span>
+            </div>
+            <div class="page-subtitle">Predict hazardous subterranean events, strata instability, and recommend preventive operational actions under DGMS (Circular 02/2023).</div>
+          </div>
+          <div class="controls-right">
+            <div class="controls-row">
+              <div class="select-box">⛰️ Kusmunda OC Mine (SECL)</div>
+              <div class="select-box">🎯 Pit Section 3B / Incline#4</div>
+            </div>
+            <div class="controls-row">
+              <span class="update-text" id="live-indicator">↻ 12s ago (30s continuous)</span>
+              <button class="btn-outline-grey" onclick="fetchLiveSensors()">↻ Refresh Sensors</button>
+              <button class="btn-action-green" id="btn-simulate" onclick="triggerIncident()">▶ Simulate Incident</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Row 1: Gauges Grid -->
+        <div class="gauges-grid">
+          <!-- Gauge 1 -->
+          <div class="card-light gauge-card danger" id="card-ch4">
+            <div class="gauge-header">
+              <div class="gauge-title">Pit #CH4-08<br>(Optical)</div>
+              <div class="gauge-badge gb-danger" id="badge-ch4">CRITICAL ALERT</div>
+            </div>
+            <div class="gauge-circle">
+              <svg><circle class="gauge-bg" cx="40" cy="40" r="36"/><circle class="gauge-value val-danger" id="svg-ch4" cx="40" cy="40" r="36" style="stroke-dashoffset: 60;"/></svg>
+              <div class="gauge-center">
+                <span class="g-num" id="val-ch4">0.84%</span>
+                <span class="g-unit">CH₄</span>
+              </div>
+            </div>
+            <div class="gauge-footer">
+              <span>DGMS Max:<br>0.70%</span>
+              <span class="gf-red" id="foot-ch4">+20%<br>Excess</span>
+            </div>
+          </div>
+          
+          <!-- Gauge 2 -->
+          <div class="card-light gauge-card success">
+            <div class="gauge-header">
+              <div class="gauge-title">Pit #CO-12<br>(Electroc.)</div>
+              <div class="gauge-badge gb-muted">NORMAL</div>
+            </div>
+            <div class="gauge-circle">
+              <svg><circle class="gauge-bg" cx="40" cy="40" r="36"/><circle class="gauge-value val-success" id="svg-co" cx="40" cy="40" r="36" style="stroke-dashoffset: 160;"/></svg>
+              <div class="gauge-center">
+                <span class="g-num" id="val-co">18</span>
+                <span class="g-unit">ppm CO</span>
+              </div>
+            </div>
+            <div class="gauge-footer">
+              <span>Safe Limit: <50<br>ppm</span>
+              <span style="color:var(--text-primary)">Stable</span>
+            </div>
+          </div>
+
+          <!-- Gauge 3 -->
+          <div class="card-light gauge-card warning">
+            <div class="gauge-header">
+              <div class="gauge-title">Chromatograph-03</div>
+              <div class="gauge-badge gb-warning">WARNING</div>
+            </div>
+            <div class="gauge-circle">
+              <svg><circle class="gauge-bg" cx="40" cy="40" r="36"/><circle class="gauge-value val-warning" id="svg-c2h4" cx="40" cy="40" r="36" style="stroke-dashoffset: 120;"/></svg>
+              <div class="gauge-center">
+                <span class="g-num" id="val-c2h4">0.04</span>
+                <span class="g-unit">ppm C₂H₄</span>
+              </div>
+            </div>
+            <div class="gauge-footer">
+              <span>Oxidation<br>Traces</span>
+              <span style="color:var(--cyan)">Incubation</span>
+            </div>
+          </div>
+
+          <!-- Gauge 4 -->
+          <div class="card-light gauge-card success">
+            <div class="gauge-header">
+              <div class="gauge-title">Intake Main<br>#01</div>
+              <div class="gauge-badge gb-success">HEALTHY</div>
+            </div>
+            <div class="gauge-circle">
+              <svg><circle class="gauge-bg" cx="40" cy="40" r="36"/><circle class="gauge-value val-success" id="svg-o2" cx="40" cy="40" r="36" style="stroke-dashoffset: 40;"/></svg>
+              <div class="gauge-center">
+                <span class="g-num" id="val-o2">20.4%</span>
+                <span class="g-unit">O₂ Vol</span>
+              </div>
+            </div>
+            <div class="gauge-footer">
+              <span>Statutory:<br>>19.0%</span>
+              <span style="color:var(--success)">Optimal</span>
+            </div>
+          </div>
+
+          <!-- Gauge 5 -->
+          <div class="card-light gauge-card muted">
+            <div class="gauge-header">
+              <div class="gauge-title">Strata Probe<br>#TP-14</div>
+              <div class="gauge-badge gb-muted">ELEVATED</div>
+            </div>
+            <div class="gauge-circle">
+              <svg><circle class="gauge-bg" cx="40" cy="40" r="36"/><circle class="gauge-value val-muted" id="svg-temp" cx="40" cy="40" r="36" style="stroke-dashoffset: 100;"/></svg>
+              <div class="gauge-center">
+                <span class="g-num" id="val-temp">34.2</span>
+                <span class="g-unit">°C Temp</span>
+              </div>
+            </div>
+            <div class="gauge-footer">
+              <span>Threshold: 32.0°C</span>
+              <span class="gf-red">+2.2°C</span>
+            </div>
+          </div>
+
+          <!-- Gauge 6 -->
+          <div class="card-light gauge-card danger">
+            <div class="gauge-header">
+              <div class="gauge-title">Haul Rd<br>Telemetry</div>
+              <div class="gauge-badge gb-danger">NON-COMPLIANT</div>
+            </div>
+            <div class="gauge-circle">
+              <svg><circle class="gauge-bg" cx="40" cy="40" r="36"/><circle class="gauge-value val-danger" id="svg-dust" cx="40" cy="40" r="36" style="stroke-dashoffset: 50;"/></svg>
+              <div class="gauge-center">
+                <span class="g-num" id="val-dust">142</span>
+                <span class="g-unit">μg/m³ PM10</span>
+              </div>
+            </div>
+            <div class="gauge-footer">
+              <span>CPCB Max: 100</span>
+              <span class="gf-red">+42 μg/m³</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Row 2: Predictive Models -->
+        <div class="mid-grid">
+          <!-- Combustion Panel -->
+          <div class="card-light">
+            <div class="panel-header">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+              Spontaneous Combustion Risk Engine
+              <span class="dgms-badge" style="margin-left:auto; background:#F5F7F6; color:var(--text-secondary); border-color:var(--border)">SA-SVM Model (91% Confidence)</span>
+            </div>
+            
+            <div class="sev-row">
+              <div class="sev-left">
+                <div>
+                  <div class="tf-label" style="color:var(--danger)">PREDICTED SEVERITY</div>
+                  <div class="sev-percent" id="fire-prob">78%</div>
+                </div>
+                <div class="sev-label" style="margin-left:8px;">Probability of Active Combustion Pocket</div>
+              </div>
+              <div class="time-flash">
+                <div class="tf-label">ESTIMATED TIME<br>TO FLASH</div>
+                <div class="tf-val" id="fire-time">3.4 Hours</div>
+              </div>
+            </div>
+            <div class="sev-desc">Smoldering oxidation pocket detected within Goaf #4 coal barrier via non-linear multi-gas indices.</div>
+            
+            <div class="stage-progression">
+              <div class="sp-title">DGMS FORM-IV STAGE PROGRESSION</div>
+              <div class="stages-row">
+                <div class="stage-box" id="stage-0"><div class="sb-num">Stage 0</div><div class="sb-name">Inert</div></div>
+                <div class="stage-box" id="stage-1"><div class="sb-num">Stage 1</div><div class="sb-name">Incubation</div></div>
+                <div class="stage-box active" id="stage-2"><div class="sb-num">Stage 2 [ACTIVE]</div><div class="sb-name">Smoldering</div></div>
+                <div class="stage-box" style="opacity:0.5" id="stage-3"><div class="sb-num">Stage 3</div><div class="sb-name">Open Fire</div></div>
+              </div>
+            </div>
+            
+            <div class="sp-title">GAS RATIO ANALYSIS TABLE (Graham's & Young's Ratios)</div>
+            <table class="ratio-table">
+              <tr><th>Ratio Index Identifier</th><th>Observed</th><th>Statutory Baseline</th><th>Risk Classification</th></tr>
+              <tr><td>CO / CO₂ Ratio</td><td class="val-red" id="ratio-co-co2">0.014</td><td>< 0.005</td><td><span class="gauge-badge gb-danger" style="background:#FCEBEA; color:var(--danger)">High Risk</span></td></tr>
+              <tr><td>CO / O₂ Deficiency</td><td class="val-cyan" id="ratio-grahams">0.28</td><td>< 0.15</td><td><span class="gauge-badge gb-warning">Warning</span></td></tr>
+              <tr><td>C₂H₄ / CH₄ Index</td><td class="val-cyan" id="ratio-youngs">0.048</td><td>< 0.010</td><td><span class="gauge-badge gb-muted">Abnormal Oxidation</span></td></tr>
+            </table>
+          </div>
+
+          <!-- Strata Panel -->
+          <div class="card-light">
+            <div class="panel-header">
+              <svg viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2"><path d="m2 12 5.25 5 5.25-5L12 7l-5.25 5Z"/><path d="m11 12 5.25 5 5.25-5L16 7l-5.25 5Z"/></svg>
+              Strata & Roof Fall Predictor
+              <span class="dgms-badge" style="margin-left:auto; background:#F5F7F6; color:var(--text-secondary); border-color:var(--border)">Ib Valley Sensor #RS-09</span>
+            </div>
+
+            <div class="strata-top">
+              <div>
+                <div class="tf-label" style="color:var(--text-secondary)">48-HOUR FALL PROBABILITY</div>
+                <div class="strata-val">63%</div>
+              </div>
+              <div class="time-flash">
+                <div class="tf-label" style="color:var(--text-secondary)">MICRO-DISPLACEMENT</div>
+                <div class="micro-val">4.2 mm / 6h</div>
+              </div>
+            </div>
+            <div class="strata-desc" style="margin-bottom:16px;">Accelerating roof sag detected along Junction 14. Geological shear slip rate exceeds DGMS threshold (0.5 mm/hr).</div>
+            
+            <div class="sp-title" style="margin-bottom:12px;">MULTI-PARAMETRIC STRata CONTRIBUTORS</div>
+            
+            <div class="multi-param-row">
+              <div class="mp-label">Roof Convergence Velocity</div>
+              <div class="mp-bar-bg"><div class="mp-bar red" style="width: 78%"></div></div>
+              <div class="mp-val red">78%</div>
+            </div>
+            <div class="multi-param-row">
+              <div class="mp-label">Blast Vibration (PPV 4.8 mm/s)</div>
+              <div class="mp-bar-bg"><div class="mp-bar teal" style="width: 65%"></div></div>
+              <div class="mp-val teal">65%</div>
+            </div>
+            <div class="multi-param-row">
+              <div class="mp-label">Hydrogeological Saturation</div>
+              <div class="mp-bar-bg"><div class="mp-bar green" style="width: 42%; background:var(--success)"></div></div>
+              <div class="mp-val" style="color:var(--success)">42%</div>
+            </div>
+            <div class="multi-param-row">
+              <div class="mp-label">Hydraulic Prop Load (480 kN)</div>
+              <div class="mp-bar-bg"><div class="mp-bar red" style="width: 88%"></div></div>
+              <div class="mp-val red">88%</div>
+            </div>
+            
+            <div class="strata-action">
+              <div style="font-size:11px; color:var(--text-secondary); width: 60%">Recommended Action: Reinforce with 2.2m resin rock bolts</div>
+              <button class="btn-outline-grey" style="padding:6px 12px;">View Strata Log</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Row 3: Prescriptive Models -->
+        <div class="prescriptive-grid">
+          <!-- Ventilation Optimizer -->
+          <div class="card-light" style="border-top: 3px solid var(--success);">
+            <div class="panel-header" style="align-items:flex-start">
+              <svg viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2" style="margin-top:2px"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              <div style="max-width:200px; line-height:1.2;">Ventilation Optimizer (Autonomous Prescriptive Action)</div>
+              <span class="dgms-badge" style="margin-left:auto; background:var(--success-bg); color:var(--success); border:none; padding-top:6px; padding-bottom:6px;">OPTIMIZATION<br>READY</span>
+            </div>
+            
+            <div class="vent-boxes">
+              <div class="vent-box">
+                <div class="vb-title">CURRENT AUXILIARY FAN SPEED</div>
+                <div class="vb-val">62%</div>
+                <div class="vb-sub">1,050 m³/min flow</div>
+              </div>
+              <div class="vent-box target">
+                <div class="vb-title" style="color:var(--success)">AI TARGET RECOMMENDATION</div>
+                <div class="vb-val" id="rec-fan">74%</div>
+                <div class="vb-sub" style="color:var(--success)">1,250 m³/min flow</div>
+              </div>
+            </div>
+            
+            <div class="vent-impact">
+              <div class="vi-row"><span>Methane Dilution Projection:</span> <span class="vi-val bold" id="rec-dilution">Drop below 0.65% within 14 mins</span></div>
+              <div class="vi-row"><span>Auxiliary Energy Increment:</span> <span class="vi-val" id="rec-cost">+8.4 kWh operational cost</span></div>
+              <div class="vi-row" style="border:none"><span>Safety Compliance Index Gain:</span> <span class="vi-val bold">+34% Net Recovery</span></div>
+            </div>
+            
+            <div class="vent-actions">
+              <button class="btn-apply" onclick="applyPrescription()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                Apply Recommendation
+              </button>
+              <button class="btn-override">Override Manually</button>
+            </div>
+          </div>
+
+          <!-- HEMM Fleet -->
+          <div class="card-light">
+            <div class="panel-header">
+              <svg viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2"><rect x="2" y="7" width="20" height="15" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></svg>
+              HEMM Fleet Predictive Maintenance
+              <span class="dgms-badge" style="margin-left:auto; background:#F5F7F6; color:var(--text-secondary); border-color:var(--border)">SECL Heavy Fleet</span>
+            </div>
+
+            <!-- Dumper -->
+            <div class="hemm-card">
+              <div class="hc-top">
+                <div class="hc-type">KOMATSU DUMPER 240T</div>
+                <span class="gauge-badge gb-warning" style="background:var(--cyan-glow); color:var(--cyan)">HIGH URGENCY</span>
+              </div>
+              <div class="hc-id">Fleet ID: KOMATSU-930E-04</div>
+              <div class="hc-stats">
+                <div>ENGINE HOURS<span class="hc-val">4,821 hrs</span></div>
+                <div>REMAINING LIFE<span class="hc-val red">12 Days</span></div>
+                <div style="text-align:right">NEXT SERVICE<span class="hc-val">21 Sep 2026</span></div>
+              </div>
+              <div class="hc-desc">Anomaly: Acoustic sensor detects hydraulic main pump cavitation during grade ascent. Risk of steer loss.</div>
+            </div>
+
+            <!-- Dragline -->
+            <div class="hemm-card" style="border-color:rgba(201,54,43,0.3)">
+              <div class="hc-top">
+                <div class="hc-type">WALKING DRAGLINE</div>
+                <span class="gauge-badge gb-danger">CRITICAL URGENCY</span>
+              </div>
+              <div class="hc-id">Fleet ID: Dragline DL-08</div>
+              <div class="hc-stats">
+                <div>DUTY CYCLES<span class="hc-val">12,400 hrs</span></div>
+                <div>FATIGUE MARGIN<span class="hc-val red">68 Hours Remaining</span></div>
+                <div style="text-align:right">IMMEDIATE ACTION<span class="hc-val red">Replace Hoist Cable</span></div>
+              </div>
+              <div class="hc-desc red-border">Statutory DGMS Rule 104 Violation Warning: Stranded wire count exceeds 10% tolerance on main boom hoist.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Row 4: Digital Twin -->
+        <div class="card-light" style="padding:0; overflow:hidden;">
+          <div style="padding: 16px 20px 0;">
+            <div class="dt-header">
+              <div class="panel-header" style="margin:0;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+                Digital Mine Twin Simulation (Pit Section 3B / Incline #4 Cross-Section)
+              </div>
+              <div class="dt-controls">
+                <div class="dt-toggle" id="dtToggle">
+                  <div class="active" id="btnBaseline" onclick="switchDT('baseline')">Baseline</div>
+                  <div id="btnFan" onclick="switchDT('fan')">After 74% Fan</div>
+                </div>
+                <button class="btn-dt-run" onclick="window.mockAction(this, 'Simulation complete: safe levels reached in 14m')">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                  Generate Action Plan
+                </button>
+              </div>
+            </div>
+            <p style="font-size:12px; color:var(--text-secondary); margin-bottom:12px;">Spatial cross-section with real-time methane plume overlay, thermodynamic gradients, and airflow vectors.</p>
+          </div>
+
+          <div class="dt-svg-container">
+            <!-- Diagram SVG -->
+            <svg width="100%" height="100%" viewBox="0 0 800 260" preserveAspectRatio="xMidYMid slice" style="display:block">
+              <!-- Grid -->
+              <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+              </pattern>
+              <rect width="100%" height="100%" fill="url(#grid)" />
+              
+              <!-- Tunnels & Shafts -->
+              <path d="M -50 80 L 300 80 L 600 200 L 850 200" fill="none" stroke="#4A5B55" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M -50 80 L 300 80 L 600 200 L 850 200" fill="none" stroke="#2D3734" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+              
+              <!-- Secondary Incline -->
+              <path d="M 400 260 L 500 200" fill="none" stroke="#4A5B55" stroke-width="16"/>
+              <path d="M 400 260 L 500 200" fill="none" stroke="#2D3734" stroke-width="14"/>
+
+              <!-- Airflow Vectors -->
+              <g stroke="rgba(255,255,255,0.3)" stroke-width="1" fill="none">
+                <line x1="100" y1="80" x2="160" y2="80"/><polygon points="160,77 165,80 160,83" fill="rgba(255,255,255,0.3)"/>
+                <line x1="320" y1="88" x2="380" y2="112"/><polygon points="377,109 383,113 375,114" fill="rgba(255,255,255,0.3)"/>
+                <line x1="520" y1="168" x2="580" y2="192"/><polygon points="577,189 583,193 575,194" fill="rgba(255,255,255,0.3)"/>
+              </g>
+
+              <!-- Gas Cloud Plume -->
+              <defs>
+                <radialGradient id="plume" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stop-color="rgba(201, 54, 43, 0.6)"/>
+                  <stop offset="40%" stop-color="rgba(201, 54, 43, 0.2)"/>
+                  <stop offset="100%" stop-color="rgba(201, 54, 43, 0)"/>
+                </radialGradient>
+              </defs>
+              <ellipse id="dt-plume" cx="580" cy="200" rx="90" ry="30" fill="url(#plume)" style="transition: all 1s ease;"/>
+              
+              <circle cx="580" cy="200" r="4" fill="#C9362B"/>
+            </svg>
+
+            <!-- HTML Overlays -->
+            <div class="dt-overlay">
+              CROSS SECTION: <span>NORTH 22° 14' E</span><br>
+              BENCH 1-4: <span>OVERBURDEN (SANDSTONE/SHALE)</span><br>
+              SEAM G8: <span>THICKNESS 0.8m (METALLURGICAL COAL)</span>
+            </div>
+
+            <div class="dt-label" style="position: absolute; top: 130px; left: 160px; background: white; padding: 6px; border-radius: 2px;">
+                <div class="dtl-header"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> FAN AUX-02</div>
+                <div class="dtl-value" id="fanText">1,050 m&sup3;/min (62%)</div>
+            </div>
+
+            <div class="dt-label" style="position: absolute; top: 180px; left: 450px; background: white; padding: 6px; border-radius: 2px;">
+                <div class="dtl-header" style="color:var(--danger)">&#9679; HOTSPOT #04</div>
+                <div class="dtl-value text-xl"><span id="ch4Text">CH&#8324; 0.84%</span> &middot; <span id="tempText">Temp 34.2&deg;C</span></div>
+                <div class="dtl-sub">INCLINE 4 GOAF INTERFACE</div>
+            </div>
+
+            <div class="dt-footer">
+              <div>LAT: <span>22°18'44.2" N</span></div>
+              <div>LONG: <span>82°41'12.6" E</span></div>
+              <div>DATUM: WGS-84 / MSL <span>+242m</span></div>
+              <div>HAUL CLEARANCE: <span>SAFE (14.2m)</span></div>
+              <div>VENT RETURN: <span>PIT SEC 3B</span></div>
+              <div class="purge-text text-danger" id="dt-purge" style="margin-left:auto; font-weight:bold;">METHANE PURGE SIMULATION CONVERGING (14 MIN)</div>
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="js/main.js"></script>
+  <script src="js/api.js"></script>
+  <script>
+    function switchDT(state) {
+      document.getElementById('btnBaseline').classList.remove('active');
+      document.getElementById('btnFan').classList.remove('active');
+      const plume = document.getElementById('dt-plume');
+      const footer = document.getElementById('dt-purge');
+      
+      if(state === 'baseline') {
+        document.getElementById('btnBaseline').classList.add('active');
+        document.getElementById('fanText').innerHTML = '1,050 m&sup3;/min (62%)';
+        document.getElementById('ch4Text').innerHTML = 'CH&#8324; 0.84%';
+        document.getElementById('tempText').innerHTML = 'Temp 34.2&deg;C';
+        footer.innerHTML = 'METHANE PURGE SIMULATION CONVERGING (14 MIN)';
+        footer.classList.remove('text-success');
+        footer.classList.add('text-danger');
+        plume.setAttribute('rx', '90');
+        plume.setAttribute('ry', '30');
+      } else {
+        document.getElementById('btnFan').classList.add('active');
+        document.getElementById('fanText').innerHTML = '1,650 m&sup3;/min (74%)';
+        document.getElementById('ch4Text').innerHTML = 'CH&#8324; 0.42%';
+        document.getElementById('tempText').innerHTML = 'Temp 29.5&deg;C';
+        footer.innerHTML = 'SAFE PARAMETERS ACHIEVED AFTER T+14 MIN';
+        footer.classList.remove('text-danger');
+        footer.classList.add('text-success');
+        plume.setAttribute('rx', '20');
+        plume.setAttribute('ry', '10');
+      }
+    }
+
+    // Map stroke offsets for gauges
+    function updateGauge(id, value, max, unitStr, isDanger) {
+      const el = document.getElementById(id);
+      const valEl = document.getElementById(`val-${id.split('-')[1]}`);
+      if(valEl) valEl.textContent = value + unitStr;
+      if(el) {
+        // dashoffset 0 is full (226), max offset is 226
+        const pct = Math.min(value / max, 1);
+        const offset = 226 - (226 * pct);
+        el.style.strokeDashoffset = offset;
+        if(isDanger) {
+          el.classList.add('val-danger');
+          el.classList.remove('val-success', 'val-warning');
+          document.getElementById('card-ch4').classList.add('danger');
+        }
+      }
+    }
+
+    let isIncidentActive = false;
+
+    function triggerEmergencyUI() {
+      // Called organically when AI backend sends Stage 3
+      document.getElementById('dt-plume').setAttribute('rx', '180');
+      document.getElementById('dt-plume').setAttribute('ry', '80');
+      if(window.showToast) window.showToast('INCIDENT DETECTED: CH4 limits exceeded. AI Model predicting combustion.', 'danger');
+    }
+
+    async function triggerIncident() {
+      const btn = document.getElementById('btn-simulate');
+      
+      if (isIncidentActive) {
+        // Reset to normal
+        isIncidentActive = false;
+        startSSE();
+        document.getElementById('dt-plume').setAttribute('rx', '40');
+        document.getElementById('dt-plume').setAttribute('ry', '15');
+        
+        btn.innerHTML = `▶ Simulate Incident`;
+        btn.style.background = '';
+        btn.style.color = '';
+        if(window.showToast) window.showToast('Incident Resolved. Backend telemetry returned to normal base parameters.', 'success');
+        return;
+      }
+
+      btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="animate-spin" style="animation:spin 1s linear infinite;"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Connecting Backend...`;
+      
+      isIncidentActive = true;
+      startSSE();
+      
+      setTimeout(() => { 
+        btn.innerHTML = `↻ Reset Simulation`; 
+        btn.style.background = 'var(--danger)';
+        btn.style.color = 'white';
+      }, 1000);
+    }
+
+    async function applyPrescription() {
+      if(!sseSource) return;
+      try {
+        // Parse current sensors from the text fields
+        const ch4 = parseFloat(document.getElementById('val-ch4').textContent);
+        const temp = parseFloat(document.getElementById('val-temp').textContent);
+        const co = parseFloat(document.getElementById('val-co').textContent) || 15;
+        const c2h4 = parseFloat(document.getElementById('val-c2h4').textContent) || 0.1;
+        const o2 = parseFloat(document.getElementById('val-o2').textContent) || 20.0;
+        const dust = parseFloat(document.getElementById('val-dust').textContent) || 50;
+        
+        const response = await fetch('http://localhost:8000/prescribe/ventilation', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                mine_name: currentMine,
+                CH4_pct: ch4 || 1.4,
+                CO_ppm: co,
+                CO2_pct: 0.5,
+                O2_pct: o2,
+                dust_mgm3: dust,
+                current_fan_speed_pct: 60.0
+            })
+        });
+        const data = await response.json();
+        const rec_speed = data.recommended_fan_speed_pct;
+        const rec_flow = data.airflow_m3s;
+        
+        // UI updates
+        document.getElementById('dt-fan-text').textContent = `${rec_flow} m³/min (${rec_speed}%)`;
+        document.getElementById('dt-plume').setAttribute('rx', '40');
+        document.getElementById('dt-plume').setAttribute('ry', '15');
+        
+        // Reset the SSE to naturally clear the gas
+        isIncidentActive = false;
+        startSSE();
+        
+        // Reset simulation button text
+        const btn = document.getElementById('btn-simulate');
+        if (btn) {
+            btn.innerHTML = `▶ Simulate Incident`;
+            btn.style.background = '';
+            btn.style.color = '';
+        }
+        
+        if(window.showToast) window.showToast(`AI Prescription Applied. Fan speed increased to ${rec_speed}%. Expected dilution in ${data.dilution_time_recommended_min} minutes.`, 'success');
+      } catch (err) {
+        console.error(err);
+        if(window.showToast) window.showToast('Failed to connect to AI Ventilation Optimizer', 'danger');
+      }
+    }
+
+    // ── AI Engine SSE Live Feed ──
+    let sseSource = null;
+    let currentMine = "Kusmunda OC";
+    
+    function startSSE() {
+      if (sseSource) sseSource.close();
+      const url = `http://localhost:8000/simulate/live-feed?mine=${encodeURIComponent(currentMine)}&incident=${isIncidentActive}`;
+      sseSource = new EventSource(url);
+      
+      sseSource.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        const sensors = data.sensors;
+        const comb = data.combustion;
+
+        // Update gauges
+        updateGauge('svg-ch4', sensors.CH4.toFixed(2), 2.0, '%', sensors.CH4 > 1.25);
+        updateGauge('svg-co', Math.round(sensors.CO), 100, '', sensors.CO > 50);
+        updateGauge('svg-c2h4', sensors.C2H4.toFixed(2), 0.1, '', sensors.C2H4 > 0.08);
+        updateGauge('svg-o2', sensors.O2.toFixed(1), 21.0, '%', sensors.O2 < 19.0);
+        updateGauge('svg-temp', sensors.temp.toFixed(1), 50.0, '', sensors.temp > 38.0);
+        updateGauge('svg-dust', Math.round(sensors.dust), 300, '', sensors.dust > 100);
+        
+        // Update 3D Digital Twin Text
+        document.getElementById('ch4Text').innerHTML = 'CH&#8324; ' + sensors.CH4.toFixed(2) + '%';
+        document.getElementById('tempText').innerHTML = 'Temp ' + sensors.temp.toFixed(1) + '&deg;C';
+
+        // Update AI Prediction UI based on Combustion Stage
+        document.getElementById('fire-prob').textContent = comb.confidence + '%';
+        
+        // Reset stages
+        ['stage-1', 'stage-2', 'stage-3'].forEach(id => document.getElementById(id).classList.remove('active'));
+        
+        if (comb.stage === 0 || comb.stage === 1) {
+          document.getElementById('stage-1').classList.add('active');
+        } else if (comb.stage === 2) {
+          document.getElementById('stage-2').classList.add('active');
+        } else if (comb.stage === 3) {
+          document.getElementById('stage-3').classList.add('active');
+          if(!isIncidentActive) {
+            // Backend organically triggered a stage 3!
+            triggerEmergencyUI();
+          }
+        }
+      };
+
+      sseSource.onerror = (err) => {
+        console.error('SSE Error:', err);
+      };
+    }
+
+    startSSE();
+  </script>
+</body>
+</html>

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Compliance Monitoring – CoalGuard</title>
+  <link rel="stylesheet" href="css/main.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    .filter-bar { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; align-items: center; }
+    .kpi-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+    .kpi-card { background: white; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px; }
+    .kpi-val { font-size: 32px; font-weight: 800; color: var(--text-primary); margin: 4px 0; }
+    .kpi-label { font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; }
+    
+    .chart-box { height: 160px; background: #F5F7F6; border: 1px dashed var(--border); display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-muted); font-size: 13px; font-weight: 600; margin-bottom: 24px; }
+
+    /* Stacked bar simulation for CSS */
+    .stacked-bar-chart { display: flex; align-items: flex-end; gap: 32px; height: 100%; padding: 20px 0; justify-content: space-around; width: 100%; }
+    .sb-col { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; width: 40px; }
+    .sb-label { font-size: 10px; font-weight: 700; color: var(--text-secondary); margin-top: 8px; }
+    .sb-bar { width: 100%; display: flex; flex-direction: column; justify-content: flex-end; }
+    .sb-segment { width: 100%; }
+    .sb-green { background: var(--success); }
+    .sb-amber { background: var(--amber); }
+    .sb-red { background: var(--danger); }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <div id="sidebar-mount"></div>
+
+    <div class="main-content">
+      <header class="top-header">
+        <div class="header-search">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="text" placeholder="Search regulations, mines...">
+        </div>
+        <div class="header-links">
+          <a href="dashboard.html" class="header-link">HQ Dashboard</a>
+          <a href="#" class="header-link active">SECL Operational Zone</a>
+        </div>
+        <div class="system-status-pill"><div class="status-dot"></div> System Operational</div>
+        <div class="header-time">09 Sep 2026<br>03:35 IST</div>
+        <button class="btn-emergency">Emergency Dispatch</button>
+      </header>
+
+      <main class="page-wrapper">
+        <div class="control-bar">
+          <div>
+            <h1 class="page-title">Compliance Monitoring</h1>
+            <div class="page-subtitle">Track statutory, safety, environmental, labour and production requirements across all mines.</div>
+          </div>
+          <div class="controls-right">
+            <button class="btn btn-primary" onclick="window.showToast('Add Compliance Modal Opened', 'info')">+ Add Compliance Item</button>
+          </div>
+        </div>
+
+        <!-- SECTION 1: FILTER BAR -->
+        <div class="filter-bar">
+          <select class="form-control" style="width:160px"><option>Category: All</option><option>Safety</option><option>Environment</option><option>Labour</option></select>
+          <select class="form-control" style="width:160px"><option>Status: All</option><option>Compliant</option><option>At Risk</option><option>Non-Compliant</option></select>
+          <select class="form-control" style="width:160px"><option>Subsidiary: All</option><option>SECL</option><option>MCL</option></select>
+          <select class="form-control" style="width:160px"><option>Mine: All</option><option>Kusmunda</option><option>Gevra</option></select>
+          <select class="form-control" style="width:160px"><option>Due Date: Next 30 Days</option></select>
+          <div class="form-control" style="width:200px; display:flex; align-items:center; gap:8px;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <input type="text" placeholder="Search regulation" style="border:none;background:transparent;width:100%;font-size:12px;">
+          </div>
+        </div>
+
+        <!-- SECTION 2: SUMMARY CARDS -->
+        <div class="kpi-grid-4">
+          <div class="kpi-card"><div class="kpi-label">Total Requirements</div><div class="kpi-val">1,248</div></div>
+          <div class="kpi-card" style="border-bottom: 4px solid var(--success)"><div class="kpi-label text-success">Compliant</div><div class="kpi-val">1,034</div></div>
+          <div class="kpi-card" style="border-bottom: 4px solid var(--amber)"><div class="kpi-label" style="color:var(--amber)">At Risk</div><div class="kpi-val">142</div></div>
+          <div class="kpi-card" style="border-bottom: 4px solid var(--danger)"><div class="kpi-label text-danger">Non-Compliant</div><div class="kpi-val">72</div></div>
+        </div>
+
+        <!-- SECTION 3: COMPLIANCE BREAKDOWN -->
+        <div class="card-light mb-6">
+          <h3 class="text-sm font-bold mb-4">Quarterly Compliance by Subsidiary</h3>
+          <div style="height:280px; position:relative; width:100%;">
+            <canvas id="compChart"></canvas>
+          </div>
+          <div class="flex gap-4" style="font-size:11px; font-weight:700; color:var(--text-secondary); justify-content:center; margin-top:16px;">
+            <div class="flex items-center gap-2"><div class="dot green"></div> Compliant (83%)</div>
+            <div class="flex items-center gap-2"><div class="dot amber"></div> At Risk (11%)</div>
+            <div class="flex items-center gap-2"><div class="dot" style="background:var(--danger)"></div> Non-Compliant (6%)</div>
+          </div>
+        </div>
+
+        <!-- SECTION 4: COMPLIANCE REGISTER -->
+        <div class="card-light">
+          <h3 class="text-sm font-bold mb-4">Compliance Register</h3>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Mine Name</th>
+                  <th>Regulation</th>
+                  <th>Category</th>
+                  <th>Status</th>
+                  <th>Due Date</th>
+                  <th>Days Overdue</th>
+                  <th>Responsible Officer</th>
+                  <th>Last Review</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="compliance-tbody">
+                <!-- Dynamically populated via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/mines-db.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      
+      // 1. Populate Compliance Table dynamically
+      const tbody = document.getElementById('compliance-tbody');
+      if (typeof REAL_MINES !== 'undefined' && tbody) {
+        const sortedMines = [...REAL_MINES].sort((a,b) => a.compliance - b.compliance).slice(0, 15);
+        
+        sortedMines.forEach(m => {
+          let badgeClass = 'badge-success';
+          let statusText = 'Compliant';
+          let overdueText = '-';
+          
+          if(m.compliance < 60) {
+            badgeClass = 'badge-danger';
+            statusText = 'Non-Compliant';
+            overdueText = `<span class="text-danger font-bold">${Math.floor(Math.random() * 10) + 1} days</span>`;
+          } else if(m.compliance < 80) {
+            badgeClass = 'badge-warning';
+            statusText = 'At Risk';
+          }
+          
+          const categories = ['Environment', 'Safety', 'Production', 'Labour', 'Statutory'];
+          const category = categories[Math.floor(Math.random() * categories.length)];
+          const officer = 'System User';
+          
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td class="font-bold">${m.name}</td>
+            <td style="max-width:200px;white-space:normal;line-height:1.3">${m.reason.substring(0, 50)}...</td>
+            <td>${category}</td>
+            <td><span class="badge ${badgeClass}">${statusText}</span></td>
+            <td class="font-bold">30 Sep 2026</td>
+            <td>${overdueText}</td>
+            <td>${officer}</td>
+            <td>05 Sep 2026</td>
+            <td><button class="btn btn-secondary btn-sm" onclick="window.mockAction(this, 'Audit opened successfully')">Review</button></td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      // 2. Subsidiary Compliance Chart
+      let labels = [];
+      let compData = [];
+      let warnData = [];
+      let nonCompData = [];
+      
+      if(typeof DB_STATS !== 'undefined') {
+        labels = DB_STATS.subsidiaries;
+        labels.forEach(sub => {
+          const mines = MINES_BY_SUB[sub];
+          const avg = Math.round(mines.reduce((acc, m) => acc + m.compliance, 0) / mines.length);
+          compData.push(avg);
+          warnData.push(Math.round((100 - avg) * 0.6));
+          nonCompData.push(Math.round((100 - avg) * 0.4));
+        });
+      }
+
+      const ctxComp = document.getElementById('compChart').getContext('2d');
+      new Chart(ctxComp, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            { label: 'Compliant', data: compData, backgroundColor: '#176B45' },
+            { label: 'Pending/Warning', data: warnData, backgroundColor: '#E6A23C' },
+            { label: 'Non-Compliant', data: nonCompData, backgroundColor: '#C9362B' }
+          ]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: { stacked: true, max: 100 },
+            y: { stacked: true }
+          },
+          plugins: { legend: { position: 'top' } }
+        }
+      });
+    });
+  </script>
+</body>
+</html>

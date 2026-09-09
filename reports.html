@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Reports & Audit Trail – CoalGuard</title>
+  <link rel="stylesheet" href="css/main.css">
+  <style>
+    .layout-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: start; }
+    
+    /* Report Cards */
+    .report-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+    .report-card { background: white; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 20px; transition: all 0.2s; }
+    .report-card:hover { border-color: var(--brand-primary); box-shadow: var(--shadow-sm); }
+    .rc-icon { width: 40px; height: 40px; background: var(--brand-light); color: var(--brand-primary); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; }
+    .rc-title { font-size: 14px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px; }
+    .rc-desc { font-size: 12px; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.4; }
+    
+    /* Custom form styling for reports */
+    .report-form { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+    .report-form select { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px; font-size: 12px; }
+    
+    /* Audit Trail */
+    .audit-chain { display: flex; flex-direction: column; padding: 20px 0; position: relative; }
+    .audit-chain::before { content: ''; position: absolute; left: 24px; top: 0; bottom: 0; width: 2px; background: var(--border); z-index: 1; }
+    
+    .audit-block { position: relative; z-index: 2; margin-bottom: 32px; display: flex; gap: 20px; }
+    
+    .ab-icon { width: 50px; height: 50px; background: white; border: 2px solid var(--border); border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 8px rgba(0,0,0,0.05); flex-shrink: 0; }
+    .ab-icon svg { color: var(--text-muted); }
+    .audit-block.verified .ab-icon { border-color: var(--success); }
+    .audit-block.verified .ab-icon svg { color: var(--success); }
+    
+    .ab-content { flex: 1; background: white; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px; box-shadow: var(--shadow-sm); position: relative; }
+    .ab-content::before { content: ''; position: absolute; left: -6px; top: 20px; width: 10px; height: 10px; background: white; border-left: 1px solid var(--border); border-bottom: 1px solid var(--border); transform: rotate(45deg); }
+    
+    .ab-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 12px; }
+    .ab-action { font-size: 14px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px; }
+    .ab-meta { font-size: 11px; color: var(--text-secondary); display: flex; gap: 12px; }
+    .ab-meta span { display: flex; align-items: center; gap: 4px; }
+    
+    .ab-hash-box { background: #F0F3F1; border: 1px dashed var(--border); padding: 10px 12px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-secondary); display: flex; align-items: center; justify-content: space-between; }
+    .hash-val { color: var(--brand-primary); font-weight: 700; word-break: break-all; margin-right: 12px; }
+    
+    .ab-verify { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; color: var(--success); margin-top: 12px; }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <div id="sidebar-mount"></div>
+
+    <div class="main-content">
+      <header class="top-header">
+        <div class="header-search">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="text" placeholder="Search reports or audit logs...">
+        </div>
+        <div class="header-links">
+          <a href="dashboard.html" class="header-link">HQ Dashboard</a>
+          <a href="#" class="header-link active">SECL Operational Zone</a>
+        </div>
+        <div class="system-status-pill"><div class="status-dot"></div> System Operational</div>
+        <div class="header-time">09 Sep 2026<br>03:35 IST</div>
+        <button class="btn-emergency">Emergency Dispatch</button>
+      </header>
+
+      <main class="page-wrapper">
+        <div class="control-bar">
+          <div>
+            <h1 class="page-title">Reports & Audit Trail</h1>
+            <div class="page-subtitle">Generate statutory reports and verify tamper-evident blockchain audit logs.</div>
+          </div>
+        </div>
+
+        <div class="layout-grid">
+          
+          <!-- SECTION 1: REPORT GENERATOR -->
+          <div>
+            <h3 class="text-sm font-bold mb-4">Quick Generate Reports</h3>
+            <div class="report-grid">
+              
+              <div class="report-card">
+                <div class="rc-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                </div>
+                <div class="rc-title">DGMS Daily Return (Form-IV)</div>
+                <div class="rc-desc">Statutory daily safety, attendance, and ventilation return for Directorate General of Mines Safety.</div>
+                <div class="report-form">
+                  <select><option>Select Mine</option><option>Kusmunda OC</option></select>
+                  <select><option>Date: Today</option></select>
+                </div>
+                <button class="btn btn-primary" style="width:100%" onclick="window.showToast('Generating Form-IV PDF...', 'info')">Generate PDF</button>
+              </div>
+
+              <div class="report-card">
+                <div class="rc-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                </div>
+                <div class="rc-title">Weekly Safety Audit</div>
+                <div class="rc-desc">Comprehensive compilation of all internal safety inspections and corrective action closures.</div>
+                <div class="report-form">
+                  <select><option>Select Subsidiary</option><option>SECL</option></select>
+                  <select><option>Week: Sep 02 - Sep 08</option></select>
+                </div>
+                <button class="btn btn-primary" style="width:100%">Generate PDF</button>
+              </div>
+
+              <div class="report-card">
+                <div class="rc-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                </div>
+                <div class="rc-title">Subsidiary Production</div>
+                <div class="rc-desc">Daily/Monthly coal dispatch and production figures verified against contractor logs.</div>
+                <div class="report-form">
+                  <select><option>Select Subsidiary</option><option>SECL</option></select>
+                  <select><option>Period: Sept 2026 (MTD)</option></select>
+                </div>
+                <button class="btn btn-primary" style="width:100%">Generate PDF</button>
+              </div>
+
+              <div class="report-card">
+                <div class="rc-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                </div>
+                <div class="rc-title">Environmental Compliance</div>
+                <div class="rc-desc">MoEFCC formatted report covering PM10/PM2.5, effluent discharge, and noise levels.</div>
+                <div class="report-form">
+                  <select><option>Select Mine</option><option>Dipka OC</option></select>
+                  <select><option>Period: Q3 2026</option></select>
+                </div>
+                <button class="btn btn-primary" style="width:100%">Generate PDF</button>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- SECTION 2: TAMPER-EVIDENT AUDIT TRAIL -->
+          <div>
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-sm font-bold">Tamper-Evident Audit Trail</h3>
+              <span class="badge badge-success">BLOCKCHAIN VERIFIED</span>
+            </div>
+
+            <div class="audit-chain">
+
+              <div class="audit-block verified">
+                <div class="ab-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <div class="ab-content">
+                  <div class="ab-header">
+                    <div>
+                      <div class="ab-action">Inspection Report Approved</div>
+                      <div class="ab-meta">
+                        <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> A. Sharma (Manager)</span>
+                        <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> 09 Sep 2026, 03:22 IST</span>
+                      </div>
+                    </div>
+                    <div class="badge badge-info">INS-084</div>
+                  </div>
+                  <div class="ab-hash-box">
+                    <span>SHA-256</span>
+                    <span class="hash-val">8f4e92b3a1d7c6f0e5b8a9d2c4f7e1a3b5d8c9e0f1a2b3c4d5e6f7a8b9c0d1e2</span>
+                  </div>
+                  <div class="ab-verify">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg> Cryptographically Verified
+                  </div>
+                </div>
+              </div>
+
+              <div class="audit-block verified">
+                <div class="ab-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                </div>
+                <div class="ab-content">
+                  <div class="ab-header">
+                    <div>
+                      <div class="ab-action">Contractor Form-B Uploaded</div>
+                      <div class="ab-meta">
+                        <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Vendor Portal (ABC Mining)</span>
+                        <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> 09 Sep 2026, 01:14 IST</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="ab-hash-box">
+                    <span>SHA-256</span>
+                    <span class="hash-val">3b2d1f4a9e8c7b6a5d4f3e2d1c0b9a8f7e6d5c4b3a2f1e0d9c8b7a6f5e4d3c2b</span>
+                  </div>
+                  <div class="ab-verify">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg> Cryptographically Verified
+                  </div>
+                </div>
+              </div>
+
+              <div class="audit-block verified">
+                <div class="ab-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                </div>
+                <div class="ab-content">
+                  <div class="ab-header">
+                    <div>
+                      <div class="ab-action">Statutory Baseline Altered</div>
+                      <div class="ab-meta">
+                        <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> System Admin</span>
+                        <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> 08 Sep 2026, 22:04 IST</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="ab-hash-box">
+                    <span>SHA-256</span>
+                    <span class="hash-val">1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b</span>
+                  </div>
+                  <div class="ab-verify">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg> Cryptographically Verified
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
