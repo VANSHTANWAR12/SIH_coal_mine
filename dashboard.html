@@ -409,7 +409,7 @@
 
       // Query existing backend mine data
       try {
-        const res = await fetch(`http://localhost:3001/api/mines/${encodeURIComponent(mineIdOrName)}`);
+        const res = await fetch(`/api/mines/${encodeURIComponent(mineIdOrName)}`);
         if (res.ok) {
           const backendMine = await res.json();
           if (backendMine) {

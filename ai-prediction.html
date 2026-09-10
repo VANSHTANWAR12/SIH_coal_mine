@@ -813,7 +813,7 @@
         const o2 = parseFloat(document.getElementById('val-o2')?.textContent) || 20.4;
         const dust = parseFloat(document.getElementById('val-dust')?.textContent) || 142;
         
-        const response = await fetch('http://localhost:8000/prescribe/ventilation', {
+        const response = await fetch('/prescribe/ventilation', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -887,7 +887,7 @@
       
       try {
         const ch4 = parseFloat(document.getElementById('val-ch4')?.textContent) || 0.84;
-        const response = await fetch('http://localhost:8000/prescribe/ventilation', {
+        const response = await fetch('/prescribe/ventilation', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -949,7 +949,7 @@
           shift_hours: 6.5,
           consecutive_days: 14
         };
-        const res = await fetch('http://localhost:8000/predict/strata', {
+        const res = await fetch('/predict/strata', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
@@ -1038,7 +1038,7 @@
       const container = document.getElementById('hemm-fleet-container');
       if (!container) return;
       try {
-        const res = await fetch(`http://localhost:8000/prescribe/fleet/${encodeURIComponent(mineName || currentMine)}`);
+        const res = await fetch(`/prescribe/fleet/${encodeURIComponent(mineName || currentMine)}`);
         if (!res.ok) return;
         const data = await res.json();
         const badge = document.getElementById('hemm-badge');
@@ -1083,7 +1083,7 @@
         try { sseSource.close(); } catch(e) {}
         sseSource = null;
       }
-      const url = `http://localhost:8000/simulate/live-feed?mine=${encodeURIComponent(currentMine)}&incident=${isIncidentActive}`;
+      const url = `/simulate/live-feed?mine=${encodeURIComponent(currentMine)}&incident=${isIncidentActive}`;
       sseSource = new EventSource(url);
       
       sseSource.onmessage = (event) => {

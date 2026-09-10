@@ -285,7 +285,7 @@
       let ALL_ALERTS = [];
       async function fetchAlertsFromApi() {
         try {
-          const r = await fetch('http://localhost:3001/api/alerts');
+          const r = await fetch('/api/alerts');
           if (r.ok) {
             ALL_ALERTS = await r.json();
             updateActiveAlertTimestamp();
@@ -840,7 +840,7 @@
         if (mineOrId) {
           const lookupKey = typeof mineOrId === 'object' ? (mineOrId.id || mineOrId.name) : mineOrId;
           try {
-            const r = await fetch(`http://localhost:3001/api/mines/${encodeURIComponent(lookupKey)}`);
+            const r = await fetch(`/api/mines/${encodeURIComponent(lookupKey)}`);
             if (r.ok) {
               const bMine = await r.json();
               if (bMine) {
@@ -948,7 +948,7 @@
             environmental_incidents: capRisk === 'Critical' ? 2 : 0
           };
 
-          const res = await fetch('http://localhost:8000/risk-scores/compute', {
+          const res = await fetch('/risk-scores/compute', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
