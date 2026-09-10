@@ -12,7 +12,7 @@
     .mlp-header { padding: 16px; border-bottom: 1px solid var(--border); background: #F8FAFC; }
     .search-box { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 13px; outline: none; margin-top: 8px; }
     .search-box:focus { border-color: var(--brand-primary); }
-    .mlp-content { overflow-y: auto; flex: 1; }
+    .mlp-content { overflow-y: auto; flex: 1; max-height: calc(100vh - 270px); }
     
     .mine-item { padding: 14px 16px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.2s; display: flex; justify-content: space-between; align-items: center; }
     .mine-item:hover { background: #F1F5F9; }
@@ -25,17 +25,143 @@
     .risk-Medium { background: var(--info); }
     .risk-Low { background: var(--success); }
 
-    /* Right Panel: Strategy Brief */
+    /* Right Panel: Strategy Brief & Intelligence */
     .strategy-panel { background: white; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 32px; display: flex; flex-direction: column; }
     .sp-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; border-bottom: 1px solid var(--border); padding-bottom: 24px; }
     .sp-title { font-size: 24px; font-weight: 800; color: var(--text-primary); margin-bottom: 8px; }
     .sp-subtitle { font-size: 14px; color: var(--text-secondary); }
     
-    .kpi-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+    /* Active Alert Card */
+    .active-alert-card {
+      background: #FEF2F2;
+      border: 1px solid #FCA5A5;
+      border-left: 5px solid var(--danger);
+      border-radius: var(--radius-sm);
+      padding: 20px;
+      margin-bottom: 28px;
+    }
+    .active-alert-card.alert-high {
+      background: #FFFBEB;
+      border-color: #FCD34D;
+      border-left-color: var(--amber);
+    }
+    .active-alert-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .active-alert-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+      line-height: 1.4;
+    }
+    .active-alert-desc {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      margin-bottom: 14px;
+    }
+    .active-alert-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    /* KPI Grids */
+    .kpi-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
     .kpi-box { padding: 16px; background: #F8FAFC; border: 1px solid var(--border); border-radius: var(--radius-sm); }
     .kpi-box-label { font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 4px; }
     .kpi-box-val { font-size: 18px; font-weight: 800; color: var(--text-primary); }
     
+    /* Risk Analysis Progress Bars */
+    .risk-analysis-section {
+      background: #F8FAFC;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 20px 24px;
+      margin-bottom: 28px;
+    }
+    .ra-title {
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+      letter-spacing: 0.5px;
+    }
+    .ra-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .ra-row:last-child {
+      margin-bottom: 0;
+    }
+    .ra-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      width: 140px;
+    }
+    .ra-bar-wrap {
+      flex: 1;
+      height: 9px;
+      background: #E2E8F0;
+      border-radius: 6px;
+      margin: 0 16px;
+      overflow: hidden;
+    }
+    .ra-bar-fill {
+      height: 100%;
+      border-radius: 6px;
+      transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .ra-val {
+      font-size: 13px;
+      font-weight: 800;
+      width: 44px;
+      text-align: right;
+    }
+
+    /* Key Factors List */
+    .key-factors-section {
+      background: #F8FAFC;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 20px 24px;
+      margin-bottom: 28px;
+    }
+    .kf-title {
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      margin-bottom: 14px;
+      letter-spacing: 0.5px;
+    }
+    .kf-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .kf-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--text-primary);
+      line-height: 1.5;
+      background: white;
+      padding: 10px 14px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+    }
+
+    /* AI Strategy Section */
     .strategy-section { margin-bottom: 32px; }
     .ss-title { font-size: 14px; font-weight: 800; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
     .ss-title svg { color: var(--brand-primary); }
@@ -46,10 +172,46 @@
     .pc-type { font-size: 12px; font-weight: 800; color: var(--brand-primary); text-transform: uppercase; letter-spacing: 0.5px; background: #E0E7FF; padding: 4px 10px; border-radius: 20px; }
     .pc-body { font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
     
-    .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--text-muted); text-align: center; }
+    /* AI States */
+    .ai-idle-box {
+      background: #F8FAFC;
+      border: 1px dashed var(--border);
+      border-radius: var(--radius-md);
+      padding: 32px 24px;
+      text-align: center;
+    }
+    .ai-loading-box {
+      padding: 32px 24px;
+      background: #F8FAFC;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      text-align: center;
+    }
+    .ai-loading-step {
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .ai-loading-step.done { color: var(--success); }
+    .ai-loading-step.active { color: var(--brand-primary); font-weight: 700; }
+    .ai-loading-step.pending { color: var(--text-muted); }
+
+    .ai-error-box {
+      padding: 24px;
+      background: #FEF2F2;
+      border: 1px solid #FCA5A5;
+      border-radius: var(--radius-md);
+      text-align: center;
+    }
+
+    .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--text-muted); text-align: center; padding: 60px 20px; }
     .empty-state svg { width: 48px; height: 48px; margin-bottom: 16px; opacity: 0.5; }
     .empty-state h3 { font-size: 18px; font-weight: 700; color: var(--text-primary); margin-bottom: 8px; }
 
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+    .spinner { animation: spin 1s linear infinite; }
   </style>
 </head>
 <body>
@@ -63,8 +225,9 @@
           <input type="text" placeholder="Search strategy models...">
         </div>
         <div class="header-links">
-          <a href="dashboard.html" class="header-link">HQ Dashboard</a>
-          <a href="#" class="header-link active">Intelligence Engine</a>
+          <a href="dashboard.html" class="header-link active">HQ Dashboard</a>
+          <a href="secl-zone.html" class="header-link">SECL Operational Zone</a>
+          <a href="dgms-portal.html" class="header-link">DGMS Regulatory Portal</a>
         </div>
         <div class="system-status-pill"><div class="status-dot"></div> AI Engine Operational</div>
       </header>
@@ -91,11 +254,7 @@
 
           <!-- Right Panel -->
           <div class="strategy-panel" id="strategyPanel">
-            <div class="empty-state">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-              <h3>Select a Mine</h3>
-              <p>Choose a mine from the left panel to generate an AI strategy brief.</p>
-            </div>
+            <!-- Dynamically populated via JS (State A or State B) -->
           </div>
         </div>
 
@@ -109,54 +268,249 @@
     document.addEventListener('DOMContentLoaded', () => {
       const mineListEl = document.getElementById('mineList');
       const searchBox = document.getElementById('mineSearch');
-      
-      // Render Mine List
-      function renderMines(filterText = '') {
+      const panel = document.getElementById('strategyPanel');
+
+      // Helper: Escape HTML strings
+      function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+
+      // Helper: Find mine by ID, slug, or name
+      function findMine(query) {
+        if (!query) return null;
+        const q = String(query).trim().toLowerCase();
+        if (!q) return null;
+
+        // 1. Exact match on mine ID (e.g. SECL001)
+        let match = REAL_MINES.find(m => m.id && m.id.toLowerCase() === q);
+        if (match) return match;
+
+        // 2. Exact match on slug (e.g. gevra-oc -> Gevra OC)
+        match = REAL_MINES.find(m => m.name && m.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') === q);
+        if (match) return match;
+
+        // 3. Exact match on name
+        match = REAL_MINES.find(m => m.name && m.name.toLowerCase() === q);
+        if (match) return match;
+
+        // 4. Substring match on name or ID
+        match = REAL_MINES.find(m => (m.name && m.name.toLowerCase().includes(q)) || (m.id && m.id.toLowerCase().includes(q)));
+        return match || null;
+      }
+
+      // Render Left Mine List
+      function renderMines(filterText = '', activeMineId = null) {
         mineListEl.innerHTML = '';
         const filtered = REAL_MINES.filter(m => 
           m.name.toLowerCase().includes(filterText) || 
-          m.sub.toLowerCase().includes(filterText)
+          m.sub.toLowerCase().includes(filterText) ||
+          (m.id && m.id.toLowerCase().includes(filterText))
         );
 
         filtered.forEach(mine => {
           const el = document.createElement('div');
-          el.className = 'mine-item';
+          el.className = 'mine-item' + (activeMineId && mine.id === activeMineId ? ' active' : '');
+          el.dataset.mineId = mine.id;
           el.innerHTML = `
             <div>
-              <div class="mi-name">${mine.name}</div>
-              <div class="mi-meta"><span>${mine.sub}</span> &bull; <span>${mine.type}</span></div>
+              <div class="mi-name">${escapeHtml(mine.name)}</div>
+              <div class="mi-meta"><span>${escapeHtml(mine.sub)}</span> &bull; <span>${escapeHtml(mine.type)}</span></div>
             </div>
             <div class="risk-badge risk-${mine.risk}">${mine.risk}</div>
           `;
           el.addEventListener('click', () => {
-            document.querySelectorAll('.mine-item').forEach(i => i.classList.remove('active'));
-            el.classList.add('active');
-            generateStrategy(mine);
+            selectMine(mine, null, false);
+            // Update browser URL without full reload
+            try {
+              const newUrl = window.location.pathname + '?mine=' + encodeURIComponent(mine.id);
+              window.history.pushState({ mineId: mine.id }, '', newUrl);
+            } catch (e) {}
           });
           mineListEl.appendChild(el);
         });
       }
 
-      // Generate Strategy Brief
-      async function generateStrategy(mine) {
-        const panel = document.getElementById('strategyPanel');
-        
-        // --- 1. Render Base UI & Loading State ---
-        const riskColor = mine.risk === 'Critical' ? 'var(--danger)' : mine.risk === 'High' ? 'var(--amber)' : 'var(--text-primary)';
+      // STATE A: No mine selected
+      function renderStateA() {
+        panel.innerHTML = `
+          <div class="empty-state">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:56px; height:56px; color:var(--brand-primary); opacity:0.6; margin-bottom:16px;">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+              <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+              <line x1="12" y1="22.08" x2="12" y2="12"/>
+            </svg>
+            <h3 style="font-size: 18px; font-weight: 800; color: var(--text-primary); margin-bottom: 8px;">Select a mine to view operational intelligence</h3>
+            <p style="color: var(--text-secondary); max-width: 440px; margin: 0 auto; line-height: 1.5; font-size: 13px;">
+              Choose a coal mine from the left panel to examine live operational risk metrics, review active alerts, and synthesize multi-agent AI strategy prescriptions.
+            </p>
+          </div>
+        `;
+      }
+
+      // STATE: Mine not found
+      function renderMineNotFound(invalidQuery) {
+        panel.innerHTML = `
+          <div class="empty-state" style="padding: 60px 20px; text-align: center;">
+            <div style="font-size: 40px; margin-bottom: 16px;">⚠️</div>
+            <h3 style="color: var(--danger); font-size: 20px; font-weight: 800; margin-bottom: 8px;">Mine not found</h3>
+            <p style="color: var(--text-secondary); max-width: 480px; margin: 0 auto 24px; line-height: 1.5;">
+              The requested mine identifier "<strong>${escapeHtml(invalidQuery)}</strong>" does not exist in the CoalGuard database.
+            </p>
+            <div>
+              <a href="mine-intelligence.html" class="btn btn-primary" style="display:inline-flex; align-items:center; gap:8px; font-weight:700;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+                Return to Mine Intelligence
+              </a>
+            </div>
+          </div>
+        `;
+      }
+
+      // STATE B: Mine Selected -> Comprehensive Intelligence Dashboard
+      function renderMineIntelligence(mine, alertId = null) {
+        window.activeStrategicMine = mine;
+
+        const riskColor = mine.risk === 'Critical' ? 'var(--danger)' : mine.risk === 'High' ? 'var(--amber)' : 'var(--success)';
+        const riskScore = mine.riskScore || 50;
+
+        // Compute Risk Analysis percentages
+        const safetyRisk = Math.min(96, Math.max(15, Math.round(riskScore * 1.05)));
+        const prodVal = parseFloat(mine.prod) || 20;
+        const productionRisk = Math.min(92, Math.max(24, Math.round(prodVal * 0.9 + (100 - (mine.compliance || 60)) * 0.3)));
+        const complianceRisk = Math.max(10, 100 - (mine.compliance || 65));
+
+        // Colors for risk bars
+        const safetyBarColor = safetyRisk >= 75 ? 'var(--danger)' : safetyRisk >= 50 ? 'var(--amber)' : 'var(--success)';
+        const prodBarColor = productionRisk >= 70 ? 'var(--danger)' : productionRisk >= 50 ? 'var(--amber)' : 'var(--brand-primary)';
+        const compBarColor = complianceRisk >= 50 ? 'var(--danger)' : complianceRisk >= 30 ? 'var(--amber)' : 'var(--success)';
+
+        // Extract Key Factors from mine.reason
+        const reasonParts = mine.reason ? mine.reason.split(';').map(s => s.trim()).filter(Boolean) : [];
+        const keyFactors = [];
+        if (reasonParts.length > 0) {
+          keyFactors.push({ icon: '🔴', text: reasonParts[0] });
+        } else {
+          keyFactors.push({ icon: '🔴', text: 'Operational telemetry hazard detected above baseline' });
+        }
+        if (reasonParts.length > 1) {
+          keyFactors.push({ icon: '🟠', text: reasonParts[1] });
+        } else {
+          keyFactors.push({ icon: '🟠', text: `Production activity elevated (${mine.prod} extraction volume)` });
+        }
+        if (reasonParts.length > 2) {
+          keyFactors.push({ icon: '🟡', text: reasonParts[2] });
+        } else {
+          keyFactors.push({ icon: '🟡', text: `Operational congestion & telemetry surveillance active via ${mine.mechanization || 'OITDS'}` });
+        }
+
+        // Active Alert Section Resolution
+        let alertHtml = '';
+        let isAlertMissing = false;
+
+        if (alertId) {
+          const aid = String(alertId).trim().toUpperCase();
+          const validMineAlertId1 = `ALT-${mine.id}`.toUpperCase();
+          const validMineAlertId2 = `ALERT-${mine.id}`.toUpperCase();
+          const isKnownAlert = aid === validMineAlertId1 || aid === validMineAlertId2 || aid.includes(mine.id.toUpperCase());
+
+          if (aid.includes('INVALID') || aid.includes('UNKNOWN') || !isKnownAlert) {
+            isAlertMissing = true;
+          }
+        }
+
+        if (isAlertMissing) {
+          alertHtml = `
+            <div class="alert-banner" style="background:#FFFBEB; border:1px solid #FCD34D; border-radius:8px; padding:16px 20px; margin-bottom:24px; display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <div style="font-weight:800; color:#92400E; font-size:14px; margin-bottom:4px;">Alert information unavailable.</div>
+                <div style="font-size:13px; color:#78350F;">Mine: <strong>${escapeHtml(mine.name)}</strong> &bull; Alert ID: <code>${escapeHtml(alertId)}</code></div>
+              </div>
+              <button class="btn btn-secondary" onclick="window.selectMine('${mine.id}')" style="font-size:12px; font-weight:700; white-space:nowrap;">View Mine Intelligence</button>
+            </div>
+          `;
+        } else if (alertId || mine.risk === 'Critical' || mine.risk === 'High') {
+          const resolvedAlertId = alertId || `ALT-${mine.id}`;
+          const alertBadgeClass = mine.risk === 'Critical' ? 'badge-danger' : 'badge-warning';
+          const alertSeverityText = mine.risk === 'Critical' ? 'CRITICAL' : 'HIGH RISK';
+          const isHighCard = mine.risk === 'High';
+
+          alertHtml = `
+            <div class="active-alert-card ${isHighCard ? 'alert-high' : ''}" id="active-alert-container">
+              <div class="active-alert-header">
+                <div style="display:flex; align-items:center; gap:10px;">
+                  <span class="badge ${alertBadgeClass}" style="font-size:11px; padding:4px 10px; font-weight:800; letter-spacing:0.5px;">${alertSeverityText}</span>
+                  <span style="font-size:12px; font-weight:700; color:var(--text-secondary); text-transform:uppercase;">
+                    ACTIVE ALERT &bull; ${escapeHtml(resolvedAlertId)}
+                  </span>
+                </div>
+                <div style="font-size:12px; color:var(--text-secondary); font-weight:600; display:flex; align-items:center; gap:5px;">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  Detected: 46 minutes ago
+                </div>
+              </div>
+              <div class="active-alert-title">
+                ${escapeHtml(mine.reason ? mine.reason.split(';')[0] : 'Operational hazard telemetry observation')}
+              </div>
+              <div class="active-alert-desc">
+                ${escapeHtml(mine.reason || 'Telemetry-driven operational hazard detected above baseline DGMS thresholds.')}
+              </div>
+              <div class="active-alert-actions">
+                <button class="btn btn-primary" onclick="window.triggerAIStrategy()" style="font-size:12px; padding:7px 16px; font-weight:700; display:inline-flex; align-items:center; gap:6px;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m2 10 10 4 10-4-10-4Z"/><path d="m2 14 10 4 10-4"/><path d="m2 18 10 4 10-4"/></svg>
+                  Generate Strategy
+                </button>
+                <button class="btn btn-secondary" onclick="document.getElementById('risk-analysis-section').scrollIntoView({behavior:'smooth'})" style="font-size:12px; padding:7px 14px; font-weight:600;">
+                  Analyze Risk
+                </button>
+              </div>
+            </div>
+          `;
+        } else {
+          alertHtml = `
+            <div style="background:#F0FDF4; border:1px solid #BBF7D0; border-radius:8px; padding:14px 18px; margin-bottom:24px; display:flex; align-items:center; justify-content:space-between;">
+              <div style="display:flex; align-items:center; gap:10px;">
+                <span class="badge badge-success" style="font-size:10px; padding:3px 8px; font-weight:800;">NORMAL STATUS</span>
+                <span style="font-size:13px; color:#166534; font-weight:600;">Active Alerts: 0 &bull; Operational parameters within statutory safety tolerances</span>
+              </div>
+              <span style="font-size:12px; color:#166534; font-weight:600;">DGMS Baseline</span>
+            </div>
+          `;
+        }
+
+        // Build Full State B HTML
         let html = `
+          <!-- Header -->
           <div class="sp-header">
             <div>
-              <div class="sp-title">${mine.name}</div>
-              <div class="sp-subtitle">${mine.sub} &bull; ${mine.type} &bull; Geo-coordinates: ${mine.lat}, ${mine.lng}</div>
+              <div class="sp-title">${escapeHtml(mine.name)}</div>
+              <div class="sp-subtitle">${escapeHtml(mine.sub)} &bull; ${escapeHtml(mine.type)} &bull; Geo-coordinates: ${mine.lat}&deg;N, ${mine.lng}&deg;E</div>
             </div>
-            <button class="btn btn-primary" onclick="window.mockAction(this, 'Strategy PDF Exported to HQ')">Export Strategy Report</button>
+            <div style="display:flex; gap:10px; align-items:center;">
+              <button class="btn btn-primary" onclick="window.triggerAIStrategy()" style="display:inline-flex; align-items:center; gap:6px; font-weight:700;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m2 10 10 4 10-4-10-4Z"/><path d="m2 14 10 4 10-4"/><path d="m2 18 10 4 10-4"/></svg>
+                Generate AI Strategy
+              </button>
+              <button class="btn btn-secondary" onclick="window.exportStrategyReport()" style="font-weight:600;">
+                Export Strategy Report
+              </button>
+            </div>
           </div>
 
-          <h4 style="font-size: 12px; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 12px; font-weight: 800;">Strategic Profile</h4>
+          <!-- Active Operational Alert Card -->
+          ${alertHtml}
+
+          <!-- Strategic Profile KPIs -->
+          <h4 style="font-size: 12px; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 12px; font-weight: 800; letter-spacing:0.5px;">Strategic Profile</h4>
           <div class="kpi-grid-4">
             <div class="kpi-box">
               <div class="kpi-box-label">Risk Profile</div>
-              <div class="kpi-box-val" style="color: ${riskColor}">${mine.risk}</div>
+              <div class="kpi-box-val" style="color: ${riskColor}">${escapeHtml(mine.risk)} <span style="font-size:13px; font-weight:600; color:var(--text-secondary);">(${riskScore}%)</span></div>
             </div>
             <div class="kpi-box">
               <div class="kpi-box-label">Compliance Index</div>
@@ -164,19 +518,59 @@
             </div>
             <div class="kpi-box">
               <div class="kpi-box-label">Production Bracket</div>
-              <div class="kpi-box-val" style="font-size:16px">${mine.prod}</div>
+              <div class="kpi-box-val" style="font-size:16px">${escapeHtml(mine.prod)}</div>
             </div>
             <div class="kpi-box">
               <div class="kpi-box-label">Coal Grade</div>
-              <div class="kpi-box-val" style="font-size:16px">${mine.grade}</div>
+              <div class="kpi-box-val" style="font-size:16px">${escapeHtml(mine.grade)}</div>
             </div>
           </div>
 
-          <h4 style="font-size: 12px; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 12px; font-weight: 800; margin-top: 24px;">Operational Metrics</h4>
+          <!-- Risk Analysis Breakdown -->
+          <div class="risk-analysis-section" id="risk-analysis-section">
+            <div class="ra-title">Risk Analysis</div>
+            <div class="ra-row">
+              <span class="ra-label">Safety Risk</span>
+              <div class="ra-bar-wrap">
+                <div class="ra-bar-fill" style="width: ${safetyRisk}%; background: ${safetyBarColor};"></div>
+              </div>
+              <span class="ra-val" style="color:${safetyBarColor};">${safetyRisk}%</span>
+            </div>
+            <div class="ra-row">
+              <span class="ra-label">Production Risk</span>
+              <div class="ra-bar-wrap">
+                <div class="ra-bar-fill" style="width: ${productionRisk}%; background: ${prodBarColor};"></div>
+              </div>
+              <span class="ra-val" style="color:${prodBarColor};">${productionRisk}%</span>
+            </div>
+            <div class="ra-row">
+              <span class="ra-label">Compliance Risk</span>
+              <div class="ra-bar-wrap">
+                <div class="ra-bar-fill" style="width: ${complianceRisk}%; background: ${compBarColor};"></div>
+              </div>
+              <span class="ra-val" style="color:${compBarColor};">${complianceRisk}%</span>
+            </div>
+          </div>
+
+          <!-- Key Factors -->
+          <div class="key-factors-section">
+            <div class="kf-title">Key Factors</div>
+            <div class="kf-list">
+              ${keyFactors.map(kf => `
+                <div class="kf-item">
+                  <span style="font-size:14px;">${kf.icon}</span>
+                  <span>${escapeHtml(kf.text)}</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+
+          <!-- Operational Metrics -->
+          <h4 style="font-size: 12px; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 12px; font-weight: 800; letter-spacing:0.5px;">Operational Metrics</h4>
           <div class="kpi-grid-4">
             <div class="kpi-box">
               <div class="kpi-box-label">Mechanization Type</div>
-              <div class="kpi-box-val" style="font-size:14px">${mine.mechanization || 'Conventional'}</div>
+              <div class="kpi-box-val" style="font-size:14px">${escapeHtml(mine.mechanization || 'Conventional')}</div>
             </div>
             <div class="kpi-box">
               <div class="kpi-box-label">OMS (Output per Manshift)</div>
@@ -184,67 +578,316 @@
             </div>
             <div class="kpi-box">
               <div class="kpi-box-label">Stripping Ratio (OBR)</div>
-              <div class="kpi-box-val">${mine.strippingRatio || 'N/A'} <span style="font-size:12px; color:var(--text-secondary); font-weight:600">cu.m/t</span></div>
+              <div class="kpi-box-val">${mine.strippingRatio || 'N/A'} <span style="font-size:12px; color:var(--text-secondary); font-weight:600">${mine.type === 'Opencast' ? 'cu.m/t' : ''}</span></div>
+            </div>
+            <div class="kpi-box">
+              <div class="kpi-box-label">Gassiness / Telemetry</div>
+              <div class="kpi-box-val" style="font-size:14px">${escapeHtml(mine.gassiness || 'Continuous PM10 Telemetry')}</div>
             </div>
           </div>
 
-          <div class="strategy-section" style="margin-top: 32px;">
+          <!-- AI Strategy & Prescriptions Section -->
+          <div class="strategy-section" id="strategy-prescriptions-section" style="margin-top: 24px;">
             <div class="ss-title">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m2 10 10 4 10-4-10-4Z"/><path d="m2 14 10 4 10-4"/><path d="m2 18 10 4 10-4"/></svg>
               AI-Generated Strategy Prescriptions
             </div>
             <div id="prescriptions-container">
-              <div style="padding: 32px; text-align: center; color: var(--text-secondary);">
-                 <svg class="spinner" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation: spin 1s linear infinite; margin-bottom: 12px; opacity:0.5;"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="32" stroke-linecap="round" /></svg>
-                 <div>LangGraph AI Agent is analyzing safety and production data...</div>
-                 <style>@keyframes spin { 100% { transform: rotate(360deg); } }</style>
+              <div class="ai-idle-box">
+                <div style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin-bottom: 6px;">
+                  AI Strategy: No strategy generated yet.
+                </div>
+                <div style="font-size: 13px; color: var(--text-secondary); max-width: 480px; margin: 0 auto 18px; line-height: 1.5;">
+                  Synthesize multi-agent AI prescriptions (Safety Analyst + Production Strategist + Chief Synthesizer) tailored to ${escapeHtml(mine.name)}'s operational telemetry.
+                </div>
+                <button class="btn btn-primary" onclick="window.triggerAIStrategy()" style="display:inline-flex; align-items:center; gap:8px; font-weight:700; padding:10px 20px;">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m2 10 10 4 10-4-10-4Z"/><path d="m2 14 10 4 10-4"/><path d="m2 18 10 4 10-4"/></svg>
+                  Generate AI Strategy
+                </button>
               </div>
             </div>
           </div>
         `;
-        panel.innerHTML = html;
 
-        // --- 2. Fetch from LLM Backend ---
+        panel.innerHTML = html;
+      }
+
+      // Generate Strategy Brief from AI Engine
+      async function generateStrategy(mine) {
+        if (!mine) return;
+        const container = document.getElementById('prescriptions-container');
+        if (!container) return;
+
+        // --- Render Progressive AI Loading State ---
+        container.innerHTML = `
+          <div class="ai-loading-box">
+            <div style="font-size: 12px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: var(--brand-primary); margin-bottom: 8px;">
+              AI STRATEGY ENGINE
+            </div>
+            <div style="font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: 18px;">
+              Analyzing mine conditions...
+            </div>
+            <div style="max-width: 290px; margin: 0 auto; text-align: left; display: flex; flex-direction: column; gap: 10px;">
+              <div id="ai-step-safety" class="ai-loading-step active">
+                <span class="spinner" style="width:12px; height:12px; border:2px solid var(--brand-primary); border-top-color:transparent; border-radius:50%; display:inline-block;"></span>
+                <span>Safety analysis...</span>
+              </div>
+              <div id="ai-step-prod" class="ai-loading-step pending">&bull; Production analysis</div>
+              <div id="ai-step-synth" class="ai-loading-step pending">&bull; Synthesizing recommendation...</div>
+            </div>
+          </div>
+        `;
+
+        // Progressive step timers for visual feedback
+        const timer1 = setTimeout(() => {
+          const sEl = document.getElementById('ai-step-safety');
+          const pEl = document.getElementById('ai-step-prod');
+          if (sEl) { sEl.className = 'ai-loading-step done'; sEl.innerHTML = '✓ Safety analysis'; }
+          if (pEl) { pEl.className = 'ai-loading-step active'; pEl.innerHTML = '<span class="spinner" style="width:12px; height:12px; border:2px solid var(--brand-primary); border-top-color:transparent; border-radius:50%; display:inline-block;"></span> <span>Production analysis...</span>'; }
+        }, 350);
+
+        const timer2 = setTimeout(() => {
+          const pEl = document.getElementById('ai-step-prod');
+          const synEl = document.getElementById('ai-step-synth');
+          if (pEl) { pEl.className = 'ai-loading-step done'; pEl.innerHTML = '✓ Production analysis'; }
+          if (synEl) { synEl.className = 'ai-loading-step active'; synEl.innerHTML = '<span class="spinner" style="width:12px; height:12px; border:2px solid var(--brand-primary); border-top-color:transparent; border-radius:50%; display:inline-block;"></span> <span>Synthesizing recommendation...</span>'; }
+        }, 700);
+
+        // Fetch from FastAPI AI Engine
         try {
+          const payload = {
+            name: mine.name,
+            sub: mine.sub,
+            type: mine.type,
+            risk: mine.risk,
+            riskScore: mine.riskScore || 50,
+            compliance: mine.compliance || 65,
+            prod: mine.prod,
+            grade: mine.grade,
+            mechanization: mine.mechanization || 'Conventional',
+            oms: mine.oms || 'N/A',
+            strippingRatio: mine.strippingRatio || 'N/A',
+            reason: mine.reason || 'Operational hazard surveillance',
+            alert: mine.reason ? mine.reason.split(';')[0] : ''
+          };
+
           const res = await fetch('http://localhost:8000/prescribe/strategy', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(mine)
+            body: JSON.stringify(payload)
           });
+
+          if (!res.ok) {
+            throw new Error(`Server returned HTTP ${res.status}: ${res.statusText}`);
+          }
+
           const data = await res.json();
+          clearTimeout(timer1);
+          clearTimeout(timer2);
+
           const prescriptions = data.prescriptions || [];
+
+          if (prescriptions.length === 0) {
+            container.innerHTML = `
+              <div style="padding: 24px; color: var(--text-secondary); text-align: center; background: #F8FAFC; border: 1px solid var(--border); border-radius: 8px;">
+                No high-priority strategic interventions required at this time. Standard operating procedures apply.
+              </div>
+            `;
+            return;
+          }
 
           let phtml = '<div class="prescriptions-list">';
           prescriptions.forEach(p => {
             phtml += `
               <div class="prescription-card" style="border-left-color: ${p.color};">
                 <div class="pc-header">
-                  <span class="pc-type" style="background: ${p.bg}; color: ${p.color};">${p.type}</span>
+                  <span class="pc-type" style="background: ${p.bg}; color: ${p.color};">${escapeHtml(p.type)}</span>
                 </div>
                 <div class="pc-body">${p.text}</div>
               </div>
             `;
           });
-          if(prescriptions.length === 0) {
-              phtml += `<div style="padding:16px; color:var(--text-secondary); text-align:center;">No high-priority strategic interventions required at this time. Standard operating procedures apply.</div>`;
-          }
+          phtml += `
+            <div style="display:flex; justify-content:flex-end; margin-top:12px;">
+              <button class="btn btn-secondary" onclick="window.triggerAIStrategy()" style="font-size:12px; font-weight:600; display:inline-flex; align-items:center; gap:6px;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                Re-run AI Analysis
+              </button>
+            </div>
+          `;
           phtml += '</div>';
-          document.getElementById('prescriptions-container').innerHTML = phtml;
+          container.innerHTML = phtml;
 
         } catch (err) {
-          document.getElementById('prescriptions-container').innerHTML = `
-            <div style="padding:16px; color:var(--danger); text-align:center; background: var(--danger-bg); border-radius:8px;">
-              <strong>Connection Error</strong><br>
-              Failed to connect to AI Engine Backend (localhost:8000). Make sure it is running and the NVIDIA API Key is configured.
+          clearTimeout(timer1);
+          clearTimeout(timer2);
+          container.innerHTML = `
+            <div class="ai-error-box">
+              <div style="font-size: 24px; margin-bottom: 8px;">⚠️</div>
+              <div style="font-size: 15px; font-weight: 800; color: var(--danger); margin-bottom: 4px;">
+                AI strategy unavailable.
+              </div>
+              <div style="font-size: 13px; color: #991B1B; margin-bottom: 16px;">
+                Reason: Unable to connect to the AI Strategy Engine.
+              </div>
+              <button class="btn btn-secondary" onclick="window.triggerAIStrategy()" style="font-weight: 700; padding: 8px 20px;">
+                Retry
+              </button>
             </div>
           `;
         }
       }
 
-      // Init
-      searchBox.addEventListener('input', (e) => renderMines(e.target.value.toLowerCase()));
-      renderMines();
+      // Master Select Mine function
+      function selectMine(mineOrId, alertId = null, autoGenerate = false) {
+        const mine = typeof mineOrId === 'object' && mineOrId !== null ? mineOrId : findMine(mineOrId);
+        if (!mine) {
+          renderMineNotFound(mineOrId);
+          return;
+        }
+
+        // Highlight in left list
+        document.querySelectorAll('.mine-item').forEach(item => {
+          if (item.dataset.mineId === mine.id) {
+            item.classList.add('active');
+            if (typeof item.scrollIntoView === 'function') {
+              try { item.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } catch (e) {}
+            }
+          } else {
+            item.classList.remove('active');
+          }
+        });
+
+        // Render Right Panel Intelligence
+        renderMineIntelligence(mine, alertId);
+
+        if (autoGenerate) {
+          generateStrategy(mine);
+        }
+      }
+
+      // Expose globally
+      window.selectMine = selectMine;
+      window.triggerAIStrategy = function() {
+        if (window.activeStrategicMine) {
+          generateStrategy(window.activeStrategicMine);
+        }
+      };
+
+      // Search Box Event
+      searchBox.addEventListener('input', (e) => {
+        const activeId = window.activeStrategicMine ? window.activeStrategicMine.id : null;
+        renderMines(e.target.value.toLowerCase(), activeId);
+      });
+
+      // --- Initialization & URL Parameter Parsing ---
+      const urlParams = new URLSearchParams(window.location.search);
+      const mineParam = urlParams.get('mine');
+      const alertParam = urlParams.get('alert');
+
+      if (mineParam) {
+        const matchedMine = findMine(mineParam);
+        if (matchedMine) {
+          renderMines('', matchedMine.id);
+          selectMine(matchedMine, alertParam, false);
+        } else {
+          renderMines('', null);
+          renderMineNotFound(mineParam);
+        }
+      } else {
+        renderMines('', null);
+        renderStateA();
+      }
     });
+
+    window.exportStrategyReport = function() {
+      const activeMine = window.activeStrategicMine || (typeof REAL_MINES !== 'undefined' ? REAL_MINES[0] : null);
+      if (!activeMine) return;
+
+      document.getElementById('sm-title').textContent = `${activeMine.name} — AI Strategy & Prescriptions Report`;
+      document.getElementById('sm-meta').textContent = `Subsidiary: ${activeMine.sub} • Category: ${activeMine.type} • Coordinates: ${activeMine.lat}°N, ${activeMine.lng}°E • Issued: ${new Date().toLocaleDateString('en-IN')}`;
+      
+      const riskClass = activeMine.risk === 'Critical' ? 'badge-danger' : activeMine.risk === 'High' ? 'badge-warning' : 'badge-success';
+      document.getElementById('sm-risk-badge').innerHTML = `<span class="badge ${riskClass}">${activeMine.risk.toUpperCase()} RISK PROFILE</span>`;
+      document.getElementById('sm-comp').textContent = `${activeMine.compliance}%`;
+      document.getElementById('sm-prod').textContent = `${activeMine.prod} MTPA`;
+      document.getElementById('sm-grade').textContent = activeMine.grade || 'Thermal Grade';
+      document.getElementById('sm-reason').textContent = activeMine.reason || 'Ongoing multi-parametric AI risk surveillance active.';
+
+      window.openModal('strategy-export-modal');
+    };
   </script>
+
+  <!-- MODAL: STRATEGY REPORT PREVIEW -->
+  <div class="modal-overlay" id="strategy-export-modal">
+    <div class="modal-card modal-xl" role="dialog" aria-modal="true">
+      <div class="modal-header">
+        <div>
+          <div class="modal-title">AI Strategy & Risk Mitigation Dossier</div>
+          <div class="modal-subtitle">Comprehensive tactical engineering prescriptions & DGMS compliance guidance</div>
+        </div>
+        <button class="modal-close" onclick="window.closeModal('strategy-export-modal')">&times;</button>
+      </div>
+
+      <div class="modal-body" style="background:#EBF0EC; padding:24px;">
+        <div style="background:#FFFFFF; border:1px solid #D0D7D4; box-shadow:0 4px 20px rgba(0,0,0,0.08); padding:36px; border-radius:4px; font-family:'Segoe UI', Arial, sans-serif; color:#17221C; line-height:1.5;">
+          <div style="border-bottom:2px solid #16834B; padding-bottom:14px; margin-bottom:18px; display:flex; justify-content:space-between; align-items:flex-start;">
+            <div>
+              <div style="font-size:11px; font-weight:800; text-transform:uppercase; color:#16834B; letter-spacing:1px;">COALGUARD AI INTELLIGENCE SYSTEM</div>
+              <div id="sm-title" style="font-size:18px; font-weight:900; margin-top:2px;">Mine Tactical Strategy Dossier</div>
+              <div id="sm-meta" style="font-size:12px; color:#555; margin-top:2px;">Statutory Strategic Briefing</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:11px; font-weight:700; color:#888;">DOCUMENT REF</div>
+              <div style="font-size:13px; font-weight:800; font-family:monospace; color:#16834B;">STRAT/AI/2026-HQ</div>
+            </div>
+          </div>
+
+          <div class="form-row-3" style="background:#F8FAFA; border:1px solid #E5E7EB; border-radius:4px; padding:12px; margin-bottom:18px;">
+            <div>
+              <div style="font-size:10px; font-weight:700; text-transform:uppercase; color:#666;">Risk Classification</div>
+              <div id="sm-risk-badge" style="margin-top:3px;">—</div>
+            </div>
+            <div>
+              <div style="font-size:10px; font-weight:700; text-transform:uppercase; color:#666;">Compliance Score</div>
+              <div id="sm-comp" style="font-size:15px; font-weight:800; color:#16834B; margin-top:2px;">—</div>
+            </div>
+            <div>
+              <div style="font-size:10px; font-weight:700; text-transform:uppercase; color:#666;">Annual Extraction Rate</div>
+              <div id="sm-prod" style="font-size:15px; font-weight:800; margin-top:2px;">—</div>
+            </div>
+          </div>
+
+          <div style="margin-bottom:18px;">
+            <div style="font-size:12px; font-weight:800; text-transform:uppercase; color:#16834B; margin-bottom:6px;">Strategic Risk Drivers & Vector Analysis</div>
+            <div id="sm-reason" style="background:#F4F7F5; padding:10px 14px; border-radius:4px; font-size:12px; border-left:3px solid #16834B;">—</div>
+          </div>
+
+          <div style="margin-bottom:20px;">
+            <div style="font-size:12px; font-weight:800; text-transform:uppercase; color:#16834B; margin-bottom:8px;">Mandated Engineering Prescriptions (AI Prescribed)</div>
+            <ul style="margin:0; padding-left:20px; font-size:12px; line-height:1.6;">
+              <li><strong>Ventilation Optimization:</strong> Maintain auxiliary fan flow rate &ge; 72% capacity to prevent methane stagnation at blind headings.</li>
+              <li><strong>Strata Control Protocol:</strong> Implement digital tell-tale convergence meters at intervals &le; 15m along extraction gate roads.</li>
+              <li><strong>Contractor Safety Compliance:</strong> Mandatory bi-weekly DGMS Form-B workforce PPE & induction audit.</li>
+              <li><strong>Environmental Telemetry:</strong> Keep continuous ambient PM10 telemetry active with automated dust misting guns.</li>
+            </ul>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; margin-top:30px; padding-top:16px; border-top:1px dashed #CCC; font-size:11px;">
+            <div>Chief Inspector of Mines (DGMS) • Technical Directorate</div>
+            <div style="font-family:monospace; color:#16834B;">Cryptographic Hash: 9e4f2a1b7c8d3e5f0a</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="window.closeModal('strategy-export-modal')">CLOSE</button>
+        <button type="button" class="btn btn-primary" onclick="window.print()" style="padding:10px 24px;font-weight:700;display:flex;align-items:center;gap:8px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          PRINT / EXPORT PDF
+        </button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

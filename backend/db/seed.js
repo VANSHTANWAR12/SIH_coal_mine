@@ -182,36 +182,63 @@ module.exports = function seed(db, run, saveDb) {
 
   /* ── Inspections ─────────────────────────────────────────── */
   const inspSamples = [
-    { mine:'Churcha RO',     type:'DGMS Safety Audit',        insp:'G.S. Mehta',     date:'2026-09-05', status:'completed',   f:9, c:4 },
-    { mine:'Moonidih',       type:'Methane Safety Inspection', insp:'R.K. Tripathi',  date:'2026-09-06', status:'completed',   f:6, c:3 },
-    { mine:'Jhanjra UG',     type:'Ventilation Inspection',   insp:'D.N. Sharma',    date:'2026-09-10', status:'scheduled',   f:0, c:0 },
-    { mine:'Adriyala Shaft', type:'Strata Control Audit',     insp:'K.V. Rao',       date:'2026-09-08', status:'in-progress', f:5, c:2 },
-    { mine:'Gevra OC',       type:'Environmental Check',      insp:'S. Patel',       date:'2026-09-12', status:'scheduled',   f:0, c:0 },
-    { mine:'Jayant OC',      type:'HEMM Safety Check',        insp:'A. Kumar',       date:'2026-09-03', status:'completed',   f:3, c:1 },
-    { mine:'Bhubaneswari OC',type:'Dust & Noise Audit',       insp:'P. Singh',       date:'2026-09-01', status:'completed',   f:4, c:0 },
-    { mine:'Pootkee Balihari',type:'Subsidence Risk Audit',   insp:'B.N. Tiwari',    date:'2026-09-11', status:'scheduled',   f:0, c:0 },
-    { mine:'Rajmahal OC',    type:'Blasting Vibration Check', insp:'M.L. Gupta',     date:'2026-09-07', status:'completed',   f:2, c:1 },
-    { mine:'Kenduadih',      type:'Fire Zone Inspection',     insp:'S.K. Mishra',    date:'2026-09-09', status:'in-progress', f:7, c:5 },
+    // Overdue (4 items)
+    { id:'INS-070', type:'Safety (DGMS)', mine:'Dudhichua OC', insp:'A. Patel', date:'2026-08-23', time:'10:00 AM', priority:'High', status:'overdue', f:5, c:0, desc:'Overburden dump edge stability and haul road barrier check.' },
+    { id:'INS-071', type:'Statutory', mine:'Jayant OC', insp:'S. Reddy', date:'2026-08-25', time:'11:30 AM', priority:'Medium', status:'overdue', f:4, c:0, desc:'Dragline operator logbook and statutory DGMS register inspection.' },
+    { id:'INS-072', type:'Labour / Workforce', mine:'Lakhanpur OC', insp:'V. Kumar', date:'2026-08-27', time:'02:00 PM', priority:'Medium', status:'overdue', f:3, c:0, desc:'Contractor workforce PPE compliance and shift hour monitoring.' },
+    { id:'INS-073', type:'Production', mine:'Bhubaneswari OC', insp:'N. Das', date:'2026-08-29', time:'09:00 AM', priority:'Low', status:'overdue', f:7, c:0, desc:'Surface extraction velocity and in-pit crusher output verification.' },
+
+    // Completed in August (5 items)
+    { id:'INS-074', type:'Safety (DGMS)', mine:'Baroud OC', insp:'K. Nair', date:'2026-08-15', time:'09:30 AM', priority:'Low', status:'completed', f:0, c:0, desc:'Standard opencast bench geometry and berm height compliance check.' },
+    { id:'INS-075', type:'Environmental', mine:'Chhal OC', insp:'P. Rao', date:'2026-08-17', time:'11:00 AM', priority:'Medium', status:'completed', f:3, c:0, desc:'Wet drilling suppression effectiveness and water tanker dispatch.' },
+    { id:'INS-076', type:'Production', mine:'Manikpur OC', insp:'M. Singh', date:'2026-08-19', time:'01:30 PM', priority:'Low', status:'completed', f:2, c:0, desc:'Overburden removal reconciliation with monthly mine plan.' },
+    { id:'INS-077', type:'Safety (DGMS)', mine:'Nigahi OC', insp:'R. Sharma', date:'2026-08-21', time:'10:00 AM', priority:'High', status:'completed', f:6, c:1, desc:'Automated fire detection & suppression system (AFDSS) audit on dumpers.' },
+    { id:'INS-078', type:'Environmental', mine:'Surakachhar', insp:'L. Verma', date:'2026-08-31', time:'03:00 PM', priority:'Medium', status:'completed', f:6, c:0, desc:'Underground water sump telemetry and effluent treatment monitoring.' },
+
+    // Scheduled in September (3 items: INS-079, INS-080, INS-089)
+    { id:'INS-079', type:'Compliance', mine:'Kusmunda OC', insp:'V. Kumar', date:'2026-09-15', time:'10:00 AM', priority:'Medium', status:'scheduled', f:0, c:0, desc:'Statutory compliance verification and environmental clearance renewal audit.' },
+    { id:'INS-080', type:'Safety (DGMS)', mine:'Pootkee Balihari', insp:'S.K. Mishra', date:'2026-09-16', time:'11:30 AM', priority:'Critical', status:'scheduled', f:0, c:0, desc:'Subsidence risk analysis and surface fissure monitoring near inhabited perimeter.' },
+
+    // September 2026 Calendar items (INS-081 to INS-089)
+    { id:'INS-081', type:'Safety (DGMS)', mine:'Churcha RO', insp:'G.S. Mehta', date:'2026-09-01', time:'09:30 AM', priority:'Critical', status:'completed', f:9, c:4, desc:'Deep underground strata control and mechanized resin roof bolting audit.' },
+    { id:'INS-082', type:'Environmental', mine:'Moonidih', insp:'R.K. Tripathi', date:'2026-09-01', time:'02:00 PM', priority:'High', status:'completed', f:6, c:3, desc:'Continuous telemetric methane monitoring and drainage exhaust analysis.' },
+    { id:'INS-083', type:'Production', mine:'SECL Gevra', insp:'D.N. Sharma', date:'2026-09-02', time:'10:00 AM', priority:'Low', status:'completed', f:0, c:0, desc:'High-capacity surface miner deployment and truck dispatch optimization.' },
+    { id:'INS-084', type:'Safety (DGMS)', mine:'Adriyala Shaft', insp:'K.V. Rao', date:'2026-09-04', time:'11:00 AM', priority:'Critical', status:'completed', f:5, c:2, desc:'Longwall face strata convergence and powered roof support pressure audit.' },
+    { id:'INS-085', type:'Labour / Workforce', mine:'WCL Wardha', insp:'S. Patel', date:'2026-09-07', time:'09:00 AM', priority:'Medium', status:'completed', f:0, c:0, desc:'Workforce statutory safety induction and emergency evacuation protocol.' },
+    { id:'INS-086', type:'Safety (DGMS)', mine:'Jayant OC', insp:'A. Kumar', date:'2026-09-08', time:'01:30 PM', priority:'High', status:'completed', f:3, c:1, desc:'Dragline electrical and mechanical fail-safe audit and fatigue monitoring.' },
+    { id:'INS-087', type:'Environmental', mine:'Bhubaneswari OC', insp:'P. Singh', date:'2026-09-09', time:'10:30 AM', priority:'Medium', status:'completed', f:4, c:0, desc:'Haul road continuous misting and ambient PM10 telemetry check.' },
+    { id:'INS-088', type:'Safety (DGMS)', mine:'Rajmahal OC', insp:'M.L. Gupta', date:'2026-09-09', time:'03:00 PM', priority:'High', status:'in-progress', f:0, c:0, desc:'Controlled blasting vibration seismograph verification and danger zone isolation.' },
+    { id:'INS-089', type:'Production', mine:'Dipka OC', insp:'B.N. Tiwari', date:'2026-09-11', time:'11:00 AM', priority:'Low', status:'scheduled', f:0, c:0, desc:'Overburden dump sequencing and coal evacuation logistics review.' }
   ];
-  inspSamples.forEach((ins, i) => run(
-    `INSERT INTO inspections (id,type,mine_name,inspector,date,status,findings,critical) VALUES (?,?,?,?,?,?,?,?)`,
-    [`INS${i+1}`, ins.type, ins.mine, ins.insp, ins.date, ins.status, ins.f, ins.c]
+
+  inspSamples.forEach(ins => run(
+    `INSERT INTO inspections (id,type,mine_name,inspector,date,time,priority,description,status,findings,critical,notes,created_at)
+     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,datetime('now'))`,
+    [ins.id, ins.type, ins.mine, ins.insp, ins.date, ins.time || '10:00 AM', ins.priority || 'Medium', ins.desc || '', ins.status, ins.f || 0, ins.c || 0, '']
   ));
 
   /* ── Contractors ─────────────────────────────────────────── */
   const contractors = [
-    { id:'CT001', name:'Thriveni Sainik Mining',      type:'Opencast Mining',     workers:4200, sc:72, status:'active',   exp:'2027-06-30' },
-    { id:'CT002', name:'Sai Consulting Engineers',    type:'Geotechnical',        workers:380,  sc:88, status:'active',   exp:'2027-12-31' },
-    { id:'CT003', name:'Prakash Industries Ltd.',     type:'Coal Handling & CHP', workers:920,  sc:65, status:'active',   exp:'2026-11-30' },
-    { id:'CT004', name:'BEML Ltd.',                   type:'HEMM Supply',         workers:210,  sc:94, status:'active',   exp:'2028-03-31' },
-    { id:'CT005', name:'Bharat Labour Corp',          type:'Manpower',            workers:2800, sc:61, status:'active',   exp:'2027-01-01' },
-    { id:'CT006', name:'MEIL Environmental Services', type:'Environmental',       workers:180,  sc:91, status:'active',   exp:'2028-06-30' },
-    { id:'CT007', name:'Rawat Explosives Ltd.',       type:'Blasting',            workers:340,  sc:75, status:'expiring', exp:'2026-10-30' },
-    { id:'CT008', name:'Alpha Security Solutions',    type:'Mine Security',       workers:620,  sc:83, status:'active',   exp:'2027-09-30' },
+    { id: 'CT001', name: 'Jai Bharat Mining Co.',           type: 'Heavy Earth Moving',     workers: 10370, sc: 71, status: 'active',   exp: '2026-12-20', mine: 'Gevra OC',             areas: 'North Pit Quarry 3, Overburden Bench 4A-4D', role: 'Continuous Overburden Stripping & HEMM Haulage', viol: 1, officer: 'Er. R. K. Mishra (GM Mining Ops, SECL)', start: '2023-12-21', ctype: 'Turnkey HEMM Deployment & Overburden SLA', renewal: 'Active in Good Standing (Eligible for 2-Yr Extension)' },
+    { id: 'CT002', name: 'Vishwakarma Infrastructure Ltd.',  type: 'Infrastructure Works',   workers: 628,   sc: 75, status: 'active',   exp: '2027-05-15', mine: 'Chhal OC',             areas: 'Coal Handling Plant Haul Loop, Workshop Bay 2', role: 'Civil Haul Road Construction & Sump Dewatering', viol: 2, officer: 'Sri P. K. Dash (Area Engineer, SECL)', start: '2024-05-16', ctype: 'Mine Infrastructure & Road Works', renewal: 'Active in Good Standing' },
+    { id: 'CT003', name: 'SureSafe Systems Pvt. Ltd.',      type: 'Safety & Ventilation',   workers: 4597,  sc: 80, status: 'active',   exp: '2027-08-31', mine: 'Bhubaneswari OC',      areas: 'Sensor Grid Substation 1-6, Main Ventilation Shaft', role: 'Gas Telemetry & Flameproof Electrical Monitoring', viol: 0, officer: 'Dr. V. Rao (Chief Safety Officer, MCL)', start: '2024-09-01', ctype: 'Statutory Safety & Environmental SLA', renewal: 'DGMS Excellence Certified' },
+    { id: 'CT004', name: 'Rawat Explosives Services',       type: 'Blasting & Explosives',  workers: 1782,  sc: 78, status: 'expiring', exp: '2026-10-30', mine: 'Sairmal OCP',          areas: 'Magazines 1 & 2, Production Benches 12-16', role: 'Deep Hole Controlled Blasting & Vibration Mitigation', viol: 4, officer: 'Sri S. Rawat (Explosives Liaison Head)', start: '2023-11-01', ctype: 'Bulk Emulsion Supply & Blast Execution', renewal: 'Renewal Due (Statutory Clearance Pending)' },
+    { id: 'CT005', name: 'Bharat Labour Corp',               type: 'Manpower Services',      workers: 2964,  sc: 65, status: 'active',   exp: '2027-01-01', mine: 'Jayant OC',            areas: 'Siding A & B, Surface Coal Stockyard', role: 'Statutory Mining Labour & Conveyor Attendants', viol: 0, officer: 'Sri K. Sen (Labour Welfare Commissioner)', start: '2024-01-02', ctype: 'Manpower Supply Contract under CLRA 1970', renewal: 'Annual Review Scheduled' },
+    { id: 'CT006', name: 'GreenTech Environmental',         type: 'Dust & Water Control',   workers: 1492,  sc: 84, status: 'active',   exp: '2028-06-30', mine: 'Khadia OC',            areas: 'Boundary Mist Cannons, Settling Ponds 1-4', role: 'Ambient Dust Suppression & Zero Discharge Treatment', viol: 0, officer: 'Ms. A. Sen (Environmental Officer, NCL)', start: '2025-07-01', ctype: 'Environmental Statutory SLA', renewal: 'Active - CPCB Benchmark Compliant' },
+    { id: 'CT007', name: 'National Conveyor Systems',       type: 'Coal Handling',          workers: 296,   sc: 56, status: 'active',   exp: '2027-03-31', mine: 'Moonidih',             areas: 'Longwall Trunk Conveyor Belt Line 1-3', role: 'Overland Conveyor Operation & Belt Vulcanizing Maintenance', viol: 6, officer: 'Sri M. Gupta (Mechanical Engineer, BCCL)', start: '2024-04-01', ctype: 'Conveyor Handling Maintenance SLA', renewal: 'Under DGMS Special Supervision' },
+    { id: 'CT008', name: 'Eastern Mining Contractors',      type: 'Opencast Mining',        workers: 541,   sc: 60, status: 'active',   exp: '2026-11-30', mine: 'Gopalichak',           areas: 'West Pit Overburden Sector C', role: 'Excavation & Rock Truck Haulage', viol: 9, officer: 'Sri B. Roy (Project Officer, BCCL)', start: '2023-12-01', ctype: 'Mining Excavation Contract', renewal: 'Under DGMS Section 22 Improvement Notice' },
+    { id: 'CT009', name: 'Singareni Heavy Equipment Co.',   type: 'Equipment Lease',        workers: 1599,  sc: 78, status: 'active',   exp: '2027-09-30', mine: 'Amrapali OC',          areas: 'Overburden Bench Sector 5, Central Maintenance Yard', role: 'HEMM Fleet Lease (240T Dumpers & 42m³ Shovels)', viol: 4, officer: 'Sri T. Reddy (Chief of HEMM Operations, CCL)', start: '2024-10-01', ctype: 'Heavy Equipment Lease & Maintenance SLA', renewal: 'Active in Good Standing' },
+    { id: 'CT010', name: 'Central Coal Transport Ltd.',     type: 'Transport & Logistics',  workers: 556,   sc: 72, status: 'active',   exp: '2027-04-15', mine: 'North Urimari OC',     areas: 'Railway Siding Loading Point 1-4', role: 'Bulk Coal Rake Dispatch & GPS Fleet Tracking', viol: 0, officer: 'Sri D. Verma (Traffic Manager, CCL)', start: '2024-04-16', ctype: 'Dispatch & Rail Loading Contract', renewal: 'Active' },
+    { id: 'CT011', name: 'Odisha Bulk Carriers',            type: 'Coal Transport',         workers: 303,   sc: 69, status: 'active',   exp: '2026-12-15', mine: 'Adriyala Shaft',       areas: 'Surface Coal Bunkers & Evacuation Highway', role: 'Specialized High-Capacity Tipping Trailer Fleet', viol: 1, officer: 'Sri N. Mohanty (Logistics Head, SCCL)', start: '2023-12-16', ctype: 'Road Haulage & Dispatch Agreement', renewal: 'Renewal Due' },
+    { id: 'CT012', name: 'Apex Surface Miners India',       type: 'Surface Mining',         workers: 596,   sc: 76, status: 'active',   exp: '2027-07-31', mine: 'Amalgamated Yekona',   areas: 'Seam III Continuous Surface Miner Panel', role: 'Vibration-Free Precision Coal Milling & Direct Loading', viol: 2, officer: 'Sri S. Deshmukh (Production Manager, WCL)', start: '2024-08-01', ctype: 'Continuous Surface Miner SLA', renewal: 'Active' },
+    { id: 'CT013', name: 'Deccan Mining Services',          type: 'Manpower Services',      workers: 301,   sc: 80, status: 'active',   exp: '2028-01-31', mine: 'Sasti OC',             areas: 'Pit Incline & Safety Muster Station', role: 'Statutory Mining Sirdars & First Aid Station Attendants', viol: 1, officer: 'Sri R. Patil (Safety In-Charge, WCL)', start: '2025-02-01', ctype: 'Technical Manpower & Safety Support', renewal: 'Active' },
+    { id: 'CT014', name: 'Jharkhand Drilling Corp',         type: 'Drilling & Exploration', workers: 905,   sc: 64, status: 'active',   exp: '2026-10-15', mine: 'Jhanjra UG',           areas: 'Longwall Panel LW-8 Methane Drainage Bores', role: 'In-Seam Directional Drilling & Degasification Holes', viol: 7, officer: 'Dr. A. Ghosh (GM Underground, ECL)', start: '2023-10-16', ctype: 'Exploration & Gas Drainage Drilling SLA', renewal: 'Improvement Directive Active' },
+    { id: 'CT015', name: 'MP Coal Handlers Pvt. Ltd.',      type: 'Coal Handling',          workers: 193,   sc: 73, status: 'active',   exp: '2027-02-28', mine: 'G/Begunia OC',         areas: 'Primary Crusher Hopper & Sizing Screen Bay', role: 'Screening Plant Operation & Chute Maintenance', viol: 0, officer: 'Sri J. P. Singh (Plant Superintendent, ECL)', start: '2024-03-01', ctype: 'Coal Beneficiation & Crushing Agreement', renewal: 'Active' },
   ];
   contractors.forEach(c => run(
-    `INSERT INTO contractors (id,name,type,workers,compliance_score,status,contract_expiry) VALUES (?,?,?,?,?,?,?)`,
-    [c.id, c.name, c.type, c.workers, c.sc, c.status, c.exp]
+    `INSERT INTO contractors (id,name,type,workers,compliance_score,status,contract_expiry,primary_mine,assigned_areas,operational_role,violations_count,responsible_officer,contract_start,contract_type,renewal_status)
+     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+    [c.id, c.name, c.type, c.workers, c.sc, c.status, c.exp, c.mine, c.areas, c.role, c.viol, c.officer, c.start, c.ctype, c.renewal]
   ));
 
   /* ── Incidents ───────────────────────────────────────────── */
@@ -262,5 +289,44 @@ module.exports = function seed(db, run, saveDb) {
     [a.id, a.action, a.user, a.mine, '{}', a.hash, a.prev]
   ));
 
+  saveDb();
+};
+
+module.exports.seedInspections = function(db, run, saveDb) {
+  const inspSamples = [
+    // Overdue (4 items)
+    { id:'INS-070', type:'Safety (DGMS)', mine:'Dudhichua OC', insp:'A. Patel', date:'2026-08-23', time:'10:00 AM', priority:'High', status:'overdue', f:5, c:0, desc:'Overburden dump edge stability and haul road barrier check.' },
+    { id:'INS-071', type:'Statutory', mine:'Jayant OC', insp:'S. Reddy', date:'2026-08-25', time:'11:30 AM', priority:'Medium', status:'overdue', f:4, c:0, desc:'Dragline operator logbook and statutory DGMS register inspection.' },
+    { id:'INS-072', type:'Labour / Workforce', mine:'Lakhanpur OC', insp:'V. Kumar', date:'2026-08-27', time:'02:00 PM', priority:'Medium', status:'overdue', f:3, c:0, desc:'Contractor workforce PPE compliance and shift hour monitoring.' },
+    { id:'INS-073', type:'Production', mine:'Bhubaneswari OC', insp:'N. Das', date:'2026-08-29', time:'09:00 AM', priority:'Low', status:'overdue', f:7, c:0, desc:'Surface extraction velocity and in-pit crusher output verification.' },
+
+    // Completed in August (5 items)
+    { id:'INS-074', type:'Safety (DGMS)', mine:'Baroud OC', insp:'K. Nair', date:'2026-08-15', time:'09:30 AM', priority:'Low', status:'completed', f:0, c:0, desc:'Standard opencast bench geometry and berm height compliance check.' },
+    { id:'INS-075', type:'Environmental', mine:'Chhal OC', insp:'P. Rao', date:'2026-08-17', time:'11:00 AM', priority:'Medium', status:'completed', f:3, c:0, desc:'Wet drilling suppression effectiveness and water tanker dispatch.' },
+    { id:'INS-076', type:'Production', mine:'Manikpur OC', insp:'M. Singh', date:'2026-08-19', time:'01:30 PM', priority:'Low', status:'completed', f:2, c:0, desc:'Overburden removal reconciliation with monthly mine plan.' },
+    { id:'INS-077', type:'Safety (DGMS)', mine:'Nigahi OC', insp:'R. Sharma', date:'2026-08-21', time:'10:00 AM', priority:'High', status:'completed', f:6, c:1, desc:'Automated fire detection & suppression system (AFDSS) audit on dumpers.' },
+    { id:'INS-078', type:'Environmental', mine:'Surakachhar', insp:'L. Verma', date:'2026-08-31', time:'03:00 PM', priority:'Medium', status:'completed', f:6, c:0, desc:'Underground water sump telemetry and effluent treatment monitoring.' },
+
+    // Scheduled in September (3 items: INS-079, INS-080, INS-089)
+    { id:'INS-079', type:'Compliance', mine:'Kusmunda OC', insp:'V. Kumar', date:'2026-09-15', time:'10:00 AM', priority:'Medium', status:'scheduled', f:0, c:0, desc:'Statutory compliance verification and environmental clearance renewal audit.' },
+    { id:'INS-080', type:'Safety (DGMS)', mine:'Pootkee Balihari', insp:'S.K. Mishra', date:'2026-09-16', time:'11:30 AM', priority:'Critical', status:'scheduled', f:0, c:0, desc:'Subsidence risk analysis and surface fissure monitoring near inhabited perimeter.' },
+
+    // September 2026 Calendar items (INS-081 to INS-089)
+    { id:'INS-081', type:'Safety (DGMS)', mine:'Churcha RO', insp:'G.S. Mehta', date:'2026-09-01', time:'09:30 AM', priority:'Critical', status:'completed', f:9, c:4, desc:'Deep underground strata control and mechanized resin roof bolting audit.' },
+    { id:'INS-082', type:'Environmental', mine:'Moonidih', insp:'R.K. Tripathi', date:'2026-09-01', time:'02:00 PM', priority:'High', status:'completed', f:6, c:3, desc:'Continuous telemetric methane monitoring and drainage exhaust analysis.' },
+    { id:'INS-083', type:'Production', mine:'SECL Gevra', insp:'D.N. Sharma', date:'2026-09-02', time:'10:00 AM', priority:'Low', status:'completed', f:0, c:0, desc:'High-capacity surface miner deployment and truck dispatch optimization.' },
+    { id:'INS-084', type:'Safety (DGMS)', mine:'Adriyala Shaft', insp:'K.V. Rao', date:'2026-09-04', time:'11:00 AM', priority:'Critical', status:'completed', f:5, c:2, desc:'Longwall face strata convergence and powered roof support pressure audit.' },
+    { id:'INS-085', type:'Labour / Workforce', mine:'WCL Wardha', insp:'S. Patel', date:'2026-09-07', time:'09:00 AM', priority:'Medium', status:'completed', f:0, c:0, desc:'Workforce statutory safety induction and emergency evacuation protocol.' },
+    { id:'INS-086', type:'Safety (DGMS)', mine:'Jayant OC', insp:'A. Kumar', date:'2026-09-08', time:'01:30 PM', priority:'High', status:'completed', f:3, c:1, desc:'Dragline electrical and mechanical fail-safe audit and fatigue monitoring.' },
+    { id:'INS-087', type:'Environmental', mine:'Bhubaneswari OC', insp:'P. Singh', date:'2026-09-09', time:'10:30 AM', priority:'Medium', status:'completed', f:4, c:0, desc:'Haul road continuous misting and ambient PM10 telemetry check.' },
+    { id:'INS-088', type:'Safety (DGMS)', mine:'Rajmahal OC', insp:'M.L. Gupta', date:'2026-09-09', time:'03:00 PM', priority:'High', status:'in-progress', f:0, c:0, desc:'Controlled blasting vibration seismograph verification and danger zone isolation.' },
+    { id:'INS-089', type:'Production', mine:'Dipka OC', insp:'B.N. Tiwari', date:'2026-09-11', time:'11:00 AM', priority:'Low', status:'scheduled', f:0, c:0, desc:'Overburden dump sequencing and coal evacuation logistics review.' }
+  ];
+
+  inspSamples.forEach(ins => run(
+    `INSERT INTO inspections (id,type,mine_name,inspector,date,time,priority,description,status,findings,critical,notes,created_at)
+     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,datetime('now'))`,
+    [ins.id, ins.type, ins.mine, ins.insp, ins.date, ins.time || '10:00 AM', ins.priority || 'Medium', ins.desc || '', ins.status, ins.f || 0, ins.c || 0, '']
+  ));
   saveDb();
 };

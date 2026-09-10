@@ -9,8 +9,35 @@
     .filter-bar { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; align-items: center; }
     
     .contractor-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
-    .contractor-card { background: white; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px; position: relative; }
-    .contractor-card:hover { border-color: var(--brand-primary); }
+    .contractor-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      position: relative;
+      cursor: pointer;
+      user-select: none;
+      transition: transform 0.18s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.18s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.18s ease;
+      outline: none;
+    }
+    .contractor-card:hover {
+      border-color: var(--brand-primary);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+      transform: translateY(-2px);
+    }
+    .contractor-card:focus-visible {
+      outline: 2px solid var(--brand-primary);
+      outline-offset: 2px;
+    }
+    .no-card-click {
+      position: relative;
+      z-index: 2;
+      transition: color 0.15s ease;
+    }
+    .no-card-click:hover {
+      text-decoration: underline;
+    }
+    
     .cc-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
     .cc-name { font-size: 15px; font-weight: 800; color: var(--text-primary); margin-bottom: 2px; }
     .cc-type { font-size: 11px; font-weight: 600; color: var(--text-secondary); }
@@ -39,6 +66,41 @@
     .hbar-fill.success { background: var(--success); }
     .hbar-fill.warning { background: var(--amber); }
     .hbar-fill.danger { background: var(--danger); }
+
+    /* Contractor Details View Components */
+    .factor-item {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      padding: 10px 12px;
+      background: #FFFFFF;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+    }
+    .violation-card {
+      background: #FFFFFF;
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--danger);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .violation-card:hover {
+      box-shadow: 0 3px 12px rgba(0,0,0,0.06);
+    }
+    .violation-card.severity-high { border-left-color: var(--danger); }
+    .violation-card.severity-medium { border-left-color: var(--amber); }
+    .violation-card.severity-low { border-left-color: #177EAF; }
+    .clean-state-card {
+      background: #F4F9F6;
+      border: 1px solid #C4E3D3;
+      border-left: 4px solid var(--success);
+      border-radius: var(--radius-sm);
+      padding: 18px 20px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
   </style>
 </head>
 <body>
@@ -53,7 +115,8 @@
         </div>
         <div class="header-links">
           <a href="dashboard.html" class="header-link">HQ Dashboard</a>
-          <a href="#" class="header-link active">SECL Operational Zone</a>
+          <a href="secl-zone.html" class="header-link active">SECL Operational Zone</a>
+          <a href="dgms-portal.html" class="header-link">DGMS Regulatory Portal</a>
         </div>
         <div class="system-status-pill"><div class="status-dot"></div> System Operational</div>
         <div class="header-time"></div>
@@ -61,71 +124,562 @@
       </header>
 
       <main class="page-wrapper">
-        <div class="control-bar">
-          <div>
-            <h1 class="page-title">Contractor Management</h1>
-            <div class="page-subtitle">Monitor contractor workforce, compliance scores, contracts and operational risk.</div>
-          </div>
-          <div class="controls-right">
-            <button class="btn btn-primary" onclick="window.showToast('Add Contractor Modal Opened', 'info')">+ Add Contractor</button>
-          </div>
-        </div>
-
-        <div class="filter-bar">
-          <select class="form-control" style="width:160px"><option>Type: All</option><option>Mining Ops</option><option>Transport</option></select>
-          <select class="form-control" style="width:160px"><option>Status: Active</option><option>Expired</option></select>
-          <select class="form-control" style="width:160px"><option>Mine: All</option><option>Kusmunda</option></select>
-          <select class="form-control" style="width:160px"><option>Expiry: Next 60 Days</option></select>
-          <div class="form-control" style="width:200px; display:flex; align-items:center; gap:8px;">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-            <input type="text" placeholder="Search" style="border:none;background:transparent;width:100%;font-size:12px;">
-          </div>
-        </div>
-
-        <!-- SECTION 2: CONTRACTOR CARDS -->
-        <div class="contractor-grid" id="contractor-cards">
-          <!-- Populated by JS -->
-        </div>
-
-        <!-- SECTIONS 3 & 4: CHARTS -->
-        <div class="chart-row">
-          <div class="card-light">
-            <h3 class="text-sm font-bold mb-4">Worker Distribution</h3>
-            <div style="height:180px; position:relative; width:100%; display:flex; justify-content:center;">
-              <canvas id="workerChart"></canvas>
+        <!-- ── SECTION 1: CONTRACTOR DIRECTORY VIEW ──────────── -->
+        <div id="contractor-directory-view">
+          <div class="control-bar">
+            <div>
+              <h1 class="page-title">Contractor Management</h1>
+              <div class="page-subtitle">Monitor contractor workforce, compliance scores, contracts and operational risk.</div>
+            </div>
+            <div class="controls-right">
+              <button class="btn btn-primary" onclick="window.openAddContractorModal()">+ Add Contractor</button>
             </div>
           </div>
-          
+
+          <div class="filter-bar">
+            <select class="form-control" id="filter-type" style="width:170px" onchange="window.filterContractors()">
+              <option value="All">Type: All</option>
+              <option value="Heavy Earth Moving">Heavy Earth Moving</option>
+              <option value="Safety & Ventilation">Safety & Ventilation</option>
+              <option value="Manpower Services">Manpower Services</option>
+              <option value="Blasting & Explosives">Blasting & Explosives</option>
+              <option value="Equipment Lease">Equipment Lease</option>
+              <option value="Dust & Water Control">Dust & Water Control</option>
+              <option value="Coal Handling">Coal Handling</option>
+              <option value="Opencast Mining">Opencast Mining</option>
+              <option value="Transport & Logistics">Transport & Logistics</option>
+              <option value="Drilling & Exploration">Drilling & Exploration</option>
+              <option value="Infrastructure Works">Infrastructure Works</option>
+            </select>
+            <select class="form-control" id="filter-status" style="width:140px" onchange="window.filterContractors()">
+              <option value="All">Status: All</option>
+              <option value="active">Active</option>
+              <option value="expiring">Renewal Due</option>
+              <option value="suspended">Suspended</option>
+            </select>
+            <select class="form-control" id="filter-mine" style="width:160px" onchange="window.filterContractors()">
+              <option value="All">Mine: All</option>
+            </select>
+            <select class="form-control" id="filter-expiry" style="width:160px" onchange="window.filterContractors()">
+              <option value="All">Expiry: All</option>
+              <option value="60">Next 60 Days</option>
+              <option value="180">Next 6 Months</option>
+              <option value="365">Next 1 Year</option>
+            </select>
+            <div class="form-control" style="width:210px; display:flex; align-items:center; gap:8px;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              <input type="text" id="filter-search" placeholder="Search contractor..." style="border:none;background:transparent;width:100%;font-size:12px;outline:none;" oninput="window.filterContractors()">
+            </div>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="window.resetContractorFilters()" style="font-size:11px;font-weight:600;">Reset</button>
+          </div>
+
+          <!-- SECTION 2: CONTRACTOR CARDS -->
+          <div class="contractor-grid" id="contractor-cards">
+            <!-- Populated dynamically by JS -->
+          </div>
+
+          <!-- SECTIONS 3 & 4: CHARTS -->
+          <div class="chart-row">
+            <div class="card-light">
+              <h3 class="text-sm font-bold mb-4">Worker Distribution</h3>
+              <div style="height:180px; position:relative; width:100%; display:flex; justify-content:center;">
+                <canvas id="workerChart"></canvas>
+              </div>
+            </div>
+            
+            <div class="card-light">
+              <h3 class="text-sm font-bold mb-4">Compliance Score Comparison</h3>
+              <div style="height:180px; position:relative; width:100%;">
+                <canvas id="scoreChart"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- SECTION 5: TABLE -->
           <div class="card-light">
-            <h3 class="text-sm font-bold mb-4">Compliance Score Comparison</h3>
-            <div style="height:180px; position:relative; width:100%;">
-              <canvas id="scoreChart"></canvas>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+              <h3 class="text-sm font-bold m-0">Contractor Directory</h3>
+              <span id="directory-count" style="font-size:11px; color:var(--text-secondary); font-weight:600;">—</span>
+            </div>
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Contractor Name</th>
+                    <th>Type</th>
+                    <th>Primary Mine(s)</th>
+                    <th>Workers</th>
+                    <th>Compliance</th>
+                    <th>Contract Expiry</th>
+                    <th>Violations</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="contractor-tbody">
+                  <!-- Populated by JS -->
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
 
-        <!-- SECTION 5: TABLE -->
-        <div class="card-light">
-          <h3 class="text-sm font-bold mb-4">Contractor Directory</h3>
-          <div class="table-wrapper">
-            <table>
-              <thead>
-                <tr>
-                  <th>Contractor Name</th>
-                  <th>Type</th>
-                  <th>Primary Mine(s)</th>
-                  <th>Workers</th>
-                  <th>Compliance</th>
-                  <th>Contract Expiry</th>
-                  <th>Violations</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody id="contractor-tbody">
-                <!-- Populated by JS -->
-              </tbody>
-            </table>
+        <!-- ── SECTION 2: DEDICATED CONTRACTOR DETAILS VIEW ──── -->
+        <div id="contractor-detail-view" style="display:none;">
+          <!-- Breadcrumb & Navigation Bar -->
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:12px;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <button class="btn btn-secondary btn-sm" onclick="window.showContractorDirectory()" style="display:flex; align-items:center; gap:6px; font-weight:700;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                Back to Directory
+              </button>
+              <span style="color:var(--text-muted); font-size:13px;">/</span>
+              <span style="color:var(--text-secondary); font-size:13px; font-weight:600;">Contractor Details</span>
+              <span style="color:var(--text-muted); font-size:13px;">/</span>
+              <span id="dt-breadcrumb-name" style="color:var(--text-primary); font-size:13px; font-weight:800;">—</span>
+            </div>
+
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+              <button class="btn btn-secondary btn-sm" onclick="window.scrollToSection('dt-violations-card')">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                View Violations
+              </button>
+              <button class="btn btn-secondary btn-sm" onclick="window.scrollToSection('dt-compliance-card')">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                Review Compliance
+              </button>
+              <button class="btn btn-secondary btn-sm" onclick="window.scrollToSection('dt-workforce-card')">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                View Workforce
+              </button>
+              <button class="btn btn-primary btn-sm" id="dt-btn-edit" onclick="window.openCurrentContractorEdit()">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                Edit Contractor
+              </button>
+            </div>
+          </div>
+
+          <!-- CONTRACTOR PROFILE (Hero Section) -->
+          <div class="card-light" style="margin-bottom:20px; padding:24px;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:16px; margin-bottom:20px; padding-bottom:18px; border-bottom:1px solid var(--border);">
+              <div>
+                <div style="display:flex; align-items:center; gap:10px; margin-bottom:4px; flex-wrap:wrap;">
+                  <h2 id="dt-name" style="font-size:22px; font-weight:800; color:var(--text-primary); margin:0;">—</h2>
+                  <span id="dt-id-badge" class="badge" style="background:#F0F3F2; color:var(--text-secondary); font-family:monospace; font-size:11px;">—</span>
+                  <span id="dt-status-badge">—</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap; font-size:12px; color:var(--text-secondary);">
+                  <div><strong>Category:</strong> <span id="dt-type">—</span></div>
+                  <div>•</div>
+                  <div style="display:flex; align-items:center; gap:4px;">
+                    <strong>Primary Site:</strong> 
+                    <button id="dt-primary-mine-btn" type="button" class="btn btn-secondary btn-sm" style="padding:2px 8px; font-size:11px; border-color:var(--brand-primary); color:var(--brand-primary); font-weight:700;">
+                      —
+                    </button>
+                  </div>
+                  <div>•</div>
+                  <div><strong>Subsidiary:</strong> <span id="dt-sub">—</span></div>
+                </div>
+              </div>
+              <div style="display:flex; align-items:center; gap:14px;">
+                <div style="text-align:right;">
+                  <div style="font-size:10px; font-weight:700; text-transform:uppercase; color:var(--text-secondary);">Safety & Compliance</div>
+                  <div id="dt-score-text" style="font-size:22px; font-weight:800; color:var(--text-primary);">—</div>
+                </div>
+                <div id="dt-gauge" class="cc-gauge" style="width:48px; height:48px; font-size:13px;">—</div>
+              </div>
+            </div>
+
+            <!-- 4 Key Metrics Cards -->
+            <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:16px;">
+              <div class="detail-hero-metric">
+                <div style="font-size:10px; font-weight:700; text-transform:uppercase; color:var(--text-secondary);">Safety Score</div>
+                <div id="dt-metric-score" style="font-size:22px; font-weight:800; color:var(--text-primary); margin:4px 0 2px;">—</div>
+                <div id="dt-metric-score-label" style="font-size:11px; font-weight:600;">—</div>
+              </div>
+              <div class="detail-hero-metric">
+                <div style="font-size:10px; font-weight:700; text-transform:uppercase; color:var(--text-secondary);">Deployed Workforce</div>
+                <div id="dt-metric-workers" style="font-size:22px; font-weight:800; color:var(--text-primary); margin:4px 0 2px;">—</div>
+                <div style="font-size:11px; color:var(--text-secondary);">DGMS Registered Personnel</div>
+              </div>
+              <div class="detail-hero-metric">
+                <div style="font-size:10px; font-weight:700; text-transform:uppercase; color:var(--text-secondary);">Contract Expiry</div>
+                <div id="dt-metric-expiry" style="font-size:22px; font-weight:800; color:var(--text-primary); margin:4px 0 2px;">—</div>
+                <div id="dt-metric-expiry-days" style="font-size:11px; font-weight:600; color:var(--text-secondary);">—</div>
+              </div>
+              <div class="detail-hero-metric">
+                <div style="font-size:10px; font-weight:700; text-transform:uppercase; color:var(--text-secondary);">Open Violations</div>
+                <div id="dt-metric-violations" style="font-size:22px; font-weight:800; color:var(--text-primary); margin:4px 0 2px;">—</div>
+                <div id="dt-metric-violations-sub" style="font-size:11px; font-weight:600;">—</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2-COLUMN GRID: SAFETY & COMPLIANCE + WORKFORCE -->
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:20px;">
+            <!-- SAFETY & COMPLIANCE (Explainable Factors Breakdown) -->
+            <div class="card-light" id="dt-compliance-card" style="padding:20px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+                <h3 style="font-size:15px; font-weight:800; color:var(--text-primary); margin:0;">Safety & Compliance Assessment</h3>
+                <span id="dt-comp-status-badge" class="badge badge-success">DGMS Compliant</span>
+              </div>
+              
+              <!-- Explainable 5 Factors Breakdown -->
+              <div style="background:#F8FAFA; border:1px solid var(--border); border-radius:var(--radius-sm); padding:14px; margin-bottom:16px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                  <span style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-secondary);">Explainable Safety Score Calculation</span>
+                  <span id="dt-factors-overall" style="font-size:14px; font-weight:800; color:var(--text-primary);">Overall: 71%</span>
+                </div>
+                <div id="dt-factors-container" style="display:flex; flex-direction:column; gap:8px;">
+                  <!-- Rendered dynamically by JS -->
+                </div>
+                <div style="font-size:10px; color:var(--text-muted); margin-top:10px; line-height:1.4;">
+                  * Safety Score Formulation: Weighted composite of Statutory Compliance (30%), Incident History (25%), Worker Certification (20%), DGMS Findings Closure (15%), and Contract SLA Performance (10%).
+                </div>
+              </div>
+
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; font-size:12px;">
+                <div>
+                  <div style="font-size:10px; font-weight:700; text-transform:uppercase; color:var(--text-secondary);">Last DGMS Assessment</div>
+                  <div id="dt-last-assessment" style="font-weight:700; color:var(--text-primary); margin-top:2px;">14 Aug 2026</div>
+                  <div id="dt-assessor" style="font-size:11px; color:var(--text-secondary);">by Dy. Director of Mines Safety</div>
+                </div>
+                <div>
+                  <div style="font-size:10px; font-weight:700; text-transform:uppercase; color:var(--text-secondary);">Form-B Register Status</div>
+                  <div id="dt-formb-status" style="font-weight:700; color:var(--success); margin-top:2px;">Digitally Verified & Locked</div>
+                  <div style="font-size:11px; color:var(--text-secondary);">CMR 2017 Reg 108 Compliant</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- WORKFORCE ANALYTICS -->
+            <div class="card-light" id="dt-workforce-card" style="padding:20px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+                <h3 style="font-size:15px; font-weight:800; color:var(--text-primary); margin:0;">Contractor Workforce Deployment</h3>
+                <span class="badge" style="background:#EBF3EF; color:var(--brand-primary); font-weight:700;">DGMS Muster Verified</span>
+              </div>
+
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px;">
+                <div class="detail-hero-metric">
+                  <div style="font-size:10px; font-weight:700; text-transform:uppercase; color:var(--text-secondary);">Total Registered</div>
+                  <div id="dt-wf-total" style="font-size:18px; font-weight:800; color:var(--text-primary); margin-top:2px;">—</div>
+                  <div style="font-size:10px; color:var(--text-secondary);">Active site muster</div>
+                </div>
+                <div class="detail-hero-metric">
+                  <div style="font-size:10px; font-weight:700; text-transform:uppercase; color:var(--text-secondary);">Active on Shift</div>
+                  <div id="dt-wf-active" style="font-size:18px; font-weight:800; color:var(--brand-primary); margin-top:2px;">—</div>
+                  <div style="font-size:10px; color:var(--text-secondary);">Current operational shift</div>
+                </div>
+                <div class="detail-hero-metric">
+                  <div style="font-size:10px; font-weight:700; text-transform:uppercase; color:var(--text-secondary);">Certified Workers</div>
+                  <div id="dt-wf-certified" style="font-size:18px; font-weight:800; color:var(--success); margin-top:2px;">—</div>
+                  <div style="font-size:10px; color:var(--text-secondary);">Vocational training current</div>
+                </div>
+                <div class="detail-hero-metric">
+                  <div style="font-size:10px; font-weight:700; text-transform:uppercase; color:var(--text-secondary);">Pending Certifications</div>
+                  <div id="dt-wf-pending" style="font-size:18px; font-weight:800; color:var(--amber); margin-top:2px;">—</div>
+                  <div style="font-size:10px; color:var(--text-secondary);">Refresher batch queued</div>
+                </div>
+              </div>
+
+              <div style="background:#FFFFFF; border:1px solid var(--border); border-radius:var(--radius-sm); padding:12px;">
+                <div style="font-size:11px; font-weight:700; color:var(--text-primary); margin-bottom:8px;">Operational Role Allocation</div>
+                <div id="dt-wf-roles-bar" style="display:flex; height:10px; border-radius:5px; overflow:hidden; margin-bottom:8px;">
+                  <div style="width:55%; background:var(--brand-primary);" title="HEMM Operators / Technicians (55%)"></div>
+                  <div style="width:25%; background:#177EAF;" title="Blasting & Maintenance Crews (25%)"></div>
+                  <div style="width:12%; background:var(--amber);" title="General Support (12%)"></div>
+                  <div style="width:8%; background:#6B5EA8;" title="Safety Supervisors (8%)"></div>
+                </div>
+                <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--text-secondary); flex-wrap:wrap; gap:6px;">
+                  <span><span style="display:inline-block;width:8px;height:8px;background:var(--brand-primary);border-radius:50%;margin-right:4px;"></span>Operators (55%)</span>
+                  <span><span style="display:inline-block;width:8px;height:8px;background:#177EAF;border-radius:50%;margin-right:4px;"></span>Technical (25%)</span>
+                  <span><span style="display:inline-block;width:8px;height:8px;background:var(--amber);border-radius:50%;margin-right:4px;"></span>Support (12%)</span>
+                  <span><span style="display:inline-block;width:8px;height:8px;background:#6B5EA8;border-radius:50%;margin-right:4px;"></span>Safety (8%)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2-COLUMN GRID: CONTRACT DETAILS + SITE ASSIGNMENT -->
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:20px;">
+            <!-- CONTRACT DETAILS -->
+            <div class="card-light" style="padding:20px;">
+              <h3 style="font-size:15px; font-weight:800; color:var(--text-primary); margin:0 0 14px 0;">Contract Details & SLA</h3>
+              <div style="display:flex; flex-direction:column; gap:12px; font-size:12px;">
+                <div style="display:flex; justify-content:space-between; padding-bottom:8px; border-bottom:1px solid var(--border);">
+                  <span style="color:var(--text-secondary); font-weight:600;">Work Order / Reference</span>
+                  <span id="dt-contract-wo" style="font-weight:800; font-family:monospace; color:var(--text-primary);">—</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; padding-bottom:8px; border-bottom:1px solid var(--border);">
+                  <span style="color:var(--text-secondary); font-weight:600;">Contract Start Date</span>
+                  <span id="dt-contract-start" style="font-weight:700; color:var(--text-primary);">—</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; padding-bottom:8px; border-bottom:1px solid var(--border);">
+                  <span style="color:var(--text-secondary); font-weight:600;">Contract Expiry Date</span>
+                  <span id="dt-contract-expiry" style="font-weight:700; color:var(--text-primary);">—</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; padding-bottom:8px; border-bottom:1px solid var(--border);">
+                  <span style="color:var(--text-secondary); font-weight:600;">Contract Service Type</span>
+                  <span id="dt-contract-type" style="font-weight:700; color:var(--text-primary); text-align:right; max-width:260px;">—</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; padding-bottom:8px; border-bottom:1px solid var(--border);">
+                  <span style="color:var(--text-secondary); font-weight:600;">Renewal Status</span>
+                  <span id="dt-contract-renewal" style="font-weight:700; color:var(--text-primary); text-align:right; max-width:260px;">—</span>
+                </div>
+                <div style="display:flex; justify-content:space-between;">
+                  <span style="color:var(--text-secondary); font-weight:600;">Responsible DGMS Officer</span>
+                  <span id="dt-contract-officer" style="font-weight:700; color:var(--brand-primary); text-align:right; max-width:260px;">—</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- SITE ASSIGNMENT -->
+            <div class="card-light" style="padding:20px;">
+              <h3 style="font-size:15px; font-weight:800; color:var(--text-primary); margin:0 0 14px 0;">Site Assignment & Mining Panels</h3>
+              <div style="display:flex; flex-direction:column; gap:12px; font-size:12px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; padding-bottom:8px; border-bottom:1px solid var(--border);">
+                  <span style="color:var(--text-secondary); font-weight:600;">Primary Assigned Mine</span>
+                  <div style="display:flex; align-items:center; gap:8px;">
+                    <span id="dt-site-mine" style="font-weight:800; color:var(--text-primary);">—</span>
+                    <button id="dt-site-drawer-btn" type="button" class="btn btn-secondary btn-sm" style="padding:2px 8px; font-size:10px; font-weight:700; color:var(--brand-primary); border-color:var(--brand-primary);">
+                      View Mine Drawer →
+                    </button>
+                  </div>
+                </div>
+                <div style="display:flex; justify-content:space-between; padding-bottom:8px; border-bottom:1px solid var(--border);">
+                  <span style="color:var(--text-secondary); font-weight:600;">Operating Subsidiary</span>
+                  <span id="dt-site-sub" style="font-weight:700; color:var(--text-primary);">—</span>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:4px; padding-bottom:8px; border-bottom:1px solid var(--border);">
+                  <span style="color:var(--text-secondary); font-weight:600;">Assigned Quarry Areas / Panels</span>
+                  <div id="dt-site-areas" style="background:#F8FAFA; border:1px solid var(--border); border-radius:var(--radius-sm); padding:8px 10px; font-size:11px; font-weight:600; color:var(--text-primary); line-height:1.4;">—</div>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:4px;">
+                  <span style="color:var(--text-secondary); font-weight:600;">Operational Role & Scope</span>
+                  <div id="dt-site-role" style="background:#F8FAFA; border:1px solid var(--border); border-radius:var(--radius-sm); padding:8px 10px; font-size:11px; color:var(--text-primary); line-height:1.4;">—</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- VIOLATIONS LEDGER SECTION -->
+          <div class="card-light" id="dt-violations-card" style="padding:20px; margin-bottom:24px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+              <div>
+                <h3 style="font-size:16px; font-weight:800; color:var(--text-primary); margin:0;">Active Statutory Violations & Corrective Directives</h3>
+                <div style="font-size:11px; color:var(--text-secondary); margin-top:2px;">Track and resolve DGMS observations, Form-B gaps, and safety compliances.</div>
+              </div>
+              <span id="dt-violations-count-badge" class="badge badge-danger">—</span>
+            </div>
+
+            <div id="dt-violations-list" style="display:flex; flex-direction:column; gap:12px;">
+              <!-- Populated dynamically by JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- MODAL 1: ADD CONTRACTOR -->
+        <div class="modal-overlay" id="add-contractor-modal">
+          <div class="modal-card modal-lg" role="dialog" aria-modal="true">
+            <div class="modal-header">
+              <div>
+                <div class="modal-title" style="display:flex;align-items:center;gap:8px;">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--brand-primary)" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="11" x2="19" y2="17"/><line x1="16" y1="14" x2="22" y2="14"/></svg>
+                  + Add Contractor
+                </div>
+                <div class="modal-subtitle">Enroll verified mining contractor, agency workforce, and statutory compliance file</div>
+              </div>
+              <button class="modal-close" onclick="window.closeModal('add-contractor-modal')">&times;</button>
+            </div>
+
+            <div class="modal-body">
+              <form id="add-contractor-form" onsubmit="event.preventDefault(); window.submitAddContractor();">
+                <div class="form-row-2">
+                  <div class="form-group">
+                    <label class="form-label" for="act-name">Contractor Company Name <span class="req">*</span></label>
+                    <input type="text" class="form-input" id="act-name" placeholder="e.g. Adani Mining Enterprises Ltd." required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="act-type">Service Category <span class="req">*</span></label>
+                    <select class="form-select" id="act-type">
+                      <option value="Opencast Mining">Opencast Mining</option>
+                      <option value="Geotechnical">Geotechnical & Strata</option>
+                      <option value="Coal Handling & CHP">Coal Handling & CHP</option>
+                      <option value="HEMM Supply">HEMM Supply & Maintenance</option>
+                      <option value="Manpower">Manpower & Labour</option>
+                      <option value="Environmental">Environmental Services</option>
+                      <option value="Blasting">Blasting & Explosives</option>
+                      <option value="Mine Security">Mine Security</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="form-row-3">
+                  <div class="form-group">
+                    <label class="form-label" for="act-workers">Total Deployed Workers <span class="req">*</span></label>
+                    <input type="number" class="form-input" id="act-workers" value="650" min="1" max="10000" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="act-score">Initial Compliance (%)</label>
+                    <input type="number" class="form-input" id="act-score" value="82" min="0" max="100">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="act-status">Initial Status</label>
+                    <select class="form-select" id="act-status">
+                      <option value="active" selected>Active</option>
+                      <option value="expiring">Renewal Due</option>
+                      <option value="suspended">Suspended</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="form-row-2">
+                  <div class="form-group">
+                    <label class="form-label" for="act-expiry">Contract Expiry Date <span class="req">*</span></label>
+                    <input type="date" class="form-input" id="act-expiry" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="act-mine">Primary Operating Mine</label>
+                    <select class="form-select" id="act-mine"></select>
+                  </div>
+                </div>
+              </form>
+            </div>
+
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" onclick="window.closeModal('add-contractor-modal')">CANCEL</button>
+              <button type="button" class="btn btn-primary" id="act-submit-btn" onclick="window.submitAddContractor()" style="padding:10px 24px;font-weight:700;">
+                REGISTER CONTRACTOR
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- MODAL 2: MANAGE CONTRACTOR -->
+        <div class="modal-overlay" id="manage-contractor-modal">
+          <div class="modal-card modal-lg" role="dialog" aria-modal="true">
+            <div class="modal-header">
+              <div>
+                <div class="modal-title" style="display:flex;align-items:center;gap:8px;">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--brand-primary)" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                  Manage Contractor Profile
+                </div>
+                <div class="modal-subtitle" id="mct-subtitle">Review workforce safety records, audit scores, and renew contract terms</div>
+              </div>
+              <button class="modal-close" onclick="window.closeModal('manage-contractor-modal')">&times;</button>
+            </div>
+
+            <div class="modal-body">
+              <input type="hidden" id="mct-id">
+
+              <div style="background:#F8FAFA; border:1px solid var(--border); border-radius:var(--radius-sm); padding:14px 16px; margin-bottom:18px;">
+                <div class="form-row-3">
+                  <div>
+                    <div style="font-size:10px; font-weight:700; text-transform:uppercase; color:var(--text-secondary);">Contractor</div>
+                    <div id="mct-name-display" style="font-size:15px; font-weight:800; color:var(--text-primary);">—</div>
+                  </div>
+                  <div>
+                    <div style="font-size:10px; font-weight:700; text-transform:uppercase; color:var(--text-secondary);">Category</div>
+                    <div id="mct-type-display" style="font-size:13px; font-weight:600; color:var(--text-secondary);">—</div>
+                  </div>
+                  <div>
+                    <div style="font-size:10px; font-weight:700; text-transform:uppercase; color:var(--text-secondary);">Current Status</div>
+                    <div id="mct-badge-display" style="margin-top:2px;">—</div>
+                  </div>
+                </div>
+              </div>
+
+              <form id="manage-contractor-form" onsubmit="event.preventDefault(); window.submitManageContractor();">
+                <div class="form-row-3">
+                  <div class="form-group">
+                    <label class="form-label" for="mct-compliance">Compliance Score (%) <span class="req">*</span></label>
+                    <input type="number" class="form-input" id="mct-compliance" min="0" max="100" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="mct-workers">Workforce Deployed <span class="req">*</span></label>
+                    <input type="number" class="form-input" id="mct-workers" min="0" max="20000" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="mct-status">Contract Status <span class="req">*</span></label>
+                    <select class="form-select" id="mct-status">
+                      <option value="active">Active</option>
+                      <option value="expiring">Renewal Due</option>
+                      <option value="suspended">Suspended</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="form-row-2">
+                  <div class="form-group">
+                    <label class="form-label" for="mct-expiry">Contract Expiry Date <span class="req">*</span></label>
+                    <input type="date" class="form-input" id="mct-expiry" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="mct-notes">Auditor Verification Note</label>
+                    <input type="text" class="form-input" id="mct-notes" placeholder="e.g. Form-B inspected, all 420 workers inducted per DGMS rules">
+                  </div>
+                </div>
+              </form>
+            </div>
+
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" onclick="window.closeModal('manage-contractor-modal')">CANCEL</button>
+              <button type="button" class="btn btn-primary" id="mct-submit-btn" onclick="window.submitManageContractor()" style="padding:10px 24px;font-weight:700;">
+                UPDATE CONTRACTOR
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- MODAL 3: MINE INTELLIGENCE DRAWER -->
+        <div class="modal-overlay" id="mine-drawer-modal">
+          <div class="modal-card modal-lg" role="dialog" aria-modal="true">
+            <div class="modal-header">
+              <div>
+                <div class="modal-title" id="md-title">Mine Intelligence Overview</div>
+                <div class="modal-subtitle" id="md-subtitle">Detailed operational parameters & statutory telemetry</div>
+              </div>
+              <button class="modal-close" onclick="window.closeModal('mine-drawer-modal')">&times;</button>
+            </div>
+
+            <div class="modal-body">
+              <div class="form-row-3" style="background:#F8FAFA; border:1px solid var(--border); border-radius:var(--radius-sm); padding:14px; margin-bottom:18px;">
+                <div>
+                  <div style="font-size:10px; font-weight:700; text-transform:uppercase; color:var(--text-secondary);">Risk Assessment</div>
+                  <div id="md-risk-badge" style="margin-top:4px;">—</div>
+                </div>
+                <div>
+                  <div style="font-size:10px; font-weight:700; text-transform:uppercase; color:var(--text-secondary);">Statutory Compliance</div>
+                  <div id="md-compliance" style="font-size:16px; margin-top:2px;">—</div>
+                </div>
+                <div>
+                  <div style="font-size:10px; font-weight:700; text-transform:uppercase; color:var(--text-secondary);">Annual Production</div>
+                  <div id="md-production" style="font-size:16px; font-weight:800; color:var(--text-primary); margin-top:2px;">—</div>
+                </div>
+              </div>
+
+              <div class="form-row-2" style="margin-bottom:16px;">
+                <div>
+                  <div style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-secondary);">Coal Grade / GCV</div>
+                  <div id="md-grade" style="font-size:13px; font-weight:600; color:var(--text-primary); margin-top:2px;">—</div>
+                </div>
+                <div>
+                  <div style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-secondary);">Seam Gassiness Degree</div>
+                  <div id="md-gassiness" style="font-size:13px; font-weight:600; color:var(--text-primary); margin-top:2px;">—</div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Active Operational Findings & Directives</label>
+                <div id="md-reason" style="background:#FFFFFF; border:1px solid var(--border); border-radius:var(--radius-sm); padding:12px; font-size:13px; color:var(--text-primary); line-height:1.4;">—</div>
+              </div>
+            </div>
+
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" onclick="window.closeModal('mine-drawer-modal')">CLOSE</button>
+              <button type="button" class="btn btn-secondary" onclick="location.href='gis-map.html'">VIEW ON GIS MAP</button>
+              <button type="button" class="btn btn-primary" onclick="location.href='inspections.html'">SCHEDULE INSPECTION</button>
+            </div>
           </div>
         </div>
 
@@ -136,95 +690,842 @@
   <script src="js/main.js"></script>
   <script src="js/mines-db.js"></script>
   <script>
+    let currentContractor = null;
+    let activeFilterList = null;
+
     document.addEventListener('DOMContentLoaded', () => {
+      // Populate Add Contractor mine dropdown
+      const actMineSelect = document.getElementById('act-mine');
+      if (actMineSelect && typeof REAL_MINES !== 'undefined') {
+        REAL_MINES.forEach(m => {
+          const opt = document.createElement('option');
+          opt.value = m.name;
+          opt.textContent = `${m.name} (${m.sub})`;
+          actMineSelect.appendChild(opt);
+        });
+      }
+
+      // Populate filter mine dropdown
+      populateFilterMines();
+
+      // Initial directory render
+      filterContractors();
+      renderCharts();
+
+      // Check if URL has ?id=... to directly open contractor details
+      const urlParams = new URLSearchParams(window.location.search);
+      const requestedId = urlParams.get('id');
+      if (requestedId) {
+        window.openContractorDetails(requestedId, null, false);
+      }
+    });
+
+    // Browser back/forward navigation support
+    window.addEventListener('popstate', (e) => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const id = urlParams.get('id');
+      if (id) {
+        window.openContractorDetails(id, null, false);
+      } else {
+        window.showContractorDirectory(false);
+      }
+    });
+
+    function populateFilterMines() {
+      const mineSelect = document.getElementById('filter-mine');
+      if (!mineSelect || typeof REAL_MINES === 'undefined') return;
+      const uniqueMines = [...new Set(REAL_MINES.map(m => m.name))].sort();
+      uniqueMines.forEach(name => {
+        const opt = document.createElement('option');
+        opt.value = name;
+        opt.textContent = `Mine: ${name}`;
+        mineSelect.appendChild(opt);
+      });
+    }
+
+    window.filterContractors = function() {
       if (typeof CONTRACTORS_DB === 'undefined') return;
+      const typeVal = (document.getElementById('filter-type')?.value || 'All').trim();
+      const statusVal = (document.getElementById('filter-status')?.value || 'All').trim().toLowerCase();
+      const mineVal = (document.getElementById('filter-mine')?.value || 'All').trim();
+      const expiryVal = (document.getElementById('filter-expiry')?.value || 'All').trim();
+      const searchVal = (document.getElementById('filter-search')?.value || '').trim().toLowerCase();
 
-      // ── Render contractor cards (top 6 by workers)
+      let filtered = [...CONTRACTORS_DB];
+
+      if (typeVal !== 'All') {
+        filtered = filtered.filter(c => (c.type || '').toLowerCase().includes(typeVal.toLowerCase()));
+      }
+      if (statusVal !== 'all') {
+        filtered = filtered.filter(c => (c.status || '').toLowerCase() === statusVal);
+      }
+      if (mineVal !== 'All') {
+        filtered = filtered.filter(c => {
+          const pm = (c.primaryMine || '').toLowerCase();
+          const mines = Array.isArray(c.mines) ? c.mines.map(m => m.toLowerCase()) : [];
+          return pm.includes(mineVal.toLowerCase()) || mines.some(m => m.includes(mineVal.toLowerCase()));
+        });
+      }
+      if (expiryVal !== 'All') {
+        const maxDays = parseInt(expiryVal, 10);
+        const today = new Date();
+        filtered = filtered.filter(c => {
+          if (!c.expiry) return true;
+          const expDate = new Date(c.expiry);
+          if (isNaN(expDate.getTime())) return true;
+          const diffDays = Math.ceil((expDate - today) / (1000 * 60 * 60 * 24));
+          return diffDays >= 0 && diffDays <= maxDays;
+        });
+      }
+      if (searchVal) {
+        filtered = filtered.filter(c => 
+          (c.name || '').toLowerCase().includes(searchVal) ||
+          (c.type || '').toLowerCase().includes(searchVal) ||
+          (c.primaryMine || '').toLowerCase().includes(searchVal) ||
+          (c.subsidiary || '').toLowerCase().includes(searchVal)
+        );
+      }
+
+      activeFilterList = filtered;
+
+      const countEl = document.getElementById('directory-count');
+      if (countEl) {
+        countEl.textContent = `Showing ${filtered.length} of ${CONTRACTORS_DB.length} Contractors`;
+      }
+
+      renderContractorCards(filtered);
+      renderContractorTable(filtered);
+    };
+
+    window.resetContractorFilters = function() {
+      if (document.getElementById('filter-type')) document.getElementById('filter-type').value = 'All';
+      if (document.getElementById('filter-status')) document.getElementById('filter-status').value = 'All';
+      if (document.getElementById('filter-mine')) document.getElementById('filter-mine').value = 'All';
+      if (document.getElementById('filter-expiry')) document.getElementById('filter-expiry').value = 'All';
+      if (document.getElementById('filter-search')) document.getElementById('filter-search').value = '';
+      window.filterContractors();
+    };
+
+    function renderContractorCards(list) {
       const cardGrid = document.getElementById('contractor-cards');
-      if (cardGrid) {
-        const top6 = [...CONTRACTORS_DB].sort((a,b) => b.workers - a.workers).slice(0, 6);
-        top6.forEach(ct => {
-          const gaugeClass = ct.compliance >= 80 ? 'success' : ct.compliance >= 65 ? 'warning' : 'danger';
-          const statusBadge = ct.status === 'expiring'
-            ? '<span class="badge badge-warning">RENEWAL DUE</span>'
-            : ct.compliance < 55
-            ? '<span class="badge badge-danger" style="background:var(--danger);color:white">SUSPENDED</span>'
-            : '<span class="badge badge-success">ACTIVE</span>';
-          const border = ct.compliance < 55 ? 'border-left: 4px solid var(--danger);' : '';
-          const violText = ct.violations > 0
-            ? (ct.violations >= 10 ? `<div class="text-danger font-bold mt-4">Critical Safety Violation Active</div>` : `<div class="text-danger font-bold mt-4">${ct.violations} Open Violations</div>`)
-            : '<div class="text-success font-bold mt-4">No Open Violations</div>';
-          const card = document.createElement('div');
-          card.className = 'contractor-card';
-          card.style = border;
-          card.innerHTML = `
-            <div class="cc-header">
-              <div><div class="cc-name">${ct.name}</div><div class="cc-type">${ct.type}</div></div>
-              <div class="cc-gauge ${gaugeClass}">${ct.compliance}%</div>
-            </div>
-            <div class="cc-metrics">
-              <div class="cc-metric"><div class="ccm-val">${ct.workers.toLocaleString('en-IN')}</div><div class="ccm-label">Workers</div></div>
-              <div class="cc-metric"><div class="ccm-val" style="font-size:12px">${ct.primaryMine}</div><div class="ccm-label">Primary Site</div></div>
-            </div>
-            <div class="cc-footer">
-              <div class="flex justify-between items-center"><span>Contract Expires: <strong>${ct.expiry}</strong></span>${statusBadge}</div>
-              ${violText}
-            </div>
-          `;
-          cardGrid.appendChild(card);
-        });
+      if (!cardGrid || typeof CONTRACTORS_DB === 'undefined') return;
+      cardGrid.innerHTML = '';
+
+      const dataset = list || CONTRACTORS_DB;
+      const sorted = [...dataset].sort((a,b) => b.workers - a.workers);
+      // Show top 6 cards (or up to 12 if filtered)
+      const visible = sorted.slice(0, list ? 12 : 6);
+
+      if (visible.length === 0) {
+        cardGrid.innerHTML = `
+          <div style="grid-column: 1 / -1; padding: 40px; text-align: center; background: white; border: 1px dashed var(--border); border-radius: var(--radius-md); color: var(--text-secondary);">
+            <div style="font-weight: 700; font-size: 15px; margin-bottom: 4px;">No matching contractors found</div>
+            <div style="font-size: 12px;">Try adjusting your search criteria or filter selections.</div>
+            <button class="btn btn-secondary btn-sm" onclick="window.resetContractorFilters()" style="margin-top: 12px;">Reset Filters</button>
+          </div>
+        `;
+        return;
       }
 
-      // ── Contractor Table (all contractors)
+      visible.forEach(ct => {
+        const compliance = Number(ct.compliance !== undefined ? ct.compliance : (ct.compliance_score || 75));
+        const gaugeClass = compliance >= 80 ? 'success' : compliance >= 65 ? 'warning' : 'danger';
+        const statusBadge = ct.status === 'expiring'
+          ? '<span class="badge badge-warning">RENEWAL DUE</span>'
+          : compliance < 55 || ct.status === 'suspended'
+          ? '<span class="badge badge-danger" style="background:var(--danger);color:white">SUSPENDED</span>'
+          : '<span class="badge badge-success">ACTIVE</span>';
+        const border = (compliance < 55 || ct.status === 'suspended') ? 'border-left: 4px solid var(--danger);' : '';
+        const primarySite = ct.primaryMine || (ct.mines && ct.mines[0]) || 'National';
+
+        const violCount = Number(ct.violations !== undefined ? ct.violations : (ct.violations_count || 0));
+        const violText = violCount > 0
+          ? (violCount >= 10 ? `<a href="javascript:void(0)" class="no-card-click text-danger font-bold mt-2 inline-block" onclick="event.stopPropagation(); window.openContractorDetails('${ct.id || ct.name}', 'violations')" title="View Critical Safety Violations">Critical Safety Violation Active ↗</a>` 
+                             : `<a href="javascript:void(0)" class="no-card-click text-danger font-bold mt-2 inline-block" onclick="event.stopPropagation(); window.openContractorDetails('${ct.id || ct.name}', 'violations')" title="View open violations for ${ct.name}">${violCount} Open Violation${violCount > 1 ? 's' : ''} ↗</a>`)
+          : '<span class="text-success font-bold mt-2 inline-block">No Open Violations</span>';
+
+        const card = document.createElement('div');
+        card.className = 'contractor-card';
+        card.style = border;
+        card.tabIndex = 0;
+        card.setAttribute('role', 'button');
+        card.setAttribute('aria-label', `View details for contractor ${ct.name}`);
+
+        // Full card clickability
+        card.onclick = (e) => {
+          if (e.target.closest('.no-card-click')) return;
+          window.openContractorDetails(ct.id || ct.name);
+        };
+
+        // Keyboard accessibility (Enter and Space)
+        card.onkeydown = (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            window.openContractorDetails(ct.id || ct.name);
+          }
+        };
+
+        card.innerHTML = `
+          <div class="cc-header">
+            <div>
+              <div class="cc-name">${ct.name}</div>
+              <div class="cc-type">${ct.type}</div>
+            </div>
+            <div class="cc-gauge ${gaugeClass}">${compliance}%</div>
+          </div>
+          <div class="cc-metrics">
+            <div class="cc-metric">
+              <div class="ccm-val">${ct.workers.toLocaleString('en-IN')}</div>
+              <div class="ccm-label">Workers</div>
+            </div>
+            <div class="cc-metric">
+              <div class="ccm-val" style="font-size:12px">
+                <a href="javascript:void(0)" class="no-card-click" onclick="event.stopPropagation(); window.openMineDrawer('${primarySite}')" style="color:var(--brand-primary); font-weight:800; text-decoration:none;" title="View ${primarySite} Intelligence Drawer">
+                  ${primarySite} ↗
+                </a>
+              </div>
+              <div class="ccm-label">Primary Site</div>
+            </div>
+          </div>
+          <div class="cc-footer">
+            <div class="flex justify-between items-center">
+              <span>Contract Expires: <strong>${ct.expiry}</strong></span>
+              ${statusBadge}
+            </div>
+            <div>${violText}</div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; padding-top:8px; border-top:1px dashed var(--border);">
+              <span style="font-size:11px; font-weight:700; color:var(--brand-primary); display:flex; align-items:center; gap:4px;">
+                View Profile & Details <span style="font-size:14px; line-height:1;">→</span>
+              </span>
+              <span style="font-size:10px; color:var(--text-muted);">Click card to open</span>
+            </div>
+          </div>
+        `;
+        cardGrid.appendChild(card);
+      });
+    }
+
+    function renderContractorTable(list) {
       const tbody = document.getElementById('contractor-tbody');
-      if (tbody) {
-        CONTRACTORS_DB.forEach(ct => {
-          const compClass  = ct.compliance >= 80 ? 'badge-success' : ct.compliance >= 65 ? 'badge-warning' : 'badge-danger';
-          const statusBadge = ct.status === 'expiring' ? '<span class="badge badge-warning">Renewal Due</span>'
-                            : ct.compliance < 55 ? '<span class="badge badge-danger">Suspended</span>'
-                            : '<span class="badge badge-success">Active</span>';
-          const expClass = ct.status === 'expiring' ? 'class="text-danger font-bold"' : 'class="font-bold"';
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td class="font-bold">${ct.name}</td>
-            <td>${ct.type}</td>
-            <td style="max-width:140px;white-space:normal;font-size:11px">${ct.mines.slice(0,2).join(', ')}${ct.mines.length > 2 ? ' +' + (ct.mines.length-2) : ''}</td>
-            <td>${ct.workers.toLocaleString('en-IN')}</td>
-            <td><span class="badge ${compClass}">${ct.compliance}%</span></td>
-            <td ${expClass}>${ct.expiry}</td>
-            <td class="${ct.violations > 5 ? 'text-danger font-bold' : ''}">${ct.violations}</td>
-            <td>${statusBadge}</td>
-            <td><button class="btn btn-secondary btn-sm" onclick="window.mockAction(this,'Contractor profile opened')">Manage</button></td>
+      if (!tbody || typeof CONTRACTORS_DB === 'undefined') return;
+      tbody.innerHTML = '';
+
+      const dataset = list || CONTRACTORS_DB;
+      dataset.forEach(ct => {
+        const compliance = Number(ct.compliance !== undefined ? ct.compliance : (ct.compliance_score || 75));
+        const compClass = compliance >= 80 ? 'badge-success' : compliance >= 65 ? 'badge-warning' : 'badge-danger';
+        const statusBadge = ct.status === 'expiring' ? '<span class="badge badge-warning">Renewal Due</span>'
+                          : (compliance < 55 || ct.status === 'suspended') ? '<span class="badge badge-danger">Suspended</span>'
+                          : '<span class="badge badge-success">Active</span>';
+        const expClass = ct.status === 'expiring' ? 'class="text-danger font-bold"' : 'class="font-bold"';
+        const primarySite = ct.primaryMine || (ct.mines && ct.mines[0]) || 'National';
+        const minesStr = Array.isArray(ct.mines) ? (ct.mines.slice(0,2).join(', ') + (ct.mines.length > 2 ? ' +' + (ct.mines.length-2) : '')) : primarySite;
+        const violCount = Number(ct.violations !== undefined ? ct.violations : (ct.violations_count || 0));
+
+        const tr = document.createElement('tr');
+        tr.id = `ct-row-${ct.id || ct.name.replace(/\s+/g,'_')}`;
+        tr.style.cursor = 'pointer';
+        tr.onclick = (e) => {
+          if (e.target.closest('button') || e.target.closest('a')) return;
+          window.openContractorDetails(ct.id || ct.name);
+        };
+        tr.innerHTML = `
+          <td class="font-bold" style="color:var(--brand-primary);">${ct.name}</td>
+          <td>${ct.type}</td>
+          <td style="max-width:140px;white-space:normal;font-size:11px">
+            <a href="javascript:void(0)" onclick="event.stopPropagation(); window.openMineDrawer('${primarySite}')" style="color:var(--text-primary); text-decoration:underline;">
+              ${minesStr}
+            </a>
+          </td>
+          <td>${ct.workers.toLocaleString('en-IN')}</td>
+          <td><span class="badge ${compClass}">${compliance}%</span></td>
+          <td ${expClass}>${ct.expiry}</td>
+          <td class="${violCount > 5 ? 'text-danger font-bold' : ''}">
+            <a href="javascript:void(0)" onclick="event.stopPropagation(); window.openContractorDetails('${ct.id || ct.name}', 'violations')" style="color:inherit; font-weight:700;">
+              ${violCount}
+            </a>
+          </td>
+          <td>${statusBadge}</td>
+          <td style="white-space:nowrap;">
+            <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); window.openContractorDetails('${ct.id || ct.name}')" style="margin-right:4px;">Profile</button>
+            <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); window.openManageContractorModal('${ct.id || ct.name}')">Manage</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // ── Dedicated Contractor Details View Controller ────────
+    window.openContractorDetails = async function(identifier, focusSection, pushHistory = true) {
+      if (!identifier) return;
+
+      let ct = null;
+      if (typeof CONTRACTORS_DB !== 'undefined') {
+        ct = CONTRACTORS_DB.find(c => c.id === identifier || c.name === identifier || (c.name && c.name.toLowerCase() === String(identifier).toLowerCase()));
+      }
+
+      // Fetch from backend API to retrieve structured violations and explainable factors
+      try {
+        const res = await fetch(`http://localhost:3001/api/contractors/${encodeURIComponent(identifier)}`);
+        if (res.ok) {
+          const apiData = await res.json();
+          ct = { ...(ct || {}), ...apiData };
+          // Ensure property mappings
+          if (apiData.compliance_score !== undefined && ct.compliance === undefined) {
+            ct.compliance = apiData.compliance_score;
+          }
+          if (apiData.contract_expiry && !ct.expiry) {
+            ct.expiry = apiData.contract_expiry;
+          }
+          if (apiData.primary_mine && !ct.primaryMine) {
+            ct.primaryMine = apiData.primary_mine;
+          }
+          if (apiData.violations_count !== undefined && ct.violations === undefined) {
+            ct.violations = apiData.violations_count;
+          }
+        }
+      } catch (err) {
+        console.warn('Backend contractor API unreachable, using local database:', err);
+      }
+
+      if (!ct) {
+        window.showToast(`Contractor record '${identifier}' not found.`, 'warning');
+        return;
+      }
+
+      currentContractor = ct;
+
+      // Swap views
+      const dirView = document.getElementById('contractor-directory-view');
+      const detView = document.getElementById('contractor-detail-view');
+      if (dirView) dirView.style.display = 'none';
+      if (detView) detView.style.display = 'block';
+
+      // Update URL route without page reload
+      if (pushHistory) {
+        const newUrl = `${window.location.pathname}?id=${encodeURIComponent(ct.id || ct.name)}`;
+        window.history.pushState({ contractorId: ct.id || ct.name }, '', newUrl);
+      }
+
+      // Populate Details View
+      populateContractorDetailsView(ct);
+
+      // Handle section scroll
+      if (focusSection === 'violations') {
+        setTimeout(() => {
+          const vSec = document.getElementById('dt-violations-card');
+          if (vSec) vSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 120);
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    };
+
+    window.showContractorDirectory = function(pushHistory = true) {
+      const dirView = document.getElementById('contractor-directory-view');
+      const detView = document.getElementById('contractor-detail-view');
+      if (dirView) dirView.style.display = 'block';
+      if (detView) detView.style.display = 'none';
+
+      if (pushHistory) {
+        window.history.pushState({}, '', window.location.pathname);
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    function populateContractorDetailsView(ct) {
+      const compliance = Number(ct.compliance !== undefined ? ct.compliance : (ct.compliance_score || 71));
+      const primarySite = ct.primaryMine || (ct.mines && ct.mines[0]) || 'Gevra OC';
+      const sub = ct.subsidiary || (typeof REAL_MINES !== 'undefined' ? (REAL_MINES.find(m => m.name === primarySite)?.sub || 'SECL') : 'SECL');
+      const violCount = Number(ct.violations !== undefined ? ct.violations : (ct.violations_count || (ct.violations_list ? ct.violations_list.length : 0)));
+
+      // 1. Breadcrumb & Hero
+      document.getElementById('dt-breadcrumb-name').textContent = ct.name;
+      document.getElementById('dt-name').textContent = ct.name;
+      document.getElementById('dt-id-badge').textContent = `ID: ${ct.id || 'CT001'}`;
+      document.getElementById('dt-type').textContent = ct.type || 'Heavy Earth Moving';
+      document.getElementById('dt-sub').textContent = sub;
+
+      const mineBtn = document.getElementById('dt-primary-mine-btn');
+      if (mineBtn) {
+        mineBtn.textContent = `${primarySite} ↗`;
+        mineBtn.onclick = () => window.openMineDrawer(primarySite);
+      }
+
+      // Status Badge
+      const statusBadgeContainer = document.getElementById('dt-status-badge');
+      if (ct.status === 'expiring') {
+        statusBadgeContainer.innerHTML = '<span class="badge badge-warning">RENEWAL DUE</span>';
+      } else if (compliance < 55 || ct.status === 'suspended') {
+        statusBadgeContainer.innerHTML = '<span class="badge badge-danger" style="background:var(--danger);color:white">SUSPENDED</span>';
+      } else {
+        statusBadgeContainer.innerHTML = '<span class="badge badge-success">ACTIVE IN GOOD STANDING</span>';
+      }
+
+      // Gauge & Score Text
+      const gaugeClass = compliance >= 80 ? 'success' : compliance >= 65 ? 'warning' : 'danger';
+      const gaugeEl = document.getElementById('dt-gauge');
+      gaugeEl.className = `cc-gauge ${gaugeClass}`;
+      gaugeEl.textContent = `${compliance}%`;
+      document.getElementById('dt-score-text').textContent = `${compliance}%`;
+
+      // 2. Key Metrics Cards
+      document.getElementById('dt-metric-score').textContent = `${compliance}%`;
+      const scoreLabel = compliance >= 80 ? 'Optimal Statutory Benchmark' : compliance >= 65 ? 'Moderate Operational Risk' : 'Statutory Escalation Threshold';
+      const scoreLabelClass = compliance >= 80 ? 'text-success' : compliance >= 65 ? 'text-warning' : 'text-danger';
+      document.getElementById('dt-metric-score-label').innerHTML = `<span class="${scoreLabelClass}">${scoreLabel}</span>`;
+
+      document.getElementById('dt-metric-workers').textContent = (ct.workers || 10370).toLocaleString('en-IN');
+      document.getElementById('dt-metric-expiry').textContent = ct.expiry || '20 Dec 2026';
+      
+      // Compute remaining days
+      let daysRemaining = 'Active Term';
+      if (ct.expiry) {
+        const expDate = new Date(ct.expiry);
+        if (!isNaN(expDate.getTime())) {
+          const diff = Math.ceil((expDate - new Date()) / (1000 * 60 * 60 * 24));
+          daysRemaining = diff > 0 ? `${diff} days remaining` : 'Term expired';
+        }
+      }
+      document.getElementById('dt-metric-expiry-days').textContent = daysRemaining;
+
+      document.getElementById('dt-metric-violations').textContent = violCount;
+      const violSubEl = document.getElementById('dt-metric-violations-sub');
+      if (violCount > 0) {
+        violSubEl.innerHTML = `<span class="text-danger font-bold">${violCount} statutory mitigation${violCount > 1 ? 's' : ''} active</span>`;
+      } else {
+        violSubEl.innerHTML = `<span class="text-success font-bold">All Form-B records compliant</span>`;
+      }
+
+      // 3. Safety & Compliance Assessment & Explainable Factors
+      const compStatusBadge = document.getElementById('dt-comp-status-badge');
+      if (compliance >= 80) {
+        compStatusBadge.className = 'badge badge-success';
+        compStatusBadge.textContent = 'DGMS Compliant (Grade A)';
+      } else if (compliance >= 65) {
+        compStatusBadge.className = 'badge badge-warning';
+        compStatusBadge.textContent = 'Active Supervision (Grade B)';
+      } else {
+        compStatusBadge.className = 'badge badge-danger';
+        compStatusBadge.textContent = 'Section 22 Notice Active';
+      }
+
+      document.getElementById('dt-factors-overall').textContent = `Overall Score: ${compliance}%`;
+
+      // Explainable Safety Factors (Requirement 7)
+      const factors = ct.safety_factors || getContractorSafetyFactors(compliance);
+      const factorsContainer = document.getElementById('dt-factors-container');
+      factorsContainer.innerHTML = '';
+
+      factors.forEach(f => {
+        const fClass = f.score >= 80 ? 'success' : f.score >= 65 ? 'warning' : 'danger';
+        const factorDiv = document.createElement('div');
+        factorDiv.className = 'factor-item';
+        factorDiv.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px;">
+            <span style="font-weight:700; color:var(--text-primary);">${f.factor}</span>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span class="badge" style="background:#EBF3EF; color:var(--brand-primary); font-size:10px; font-weight:700;">Weight: ${f.weight}%</span>
+              <span style="font-weight:800; color:var(--text-primary);">${f.score}%</span>
+            </div>
+          </div>
+          <div class="hbar-bg" style="height:8px; margin:2px 0;">
+            <div class="hbar-fill ${fClass}" style="width:${f.score}%;"></div>
+          </div>
+          <div style="font-size:10px; color:var(--text-secondary); line-height:1.3;">${f.desc}</div>
+        `;
+        factorsContainer.appendChild(factorDiv);
+      });
+
+      // 4. Workforce Analytics
+      const totalWorkers = ct.workers || 10370;
+      const activeShift = Math.round(totalWorkers * 0.85);
+      const certifiedWorkers = Math.round(totalWorkers * 0.92);
+      const pendingTraining = totalWorkers - certifiedWorkers;
+
+      document.getElementById('dt-wf-total').textContent = totalWorkers.toLocaleString('en-IN');
+      document.getElementById('dt-wf-active').textContent = activeShift.toLocaleString('en-IN');
+      document.getElementById('dt-wf-certified').textContent = certifiedWorkers.toLocaleString('en-IN');
+      document.getElementById('dt-wf-pending').textContent = pendingTraining.toLocaleString('en-IN');
+
+      // 5. Contract Details & SLA
+      document.getElementById('dt-contract-wo').textContent = `WO-${sub}-2024-${ct.id || 'CT001'}`;
+      document.getElementById('dt-contract-start').textContent = ct.contract_start || '21 Dec 2023';
+      document.getElementById('dt-contract-expiry').textContent = ct.expiry || '20 Dec 2026';
+      document.getElementById('dt-contract-type').textContent = ct.contract_type || (ct.type ? `Turnkey ${ct.type} Deployment SLA` : 'Mining Services SLA');
+      document.getElementById('dt-contract-renewal').textContent = ct.renewal_status || (violCount === 0 ? 'Active in Good Standing (Eligible for Extension)' : 'Conditional (Requires Violation Closure)');
+      document.getElementById('dt-contract-officer').textContent = ct.responsible_officer || `Er. R. K. Mishra (GM Mining Ops, ${sub})`;
+
+      // 6. Site Assignment
+      document.getElementById('dt-site-mine').textContent = primarySite;
+      document.getElementById('dt-site-sub').textContent = `${sub} Subsidiary`;
+      document.getElementById('dt-site-areas').textContent = ct.assigned_areas || `North Pit Sector 4, Overburden Benches 3A-4D, Link In-Pit Feeder`;
+      document.getElementById('dt-site-role').textContent = ct.operational_role || `Primary Heavy Excavation, Overburden Haulage & In-Pit Material Handling SLA`;
+
+      const siteDrawerBtn = document.getElementById('dt-site-drawer-btn');
+      if (siteDrawerBtn) {
+        siteDrawerBtn.onclick = () => window.openMineDrawer(primarySite);
+      }
+
+      // 7. Violations Ledger (Requirement 6)
+      const violBadge = document.getElementById('dt-violations-count-badge');
+      const violListContainer = document.getElementById('dt-violations-list');
+      violListContainer.innerHTML = '';
+
+      const violations = ct.violations_list || getContractorViolations(ct);
+
+      if (violations.length === 0) {
+        violBadge.className = 'badge badge-success';
+        violBadge.textContent = '0 Open Violations';
+
+        violListContainer.innerHTML = `
+          <div class="clean-state-card">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            <div>
+              <div style="font-weight:800; font-size:14px; color:var(--text-primary); margin-bottom:2px;">Zero Open Violations On Record</div>
+              <div style="font-size:12px; color:var(--text-secondary);">
+                ${ct.name} maintains 100% compliance with DGMS statutory provisions, Form-B digital workforce registration, and periodical safety inspections.
+              </div>
+            </div>
+          </div>
+        `;
+      } else {
+        violBadge.className = 'badge badge-danger';
+        violBadge.textContent = `${violations.length} Open Violation${violations.length > 1 ? 's' : ''}`;
+
+        violations.forEach((v, idx) => {
+          const sevClass = (v.severity || '').toLowerCase() === 'high' ? 'severity-high' : (v.severity || '').toLowerCase() === 'medium' ? 'severity-medium' : 'severity-low';
+          const sevBadge = (v.severity || '').toLowerCase() === 'high' ? '<span class="badge badge-danger">HIGH SEVERITY</span>' : (v.severity || '').toLowerCase() === 'medium' ? '<span class="badge badge-warning">MEDIUM SEVERITY</span>' : '<span class="badge badge-info">LOW SEVERITY</span>';
+
+          const card = document.createElement('div');
+          card.className = `violation-card ${sevClass}`;
+          card.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px; gap:12px;">
+              <div>
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:2px;">
+                  <span style="font-size:11px; font-weight:800; font-family:monospace; color:var(--text-secondary);">${v.id || ('VIO-' + (idx+1))}</span>
+                  <div style="font-weight:800; font-size:14px; color:var(--text-primary);">${v.title}</div>
+                </div>
+                <div style="font-size:11px; color:var(--text-secondary); font-weight:600;">Statutory Reference: ${v.regulation || 'DGMS Circular 04 of 2020'}</div>
+              </div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                ${sevBadge}
+                <span class="badge" style="background:#FFF0F0; color:var(--danger); font-weight:800;">${v.status || 'OPEN'}</span>
+              </div>
+            </div>
+            <div style="background:#F8FAFA; border:1px solid var(--border); border-radius:var(--radius-sm); padding:10px 12px; margin-bottom:8px; font-size:12px; color:var(--text-primary); line-height:1.4;">
+              <strong>Required Mitigation Directive:</strong> ${v.required_action || 'Complete statutory Form-B biometric verification and submit clearance report to Area Safety Officer.'}
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; color:var(--text-secondary);">
+              <div>Compliance Due Date: <strong style="color:var(--text-primary);">${v.due_date || '15 Sep 2026'}</strong></div>
+              <button class="btn btn-secondary btn-sm" onclick="window.showToast('Compliance verification ledger opened for inspection record.', 'info')" style="padding:2px 8px; font-size:10px;">
+                Upload Mitigation Form-E
+              </button>
+            </div>
           `;
-          tbody.appendChild(tr);
+          violListContainer.appendChild(card);
         });
       }
+    }
+
+    // Helper functions for safety factors & violations
+    function getContractorSafetyFactors(scoreVal) {
+      const score = Number(scoreVal || 71);
+      let compHist = Math.min(99, Math.max(40, Math.round(score + 11)));
+      let incHist = Math.min(99, Math.max(35, Math.round(score - 7)));
+      let cert = Math.min(99, Math.max(40, Math.round(score + 2)));
+      let findings = Math.min(99, Math.max(35, Math.round(score - 3)));
+
+      let wtSumWithoutSLA = (compHist * 0.30) + (incHist * 0.25) + (cert * 0.20) + (findings * 0.15);
+      let sla = Math.round((score - wtSumWithoutSLA) / 0.10);
+      sla = Math.min(99, Math.max(30, sla));
+
+      let totalComputed = Math.round((compHist * 0.30) + (incHist * 0.25) + (cert * 0.20) + (findings * 0.15) + (sla * 0.10));
+      if (totalComputed !== score) {
+        compHist += (score - totalComputed);
+      }
+
+      return [
+        { factor: 'Compliance History', weight: 30, score: compHist, desc: 'DGMS statutory filings, Form-B submission, and labour welfare audits' },
+        { factor: 'Incident History', weight: 25, score: incHist, desc: 'Zero lost-time injury (LTI) record, near-miss reporting, and hazard mitigations' },
+        { factor: 'Worker Certification', weight: 20, score: cert, desc: 'Vocational training certificates, periodic medical examination (PME) currency' },
+        { factor: 'Inspection Findings', weight: 15, score: findings, desc: 'Timely rectification and formal closure of DGMS Section 22 observations' },
+        { factor: 'Contract SLA Performance', weight: 10, score: sla, desc: 'Adherence to statutory safety manpower ratio, PPE provisioning, and HEMM health' }
+      ];
+    }
+
+    function getContractorViolations(ct) {
+      const count = Number(ct.violations !== undefined ? ct.violations : (ct.violations_count || 0));
+      if (!count || count <= 0) return [];
+
+      if (ct.name === 'Jai Bharat Mining Co.') {
+        return [
+          {
+            id: 'VIO-CT01-01',
+            title: 'Safety training documentation incomplete for Heavy Earth Moving shift 2',
+            severity: 'HIGH',
+            regulation: 'DGMS (Tech) Circular No. 04 / CMR 2017 Reg 108',
+            due_date: '15 Sep 2026',
+            status: 'OPEN',
+            required_action: 'Submit certified Form-B vocational refresher training records for 18 haul truck operators to Area Safety Officer.'
+          }
+        ];
+      } else if (ct.name === 'Rawat Explosives Services') {
+        return [
+          { id: 'VIO-CT04-01', title: 'Magazine temperature log missing for explosive transport van #02', severity: 'HIGH', regulation: 'Explosives Rules 2008 & CMR 2017 Reg 182', due_date: '18 Sep 2026', status: 'OPEN', required_action: 'Calibrate digital temperature data-logger and submit 30-day thermal logs to DGMS Blasting Inspector.' },
+          { id: 'VIO-CT04-02', title: 'Misfire drill protocol refresher overdue for secondary shotfirer crew', severity: 'HIGH', regulation: 'DGMS Standard Operating Procedures for Controlled Blasting', due_date: '22 Sep 2026', status: 'OPEN', required_action: 'Conduct mandatory mock misfire handling drill supervised by Assistant Mine Manager.' },
+          { id: 'VIO-CT04-03', title: 'Dynamic blasting shelter viewing window cracked', severity: 'MEDIUM', regulation: 'CMR 2017 Reg 185 (Blasting Precautions)', due_date: '30 Sep 2026', status: 'OPEN', required_action: 'Replace poly-carbonate ballistic observation pane before next scheduled production blast.' },
+          { id: 'VIO-CT04-04', title: 'Non-sparking brass tool kit missing periodic certification tag', severity: 'LOW', regulation: 'DGMS Safety Equipment Guidelines', due_date: '05 Oct 2026', status: 'OPEN', required_action: 'Re-certify tool metallurgy compliance and log in mine mechanical ledger.' }
+        ];
+      } else if (ct.name === 'Singareni Heavy Equipment Co.') {
+        return [
+          { id: 'VIO-CT09-01', title: 'Automatic Fire Detection & Suppression (AFDSS) sensor audit overdue on shovel #04', severity: 'HIGH', regulation: 'DGMS Technical Circular 06 of 2020', due_date: '20 Sep 2026', status: 'OPEN', required_action: 'Perform nitrogen bottle pressure check and sensor continuity certification with OEM.' },
+          { id: 'VIO-CT09-02', title: 'Overman pre-shift machinery fitness certificate missing for 100T dumper DT-12', severity: 'MEDIUM', regulation: 'CMR 2017 Reg 89 (Inspection of Machinery)', due_date: '24 Sep 2026', status: 'OPEN', required_action: 'Enforce digital Form-E daily pre-use inspection checklist signed by shift engineer.' },
+          { id: 'VIO-CT09-03', title: 'Proximity warning radar buzzer sound level below statutory 85 dB(A)', severity: 'MEDIUM', regulation: 'DGMS Circular on HEMM Operator Blind Spots', due_date: '28 Sep 2026', status: 'OPEN', required_action: 'Recalibrate audio warning transducers in dumper cabin.' },
+          { id: 'VIO-CT09-04', title: 'Hydraulic high-pressure hose burst protection sleeve damaged', severity: 'LOW', regulation: 'DGMS Mechanical Guidelines for Earthmovers', due_date: '02 Oct 2026', status: 'OPEN', required_action: 'Install fire-retardant ballistic wrap sleeve on boom lift cylinders.' }
+        ];
+      }
+
+      const res = [];
+      for (let i = 0; i < count; i++) {
+        res.push({
+          id: `VIO-${ct.id || 'GEN'}-0${i + 1}`,
+          title: `Statutory Form-B vocational refresher verification pending for shift ${i + 1}`,
+          severity: i === 0 ? 'HIGH' : i < 3 ? 'MEDIUM' : 'LOW',
+          regulation: 'DGMS Vocational Training Rules 1966 & CMR 2017',
+          due_date: '25 Sep 2026',
+          status: 'OPEN',
+          required_action: 'Verify and upload certified attendance ledger with biometric time-stamps to Area Safety Office.'
+        });
+      }
+      return res;
+    }
+
+    window.scrollToSection = function(id) {
+      const el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+
+    window.openCurrentContractorEdit = function() {
+      if (!currentContractor) return;
+      window.openManageContractorModal(currentContractor.id || currentContractor.name);
+    };
+
+    // ── Mine Drawer Modal Controller ────────────────────────
+    window.openMineDrawer = function(mineName) {
+      if (typeof REAL_MINES === 'undefined') return;
+      const m = REAL_MINES.find(x => x.name === mineName) || REAL_MINES[0];
+      if (!m) return;
+
+      document.getElementById('md-title').textContent = m.name;
+      document.getElementById('md-subtitle').textContent = `${m.sub} Subsidiary • ${m.type} Operations • Location: ${m.lat}°N, ${m.lng}°E`;
+      
+      const riskBadgeClass = m.risk === 'Critical' ? 'badge-danger' : m.risk === 'High' ? 'badge-warning' : 'badge-success';
+      document.getElementById('md-risk-badge').innerHTML = `<span class="badge ${riskBadgeClass}">${(m.risk || 'NOMINAL').toUpperCase()} RISK</span>`;
+      
+      const compClass = m.compliance >= 80 ? 'text-success' : m.compliance >= 65 ? 'text-warning' : 'text-danger';
+      document.getElementById('md-compliance').innerHTML = `<span class="${compClass} font-bold">${m.compliance}%</span>`;
+      document.getElementById('md-production').textContent = `${m.production} MTPA`;
+      document.getElementById('md-grade').textContent = m.grade || 'Thermal Grade GCV-5';
+      document.getElementById('md-gassiness').textContent = m.gassiness || (m.type === 'Underground' ? 'Degree II' : 'N/A (Opencast)');
+      document.getElementById('md-reason').textContent = m.reason || 'Operational parameters operating within normal DGMS safety margins under regular statutory oversight.';
+
+      window.openModal('mine-drawer-modal');
+    };
+
+    // ── Add Contractor Workflow ─────────────────────────────
+    window.openAddContractorModal = function() {
+      const d = new Date(); d.setFullYear(d.getFullYear() + 1);
+      const expInput = document.getElementById('act-expiry');
+      if (expInput) expInput.value = d.toISOString().slice(0, 10);
+      window.openModal('add-contractor-modal');
+    };
+
+    window.submitAddContractor = async function() {
+      const name = (document.getElementById('act-name').value || '').trim();
+      const type = document.getElementById('act-type').value;
+      const workers = parseInt(document.getElementById('act-workers').value || '100', 10);
+      const score = parseInt(document.getElementById('act-score').value || '75', 10);
+      const status = document.getElementById('act-status').value;
+      const expiry = document.getElementById('act-expiry').value;
+      const mine = document.getElementById('act-mine').value || 'Gevra OC';
+
+      if (!name) {
+        window.showToast('Please enter contractor company name.', 'warning');
+        document.getElementById('act-name').focus();
+        return;
+      }
+
+      const submitBtn = document.getElementById('act-submit-btn');
+      const origText = submitBtn.innerHTML;
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = 'Registering...';
+
+      const payload = {
+        name,
+        type,
+        workers,
+        compliance_score: score,
+        status,
+        contract_expiry: expiry,
+        primary_mine: mine
+      };
+
+      try {
+        const res = await fetch('http://localhost:3001/api/contractors', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-user': 'DGMS Officer' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = res.ok ? await res.json() : { id: 'CT' + Date.now(), ...payload };
+
+        const newObj = {
+          id: data.id,
+          name,
+          type,
+          workers,
+          compliance: score,
+          status,
+          expiry,
+          mines: [mine],
+          primaryMine: mine,
+          violations: 0,
+          subsidiary: 'SECL'
+        };
+
+        CONTRACTORS_DB.unshift(newObj);
+        window.filterContractors();
+
+        window.closeModal('add-contractor-modal');
+        document.getElementById('add-contractor-form').reset();
+        window.showToast(`Contractor ${name} registered successfully.`, 'success', 4000);
+      } catch (err) {
+        console.error('Failed to add contractor:', err);
+        window.showToast(`Error adding contractor: ${err.message}`, 'danger', 4000);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = origText;
+      }
+    };
+
+    // ── Manage Contractor Workflow ──────────────────────────
+    window.openManageContractorModal = function(identifier) {
+      const ct = CONTRACTORS_DB.find(c => c.id === identifier || c.name === identifier);
+      if (!ct) {
+        window.showToast('Contractor record not found.', 'warning');
+        return;
+      }
+
+      document.getElementById('mct-id').value = ct.id || ct.name;
+      document.getElementById('mct-name-display').textContent = ct.name;
+      document.getElementById('mct-type-display').textContent = `${ct.type} • Primary: ${ct.primaryMine || (ct.mines && ct.mines[0]) || 'National'}`;
+      
+      const compVal = Number(ct.compliance !== undefined ? ct.compliance : (ct.compliance_score || 75));
+      const compClass = compVal >= 80 ? 'badge-success' : compVal >= 65 ? 'badge-warning' : 'badge-danger';
+      document.getElementById('mct-badge-display').innerHTML = `<span class="badge ${compClass}">${compVal}% Compliance</span>`;
+
+      document.getElementById('mct-compliance').value = compVal;
+      document.getElementById('mct-workers').value = ct.workers;
+      document.getElementById('mct-status').value = ct.status || 'active';
+      document.getElementById('mct-expiry').value = ct.expiry || '2027-06-30';
+      document.getElementById('mct-notes').value = '';
+
+      window.openModal('manage-contractor-modal');
+    };
+
+    window.submitManageContractor = async function() {
+      const id = document.getElementById('mct-id').value;
+      const compliance = parseInt(document.getElementById('mct-compliance').value || '75', 10);
+      const workers = parseInt(document.getElementById('mct-workers').value || '100', 10);
+      const status = document.getElementById('mct-status').value;
+      const expiry = document.getElementById('mct-expiry').value;
+
+      const submitBtn = document.getElementById('mct-submit-btn');
+      const origText = submitBtn.innerHTML;
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = 'Updating...';
+
+      const payload = {
+        compliance_score: compliance,
+        workers,
+        status,
+        contract_expiry: expiry
+      };
+
+      try {
+        await fetch(`http://localhost:3001/api/contractors/${encodeURIComponent(id)}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', 'x-user': 'DGMS Officer' },
+          body: JSON.stringify(payload)
+        });
+
+        // Update local object
+        const idx = CONTRACTORS_DB.findIndex(c => c.id === id || c.name === id);
+        if (idx !== -1) {
+          CONTRACTORS_DB[idx].compliance = compliance;
+          CONTRACTORS_DB[idx].workers = workers;
+          CONTRACTORS_DB[idx].status = status;
+          CONTRACTORS_DB[idx].expiry = expiry;
+        }
+
+        // If currently on details view for this contractor, refresh view
+        if (currentContractor && (currentContractor.id === id || currentContractor.name === id)) {
+          currentContractor.compliance = compliance;
+          currentContractor.workers = workers;
+          currentContractor.status = status;
+          currentContractor.expiry = expiry;
+          populateContractorDetailsView(currentContractor);
+        }
+
+        window.filterContractors();
+
+        window.closeModal('manage-contractor-modal');
+        window.showToast(`Contractor profile updated successfully.`, 'success', 4000);
+      } catch (err) {
+        console.error('Failed to update contractor:', err);
+        window.showToast(`Failed to update contractor: ${err.message}`, 'danger', 4000);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = origText;
+      }
+    };
+
+    function renderCharts() {
+      if (typeof DB_STATS === 'undefined' || typeof CONTRACTORS_DB === 'undefined') return;
 
       // ── Worker Distribution Donut (by subsidiary)
-      const workerBySub = DB_STATS.subsidiaries.map(sub => ({
-        sub, workers: CONTRACTORS_DB.filter(c => c.subsidiary === sub).reduce((a,c) => a+c.workers, 0)
-      })).filter(d => d.workers > 0);
+      const workerChartEl = document.getElementById('workerChart');
+      if (workerChartEl) {
+        const workerBySub = DB_STATS.subsidiaries.map(sub => ({
+          sub, workers: CONTRACTORS_DB.filter(c => c.subsidiary === sub).reduce((a,c) => a+c.workers, 0)
+        })).filter(d => d.workers > 0);
 
-      new Chart(document.getElementById('workerChart').getContext('2d'), {
-        type: 'doughnut',
-        data: {
-          labels: workerBySub.map(d => d.sub),
-          datasets: [{ data: workerBySub.map(d => d.workers), backgroundColor: ['#176B45','#177EAF','#E6A23C','#C9362B','#6B5EA8','#2E8B57','#8B4513','#2F4F4F'], borderWidth:0 }]
-        },
-        options: { responsive:true, maintainAspectRatio:false, cutout:'70%', plugins:{ legend:{ position:'right', labels:{ font:{ size:10 } } } } }
-      });
+        new Chart(workerChartEl.getContext('2d'), {
+          type: 'doughnut',
+          data: {
+            labels: workerBySub.map(d => d.sub),
+            datasets: [{ data: workerBySub.map(d => d.workers), backgroundColor: ['#176B45','#177EAF','#E6A23C','#C9362B','#6B5EA8','#2E8B57','#8B4513','#2F4F4F'], borderWidth:0 }]
+          },
+          options: { responsive:true, maintainAspectRatio:false, cutout:'70%', plugins:{ legend:{ position:'right', labels:{ font:{ size:10 } } } } }
+        });
+      }
 
       // ── Compliance Score Bar (top 8 contractors by compliance)
-      const top8 = [...CONTRACTORS_DB].sort((a,b) => b.compliance - a.compliance).slice(0, 8);
-      new Chart(document.getElementById('scoreChart').getContext('2d'), {
-        type: 'bar',
-        data: {
-          labels: top8.map(c => c.name.split(' ').slice(0,2).join(' ')),
-          datasets: [{ data: top8.map(c => c.compliance), backgroundColor: top8.map(c => c.compliance >= 80 ? '#176B45' : c.compliance >= 65 ? '#E6A23C' : '#C9362B'), borderRadius:4 }]
-        },
-        options: { indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ x:{ max:100, grid:{display:false} }, y:{ grid:{display:false}, ticks:{font:{size:10}} } } }
-      });
-    });
+      const scoreChartEl = document.getElementById('scoreChart');
+      if (scoreChartEl) {
+        const top8 = [...CONTRACTORS_DB].sort((a,b) => b.compliance - a.compliance).slice(0, 8);
+        new Chart(scoreChartEl.getContext('2d'), {
+          type: 'bar',
+          data: {
+            labels: top8.map(c => c.name.split(' ').slice(0,2).join(' ')),
+            datasets: [{ data: top8.map(c => c.compliance), backgroundColor: top8.map(c => c.compliance >= 80 ? '#176B45' : c.compliance >= 65 ? '#E6A23C' : '#C9362B'), borderRadius:4 }]
+          },
+          options: { indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ x:{ max:100, grid:{display:false} }, y:{ grid:{display:false}, ticks:{font:{size:10}} } } }
+        });
+      }
+    }
   </script>
 </body>
 </html>
+

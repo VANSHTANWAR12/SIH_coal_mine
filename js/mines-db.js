@@ -357,3 +357,16 @@ function getLiveTimeString() {
   const time = now.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', timeZone:'Asia/Kolkata', hour12:false });
   return `${date}<br>${time} IST`;
 }
+
+if (typeof window !== 'undefined') {
+  window.REAL_MINES = REAL_MINES;
+  window.DB_STATS = DB_STATS;
+  window.CONTRACTORS_DB = CONTRACTORS_DB;
+  window.INSPECTIONS_DB = INSPECTIONS_DB;
+}
+if (typeof globalThis !== 'undefined') {
+  globalThis.REAL_MINES = REAL_MINES;
+  globalThis.DB_STATS = DB_STATS;
+  globalThis.CONTRACTORS_DB = CONTRACTORS_DB;
+  globalThis.INSPECTIONS_DB = INSPECTIONS_DB;
+}

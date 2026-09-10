@@ -8,7 +8,10 @@ const API = {
 
   async get(path) {
     try {
-      const r = await fetch(this.BASE + path);
+      const user = (typeof Auth !== 'undefined' && Auth.getName) ? Auth.getName() : 'Ranjan Kumar';
+      const r = await fetch(this.BASE + path, {
+        headers: { 'x-user': user }
+      });
       if (!r.ok) throw new Error(r.statusText);
       return await r.json();
     } catch(e) {
@@ -19,17 +22,60 @@ const API = {
 
   async post(path, body) {
     try {
+      const user = (typeof Auth !== 'undefined' && Auth.getName) ? Auth.getName() : 'Ranjan Kumar';
       const r = await fetch(this.BASE + path, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-user': user },
         body: JSON.stringify(body)
       });
-      if (!r.ok) throw new Error(r.statusText);
-      return await r.json();
+      const data = await r.json().catch(() => null);
+      if (!r.ok) {
+        const errMsg = (data && data.error) ? data.error : r.statusText;
+        const err = new Error(errMsg);
+        err.status = r.status;
+        err.data = data;
+        throw err;
+      }
+      return data;
     } catch(e) {
       console.warn('[API POST] Failed:', path, e.message);
-      return null;
+      throw e;
     }
+  },
+
+  async patch(path, body) {
+    try {
+      const user = (typeof Auth !== 'undefined' && Auth.getName) ? Auth.getName() : 'Ranjan Kumar';
+      const r = await fetch(this.BASE + path, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'x-user': user },
+        body: JSON.stringify(body)
+      });
+      const data = await r.json().catch(() => null);
+      if (!r.ok) {
+        const errMsg = (data && data.error) ? data.error : r.statusText;
+        const err = new Error(errMsg);
+        err.status = r.status;
+        err.data = data;
+        throw err;
+      }
+      return data;
+    } catch(e) {
+      console.warn('[API PATCH] Failed:', path, e.message);
+      throw e;
+    }
+  },
+
+  async getInspections(status) {
+    return this.get('/inspections' + (status ? '?status=' + encodeURIComponent(status) : ''));
+  },
+
+  async createInspection(data) {
+    return this.post('/inspections', data);
+  },
+
+  async updateInspection(id, data) {
+    return this.patch('/inspections/' + id, data);
   },
 
   async aiGet(path) {
@@ -157,6 +203,7 @@ const Auth = {
     localStorage.removeItem('cg_role');
     localStorage.removeItem('cg_name');
     localStorage.removeItem('cg_ts');
+    localStorage.removeItem('auth_user');
     window.location.href = 'index.html';
   },
 

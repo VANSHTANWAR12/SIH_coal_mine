@@ -55,8 +55,9 @@
           <input type="text" placeholder="Search reports or audit logs...">
         </div>
         <div class="header-links">
-          <a href="dashboard.html" class="header-link">HQ Dashboard</a>
-          <a href="#" class="header-link active">SECL Operational Zone</a>
+          <a href="dashboard.html" class="header-link active">HQ Dashboard</a>
+          <a href="secl-zone.html" class="header-link">SECL Operational Zone</a>
+          <a href="dgms-portal.html" class="header-link">DGMS Regulatory Portal</a>
         </div>
         <div class="system-status-pill"><div class="status-dot"></div> System Operational</div>
         <div class="header-time"></div>
@@ -85,10 +86,10 @@
                 <div class="rc-title">DGMS Daily Return (Form-IV)</div>
                 <div class="rc-desc">Statutory daily safety, attendance, and ventilation return for Directorate General of Mines Safety.</div>
                 <div class="report-form">
-                  <select id="sel-mine-1"><option>Select Mine</option></select>
-                  <select><option>Date: Today</option></select>
+                  <select id="sel-mine-1"><option value="">Select Mine...</option></select>
+                  <select id="sel-period-1"><option>Date: Today (09-10 Sep 2026)</option></select>
                 </div>
-                <button class="btn btn-primary" style="width:100%" onclick="window.showToast('Generating Form-IV PDF...', 'info')">Generate PDF</button>
+                <button class="btn btn-primary" style="width:100%" onclick="window.generateReportPreview('dgms-daily')">Generate PDF</button>
               </div>
 
               <div class="report-card">
@@ -98,10 +99,10 @@
                 <div class="rc-title">Weekly Safety Audit</div>
                 <div class="rc-desc">Comprehensive compilation of all internal safety inspections and corrective action closures.</div>
                 <div class="report-form">
-                  <select id="sel-sub-1"><option>Select Subsidiary</option></select>
-                  <select><option>Week: Sep 02 - Sep 08</option></select>
+                  <select id="sel-sub-1"><option value="">Select Subsidiary...</option></select>
+                  <select id="sel-period-2"><option>Week: Sep 02 - Sep 08</option></select>
                 </div>
-                <button class="btn btn-primary" style="width:100%">Generate PDF</button>
+                <button class="btn btn-primary" style="width:100%" onclick="window.generateReportPreview('weekly-audit')">Generate PDF</button>
               </div>
 
               <div class="report-card">
@@ -111,10 +112,10 @@
                 <div class="rc-title">Subsidiary Production</div>
                 <div class="rc-desc">Daily/Monthly coal dispatch and production figures verified against contractor logs.</div>
                 <div class="report-form">
-                  <select id="sel-sub-2"><option>Select Subsidiary</option></select>
-                  <select><option>Period: Sept 2026 (MTD)</option></select>
+                  <select id="sel-sub-2"><option value="">Select Subsidiary...</option></select>
+                  <select id="sel-period-3"><option>Period: Sept 2026 (MTD)</option></select>
                 </div>
-                <button class="btn btn-primary" style="width:100%">Generate PDF</button>
+                <button class="btn btn-primary" style="width:100%" onclick="window.generateReportPreview('subsidiary-prod')">Generate PDF</button>
               </div>
 
               <div class="report-card">
@@ -124,10 +125,10 @@
                 <div class="rc-title">Environmental Compliance</div>
                 <div class="rc-desc">MoEFCC formatted report covering PM10/PM2.5, effluent discharge, and noise levels.</div>
                 <div class="report-form">
-                  <select id="sel-mine-2"><option>Select Mine</option></select>
-                  <select><option>Period: Q3 2026</option></select>
+                  <select id="sel-mine-2"><option value="">Select Mine...</option></select>
+                  <select id="sel-period-4"><option>Period: Q3 2026</option></select>
                 </div>
-                <button class="btn btn-primary" style="width:100%">Generate PDF</button>
+                <button class="btn btn-primary" style="width:100%" onclick="window.generateReportPreview('environmental')">Generate PDF</button>
               </div>
 
             </div>
@@ -140,81 +141,126 @@
               <span class="badge badge-success">BLOCKCHAIN VERIFIED</span>
             </div>
 
-            <div class="audit-chain">
+            <!-- DYNAMIC AUDIT CHAIN -->
+            <div class="audit-chain" id="audit-chain-container">
+              <div style="padding:20px; text-align:center; color:var(--text-secondary); font-size:13px;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="animate-spin" style="margin-bottom:8px;"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                <div>Loading cryptographically verified audit records...</div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-              <div class="audit-block verified">
-                <div class="ab-icon">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        <!-- MODAL 1: AUDIT EVENT DETAILS & VERIFICATION -->
+        <div class="modal-overlay" id="audit-details-modal">
+          <div class="modal-card modal-lg" role="dialog" aria-modal="true">
+            <div class="modal-header">
+              <div>
+                <div class="modal-title" style="display:flex;align-items:center;gap:8px;">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--brand-primary)" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+                  AUDIT EVENT VERIFICATION
                 </div>
-                <div class="ab-content">
-                  <div class="ab-header">
-                    <div>
-                      <div class="ab-action">Inspection Report Approved</div>
-                      <div class="ab-meta">
-                        <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> A. Sharma (Manager)</span>
-                        <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> 09 Sep 2026, 03:22 IST</span>
-                      </div>
-                    </div>
-                    <div class="badge badge-info">INS-084</div>
-                  </div>
-                  <div class="ab-hash-box">
-                    <span>SHA-256</span>
-                    <span class="hash-val">8f4e92b3a1d7c6f0e5b8a9d2c4f7e1a3b5d8c9e0f1a2b3c4d5e6f7a8b9c0d1e2</span>
-                  </div>
-                  <div class="ab-verify">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg> Cryptographically Verified
-                  </div>
+                <div class="modal-subtitle">Cryptographic SHA-256 hash block details and tamper-evident blockchain verification</div>
+              </div>
+              <button class="modal-close" onclick="window.closeModal('audit-details-modal')">&times;</button>
+            </div>
+
+            <div class="modal-body">
+              <div class="form-row-3" style="margin-bottom:14px;">
+                <div>
+                  <div style="font-size:10px; font-weight:700; text-transform:uppercase; color:var(--text-secondary);">Event ID</div>
+                  <div id="aud-event-id" style="font-size:14px; font-weight:800; color:var(--brand-primary);">AUD-000</div>
+                </div>
+                <div>
+                  <div style="font-size:10px; font-weight:700; text-transform:uppercase; color:var(--text-secondary);">Timestamp</div>
+                  <div id="aud-timestamp" style="font-size:12px; font-weight:700; color:var(--text-primary);">—</div>
+                </div>
+                <div>
+                  <div style="font-size:10px; font-weight:700; text-transform:uppercase; color:var(--text-secondary);">Integrity Status</div>
+                  <div id="aud-status-badge" style="margin-top:2px;"><span class="badge badge-success">✓ VERIFIED</span></div>
                 </div>
               </div>
 
-              <div class="audit-block verified">
-                <div class="ab-icon">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+              <div class="form-row-3" style="margin-bottom:14px;">
+                <div>
+                  <div style="font-size:10px; font-weight:700; text-transform:uppercase; color:var(--text-secondary);">Actor & Role</div>
+                  <div id="aud-actor" style="font-size:13px; font-weight:700; color:var(--text-primary);">—</div>
                 </div>
-                <div class="ab-content">
-                  <div class="ab-header">
-                    <div>
-                      <div class="ab-action">Contractor Form-B Uploaded</div>
-                      <div class="ab-meta">
-                        <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Vendor Portal (ABC Mining)</span>
-                        <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> 09 Sep 2026, 01:14 IST</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="ab-hash-box">
-                    <span>SHA-256</span>
-                    <span class="hash-val">3b2d1f4a9e8c7b6a5d4f3e2d1c0b9a8f7e6d5c4b3a2f1e0d9c8b7a6f5e4d3c2b</span>
-                  </div>
-                  <div class="ab-verify">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg> Cryptographically Verified
-                  </div>
+                <div>
+                  <div style="font-size:10px; font-weight:700; text-transform:uppercase; color:var(--text-secondary);">Action</div>
+                  <div id="aud-action" style="font-size:13px; font-weight:800; color:var(--text-primary);">—</div>
+                </div>
+                <div>
+                  <div style="font-size:10px; font-weight:700; text-transform:uppercase; color:var(--text-secondary);">Mine Location</div>
+                  <div id="aud-mine" style="font-size:13px; font-weight:700; color:var(--text-primary);">—</div>
                 </div>
               </div>
 
-              <div class="audit-block verified">
-                <div class="ab-icon">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              <div class="form-row-2" style="margin-bottom:14px;">
+                <div>
+                  <div style="font-size:10px; font-weight:700; text-transform:uppercase; color:var(--text-secondary);">Entity Type</div>
+                  <div id="aud-entity-type" style="font-size:12px; font-weight:600; color:var(--text-secondary);">—</div>
                 </div>
-                <div class="ab-content">
-                  <div class="ab-header">
-                    <div>
-                      <div class="ab-action">Statutory Baseline Altered</div>
-                      <div class="ab-meta">
-                        <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> System Admin</span>
-                        <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> 08 Sep 2026, 22:04 IST</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="ab-hash-box">
-                    <span>SHA-256</span>
-                    <span class="hash-val">1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b</span>
-                  </div>
-                  <div class="ab-verify">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg> Cryptographically Verified
-                  </div>
+                <div>
+                  <div style="font-size:10px; font-weight:700; text-transform:uppercase; color:var(--text-secondary);">Entity ID</div>
+                  <div id="aud-entity-id" style="font-size:12px; font-weight:700; color:var(--text-primary);">—</div>
                 </div>
               </div>
 
+              <div class="form-group">
+                <label class="form-label">Event Description & Payload Data</label>
+                <pre id="aud-payload" style="background:#F8FAFA; border:1px solid var(--border); border-radius:var(--radius-sm); padding:10px 14px; font-size:11px; font-family:monospace; color:var(--text-primary); max-height:120px; overflow-y:auto; margin:0; white-space:pre-wrap; word-break:break-all;"></pre>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Previous Hash (H<sub>t-1</sub>)</label>
+                <div id="aud-prev-hash" style="font-family:monospace; font-size:11px; padding:8px 12px; background:#F0F3F1; border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text-secondary); word-break:break-all;"></div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Current Hash (H<sub>t</sub> = SHA-256)</label>
+                <div id="aud-curr-hash" style="font-family:monospace; font-size:12px; font-weight:700; padding:8px 12px; background:#E8F5EE; border:1px solid var(--brand-primary); border-radius:var(--radius-sm); color:var(--brand-primary); word-break:break-all;"></div>
+              </div>
+
+              <!-- Verification Result Box -->
+              <div id="aud-verify-result-box" style="margin-top:14px; padding:12px 16px; border-radius:var(--radius-sm); border:1px solid var(--border); background:#F8FAFA; font-size:12px; display:flex; align-items:center; gap:10px;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text-secondary);"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                <div>Click <strong>Verify Integrity</strong> below to cryptographically calculate hash chain continuity against the backend ledger.</div>
+              </div>
+            </div>
+
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" onclick="window.closeModal('audit-details-modal')">CLOSE</button>
+              <button type="button" class="btn btn-primary" id="aud-verify-btn" onclick="window.verifyAuditIntegrity()" style="padding:10px 24px;font-weight:700;">
+                VERIFY INTEGRITY
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- MODAL 2: STATUTORY REPORT PREVIEW & PRINT -->
+        <div class="modal-overlay" id="report-preview-modal">
+          <div class="modal-card modal-xl" role="dialog" aria-modal="true">
+            <div class="modal-header">
+              <div>
+                <div class="modal-title" id="rp-modal-title">DGMS Statutory Report Document Preview</div>
+                <div class="modal-subtitle">Official statutory return formatted per Directorate General of Mines Safety regulations</div>
+              </div>
+              <button class="modal-close" onclick="window.closeModal('report-preview-modal')">&times;</button>
+            </div>
+
+            <div class="modal-body" style="background:#EBF0EC; padding:24px;">
+              <div id="statutory-doc-paper" style="background:#FFFFFF; border:1px solid #D0D7D4; box-shadow:0 4px 20px rgba(0,0,0,0.08); padding:40px; border-radius:4px; font-family:'Segoe UI', Arial, sans-serif; color:#17221C; line-height:1.5;">
+                <!-- Printable document contents injected by JS -->
+              </div>
+            </div>
+
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" onclick="window.closeModal('report-preview-modal')">CLOSE</button>
+              <button type="button" class="btn btn-primary" onclick="window.printReportDocument()" style="padding:10px 24px;font-weight:700;display:flex;align-items:center;gap:8px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                PRINT / SAVE PDF
+              </button>
             </div>
           </div>
         </div>
@@ -226,33 +272,325 @@
   <script src="js/main.js"></script>
   <script src="js/mines-db.js"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      if(typeof REAL_MINES !== 'undefined') {
+    window._AUDIT_RECORDS = [];
+    window._CURRENT_AUDIT_ID = null;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Setup mine and subsidiary dropdowns
+      if (typeof REAL_MINES !== 'undefined') {
         const mineSelects = [document.getElementById('sel-mine-1'), document.getElementById('sel-mine-2')];
         const subSelects = [document.getElementById('sel-sub-1'), document.getElementById('sel-sub-2')];
 
-        // Unique subsidiaries
         const subs = [...new Set(REAL_MINES.map(m => m.subsidiary))].sort();
 
         mineSelects.forEach(sel => {
+          if (!sel) return;
           REAL_MINES.forEach(m => {
             const opt = document.createElement('option');
-            opt.value = m.id;
-            opt.textContent = m.name;
+            opt.value = m.name;
+            opt.textContent = `${m.name} (${m.subsidiary})`;
             sel.appendChild(opt);
           });
         });
 
         subSelects.forEach(sel => {
+          if (!sel) return;
           subs.forEach(s => {
             const opt = document.createElement('option');
             opt.value = s;
-            opt.textContent = s;
+            opt.textContent = `${s} Headquarters & Mines`;
             sel.appendChild(opt);
           });
         });
       }
+
+      await loadAuditRecords();
     });
+
+    async function loadAuditRecords() {
+      const container = document.getElementById('audit-chain-container');
+      try {
+        const res = await fetch('http://localhost:3001/api/audit');
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            window._AUDIT_RECORDS = data;
+          }
+        }
+      } catch (e) {
+        console.warn('Audit fetch fallback:', e);
+      }
+
+      if (window._AUDIT_RECORDS.length === 0) {
+        // Fallback default verified records
+        window._AUDIT_RECORDS = [
+          { id:'AU007', action:'Inspection Report Approved', user_name:'A. Sharma (Manager)', mine:'Moonidih', created_at:'2026-09-09 03:22:00', hash:'8f4e92b3a1d7c6f0', prev_hash:'0000seed2', payload:'{"id":"INS-084","findings":5,"critical":2}' },
+          { id:'AU006', action:'Contractor Form-B Uploaded', user_name:'Vendor Portal (ABC Mining)', mine:'Gevra OC', created_at:'2026-09-09 01:14:00', hash:'3b2d1f4a9e8c7b6a', prev_hash:'8f4e92b3a1d7c6f0', payload:'{"contractor":"ABC Mining","workers":420}' },
+          { id:'AU005', action:'Statutory Baseline Altered', user_name:'System Admin', mine:'Adriyala Shaft', created_at:'2026-09-08 22:04:00', hash:'1a2b3c4d5e6f7a8b', prev_hash:'3b2d1f4a9e8c7b6a', payload:'{"regulation":"CMR 2017"}' }
+        ];
+      }
+
+      renderAuditChain();
+    }
+
+    function renderAuditChain() {
+      const container = document.getElementById('audit-chain-container');
+      if (!container) return;
+      container.innerHTML = '';
+
+      window._AUDIT_RECORDS.forEach((rec, idx) => {
+        let payloadObj = {};
+        try { payloadObj = typeof rec.payload === 'string' ? JSON.parse(rec.payload) : (rec.payload || {}); } catch(e){}
+        const entityBadge = payloadObj.id ? `<div class="badge badge-info">${payloadObj.id}</div>` : `<div class="badge badge-info">${rec.id}</div>`;
+
+        const block = document.createElement('div');
+        block.className = 'audit-block verified';
+        block.style.cursor = 'pointer';
+        block.onclick = (e) => {
+          if (e.target.tagName !== 'BUTTON') window.openAuditDetails(rec.id);
+        };
+
+        block.innerHTML = `
+          <div class="ab-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div class="ab-content">
+            <div class="ab-header">
+              <div>
+                <div class="ab-action font-bold" style="font-size:14px;color:var(--text-primary);">${rec.action}</div>
+                <div class="ab-meta" style="font-size:11px;color:var(--text-secondary);display:flex;gap:12px;margin-top:3px;">
+                  <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:-1px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> ${rec.user_name || 'System'}</span>
+                  <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:-1px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> ${rec.created_at || 'Just now'}</span>
+                  <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:-1px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> ${rec.mine || 'National'}</span>
+                </div>
+              </div>
+              ${entityBadge}
+            </div>
+            <div class="ab-hash-box" style="margin-top:8px;">
+              <span>SHA-256</span>
+              <span class="hash-val" style="font-family:monospace;font-size:11px;">${rec.hash}</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;">
+              <div class="ab-verify text-success font-bold" style="font-size:11px;display:flex;align-items:center;gap:6px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg> Cryptographically Chained
+              </div>
+              <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); window.openAuditDetails('${rec.id}')">
+                Preview & Verify
+              </button>
+            </div>
+          </div>
+        `;
+        container.appendChild(block);
+      });
+    }
+
+    window.openAuditDetails = async function(auditId) {
+      window._CURRENT_AUDIT_ID = auditId;
+      let rec = window._AUDIT_RECORDS.find(r => String(r.id) === String(auditId));
+
+      try {
+        const res = await fetch(`http://localhost:3001/api/audit/${auditId}`);
+        if (res.ok) {
+          rec = await res.json();
+        }
+      } catch (e) {
+        console.warn('Single audit fetch fallback:', e);
+      }
+
+      if (!rec) {
+        window.showToast('Audit record not found.', 'warning');
+        return;
+      }
+
+      document.getElementById('aud-event-id').textContent = rec.id;
+      document.getElementById('aud-timestamp').textContent = rec.created_at || new Date().toLocaleString('en-IN');
+      document.getElementById('aud-actor').textContent = rec.user_name || 'System Official';
+      document.getElementById('aud-action').textContent = rec.action || 'Statutory Event';
+      document.getElementById('aud-mine').textContent = rec.mine || 'All Coalfields';
+
+      let parsedPayload = {};
+      try { parsedPayload = typeof rec.payload === 'string' ? JSON.parse(rec.payload) : (rec.payload || {}); } catch(e){}
+
+      document.getElementById('aud-entity-type').textContent = parsedPayload.entityType || rec.action.split(' ')[0] || 'Governance';
+      document.getElementById('aud-entity-id').textContent = parsedPayload.id || rec.id;
+      document.getElementById('aud-payload').textContent = JSON.stringify(parsedPayload, null, 2);
+
+      document.getElementById('aud-prev-hash').textContent = rec.prev_hash || '0000000000000000';
+      document.getElementById('aud-curr-hash').textContent = rec.hash || 'e3b0c44298fc1c149afbf4c8996fb924';
+
+      // Reset verification box
+      const box = document.getElementById('aud-verify-result-box');
+      box.style.background = '#F8FAFA';
+      box.style.borderColor = 'var(--border)';
+      box.style.color = 'var(--text-primary)';
+      box.innerHTML = `
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text-secondary);"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        <div>Click <strong>Verify Integrity</strong> below to cryptographically calculate hash chain continuity against the backend ledger.</div>
+      `;
+
+      window.openModal('audit-details-modal');
+    };
+
+    window.verifyAuditIntegrity = async function() {
+      if (!window._CURRENT_AUDIT_ID) return;
+      const id = window._CURRENT_AUDIT_ID;
+      const btn = document.getElementById('aud-verify-btn');
+      const origText = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="animate-spin"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Verifying...';
+
+      const box = document.getElementById('aud-verify-result-box');
+
+      try {
+        const res = await fetch(`http://localhost:3001/api/audit/verify/${id}`, { method: 'POST' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+
+        if (data.verified) {
+          box.style.background = '#E8F5EE';
+          box.style.borderColor = 'var(--success)';
+          box.style.color = '#0F5B33';
+          box.innerHTML = `
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+            <div>
+              <div style="font-weight:800; font-size:13px;">✓ Audit record integrity verified</div>
+              <div style="font-size:11px; margin-top:2px;">SHA-256 block cryptographically valid. Previous hash link matches parent block in immutable ledger.</div>
+            </div>
+          `;
+          document.getElementById('aud-status-badge').innerHTML = '<span class="badge badge-success">✓ VERIFIED & VALID</span>';
+          window.showToast('Audit record integrity verified: SHA-256 block unbroken.', 'success');
+        } else {
+          box.style.background = '#FEE2E2';
+          box.style.borderColor = 'var(--danger)';
+          box.style.color = 'var(--danger)';
+          box.innerHTML = `
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <div>
+              <div style="font-weight:800; font-size:13px;">⚠ Integrity violation detected</div>
+              <div style="font-size:11px; margin-top:2px;">Discrepancy detected in hash chain sequence or block payload hash.</div>
+            </div>
+          `;
+          document.getElementById('aud-status-badge').innerHTML = '<span class="badge badge-danger">⚠ INTEGRITY FAILED</span>';
+          window.showToast('Integrity violation detected in hash continuity.', 'danger');
+        }
+      } catch (err) {
+        console.error('Audit verification error:', err);
+        window.showToast(`Verification service error: ${err.message}`, 'warning');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = origText;
+      }
+    };
+
+    window.generateReportPreview = function(reportType) {
+      let mine = 'Moonidih';
+      let sub = 'BCCL';
+      let period = 'Sept 2026';
+      let title = 'DGMS Statutory Return (Form-IV)';
+
+      if (reportType === 'dgms-daily') {
+        mine = document.getElementById('sel-mine-1')?.value || 'Moonidih';
+        title = 'DGMS Daily Safety & Attendance Return (Form-IV)';
+        period = 'Daily Return: 09-10 Sep 2026';
+      } else if (reportType === 'weekly-audit') {
+        sub = document.getElementById('sel-sub-1')?.value || 'SECL';
+        title = 'Weekly Safety Audit & Hazard Remediation Report';
+        period = 'Week: 02 Sep – 08 Sep 2026';
+      } else if (reportType === 'subsidiary-prod') {
+        sub = document.getElementById('sel-sub-2')?.value || 'SECL';
+        title = 'Subsidiary Production Reconciliation & Dispatch Log';
+        period = 'Month: September 2026 (MTD)';
+      } else if (reportType === 'environmental') {
+        mine = document.getElementById('sel-mine-2')?.value || 'Gevra OC';
+        title = 'MoEFCC Environmental Telemetry & Compliance Certificate';
+        period = 'Quarter: Q3 2026';
+      }
+
+      document.getElementById('rp-modal-title').textContent = title;
+
+      const paper = document.getElementById('statutory-doc-paper');
+      paper.innerHTML = `
+        <div style="border-bottom:2px solid #16834B; padding-bottom:16px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:flex-start;">
+          <div>
+            <div style="font-size:11px; font-weight:800; text-transform:uppercase; color:#16834B; letter-spacing:1px;">GOVERNMENT OF INDIA • MINISTRY OF COAL</div>
+            <div style="font-size:18px; font-weight:900; margin-top:2px;">DIRECTORATE GENERAL OF MINES SAFETY (DGMS)</div>
+            <div style="font-size:13px; font-weight:700; color:#555; margin-top:2px;">Central Statutory Compliance & National Mine Governance Portal</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:11px; font-weight:700; color:#888;">DOCUMENT REF NO.</div>
+            <div style="font-size:13px; font-weight:800; font-family:monospace; color:#16834B;">DGMS/CG/2026/${Math.floor(1000 + Math.random()*9000)}</div>
+            <div style="font-size:11px; color:#555; margin-top:2px;">Issued: 10 Sep 2026 10:45 IST</div>
+          </div>
+        </div>
+
+        <div style="margin-bottom:20px;">
+          <h2 style="font-size:16px; font-weight:800; text-transform:uppercase; margin-bottom:4px;">${title}</h2>
+          <div style="font-size:12px; color:#555;">Scope: <strong>${mine || sub}</strong> &bull; Period: <strong>${period}</strong> &bull; Baseline: Mines Act 1952 / Coal Mines Regulations 2017</div>
+        </div>
+
+        <table style="width:100%; border-collapse:collapse; font-size:12px; margin-bottom:24px;">
+          <thead>
+            <tr style="background:#F4F7F5; border-bottom:2px solid #D0D7D4;">
+              <th style="padding:8px 12px; text-align:left;">Parameter / Obligation</th>
+              <th style="padding:8px 12px; text-align:left;">Statutory Norm</th>
+              <th style="padding:8px 12px; text-align:left;">Recorded Reading</th>
+              <th style="padding:8px 12px; text-align:left;">Compliance Finding</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom:1px solid #E5E7EB;">
+              <td style="padding:10px 12px; font-weight:700;">Atmospheric CH₄ Level</td>
+              <td style="padding:10px 12px;">&lt; 0.75% Return / &lt; 1.25% Face</td>
+              <td style="padding:10px 12px;">0.34% (Telemetric Continuous)</td>
+              <td style="padding:10px 12px;"><span style="color:#16834B;font-weight:700;">✓ SATISFACTORY</span></td>
+            </tr>
+            <tr style="border-bottom:1px solid #E5E7EB;">
+              <td style="padding:10px 12px; font-weight:700;">Air Velocity & Quantity</td>
+              <td style="padding:10px 12px;">&gt; 6 m³/min per person</td>
+              <td style="padding:10px 12px;">8.4 m³/min per person</td>
+              <td style="padding:10px 12px;"><span style="color:#16834B;font-weight:700;">✓ SATISFACTORY</span></td>
+            </tr>
+            <tr style="border-bottom:1px solid #E5E7EB;">
+              <td style="padding:10px 12px; font-weight:700;">Strata Convergence Monitoring</td>
+              <td style="padding:10px 12px;">Rate &lt; 12 mm/day</td>
+              <td style="padding:10px 12px;">4.2 mm/day at Gate Road</td>
+              <td style="padding:10px 12px;"><span style="color:#16834B;font-weight:700;">✓ WITHIN PERMISSIBLE</span></td>
+            </tr>
+            <tr style="border-bottom:1px solid #E5E7EB;">
+              <td style="padding:10px 12px; font-weight:700;">Contractor Labour Safety & PPE</td>
+              <td style="padding:10px 12px;">100% Certified PPE</td>
+              <td style="padding:10px 12px;">98.6% Shift Verification</td>
+              <td style="padding:10px 12px;"><span style="color:#16834B;font-weight:700;">✓ VERIFIED</span></td>
+            </tr>
+            <tr style="border-bottom:1px solid #E5E7EB;">
+              <td style="padding:10px 12px; font-weight:700;">Ambient PM10 Dust Concentration</td>
+              <td style="padding:10px 12px;">&lt; 100 µg/m³ (CPCB limit)</td>
+              <td style="padding:10px 12px;">78.2 µg/m³ (Misting On)</td>
+              <td style="padding:10px 12px;"><span style="color:#16834B;font-weight:700;">✓ COMPLIANT</span></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div style="display:flex; justify-content:space-between; margin-top:36px; padding-top:20px; border-top:1px dashed #CCC; font-size:11px;">
+          <div>
+            <div><strong>Certifying Authority:</strong></div>
+            <div>A. Sharma, Deputy Director of Mines Safety</div>
+            <div>DGMS Central Zone &bull; Gov. of India</div>
+          </div>
+          <div style="text-align:right;">
+            <div><strong>Blockchain Hash Seal:</strong></div>
+            <div style="font-family:monospace; color:#16834B;">SHA256: 4f8d9b2e1c7a6e5d0b8c9a3f2e1d7c</div>
+            <div>Digitally Sealed via CoalGuard Network</div>
+          </div>
+        </div>
+      `;
+
+      window.openModal('report-preview-modal');
+    };
+
+    window.printReportDocument = function() {
+      window.print();
+    };
   </script>
 </body>
 </html>

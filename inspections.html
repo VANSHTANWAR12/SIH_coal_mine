@@ -12,17 +12,20 @@
 
     .layout-grid { display: grid; grid-template-columns: 3fr 1fr; gap: 24px; margin-bottom: 24px; }
     
-    /* Calendar Simulation */
-    .calendar-wrapper { border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; }
+    /* Calendar */
+    .calendar-wrapper { border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; background: white; }
     .cal-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: #F5F7F6; border-bottom: 1px solid var(--border); }
     .cal-title { font-size: 14px; font-weight: 800; color: var(--text-primary); }
     .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); background: var(--border); gap: 1px; }
     .cal-day-name { background: white; padding: 8px; text-align: center; font-size: 10px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; }
-    .cal-day { background: white; min-height: 100px; padding: 8px; }
+    .cal-day { background: white; min-height: 96px; padding: 6px 8px; display: flex; flex-direction: column; gap: 4px; transition: background 0.15s ease; }
+    .cal-day:hover { background: #FAFBFB; }
     .cal-day.muted { background: #F9FAFA; color: var(--text-muted); }
-    .day-num { font-size: 12px; font-weight: 600; margin-bottom: 8px; }
+    .cal-day.today { background: var(--brand-light); border: 1px solid var(--brand-primary); }
+    .day-num { font-size: 12px; font-weight: 600; margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; }
     
-    .cal-event { padding: 4px 6px; border-radius: 4px; font-size: 10px; font-weight: 600; margin-bottom: 4px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-left: 3px solid transparent; }
+    .cal-event { padding: 4px 6px; border-radius: 4px; font-size: 10px; font-weight: 600; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-left: 3px solid transparent; transition: transform 0.1s ease, box-shadow 0.1s ease; }
+    .cal-event:hover { transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.08); }
     .ev-green { background: var(--success-bg); color: var(--success); border-left-color: var(--success); }
     .ev-teal { background: var(--info-bg); color: var(--info); border-left-color: var(--info); }
     .ev-amber { background: var(--warning-bg); color: var(--warning); border-left-color: var(--amber); }
@@ -43,6 +46,80 @@
     .pb-bg { height: 6px; background: #F0F3F1; border-radius: 3px; overflow: hidden; margin-bottom: 4px; }
     .pb-fill { height: 100%; background: var(--brand-primary); border-radius: 3px; }
     .pb-text { font-size: 10px; font-weight: 700; color: var(--text-secondary); display: flex; justify-content: space-between; }
+
+    /* Modal System */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(17, 24, 39, 0.65);
+      backdrop-filter: blur(4px); z-index: 9999;
+      display: none; align-items: center; justify-content: center;
+      padding: 20px; animation: fadeIn 0.15s ease-out;
+    }
+    .modal-overlay.open { display: flex; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .modal-card {
+      background: #FFFFFF; border: 1px solid var(--border);
+      border-radius: var(--radius-md); width: 100%; max-width: 620px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.05);
+      max-height: 92vh; display: flex; flex-direction: column; overflow: hidden;
+    }
+    .modal-header {
+      padding: 16px 20px; border-bottom: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center; background: #F8FAFA;
+    }
+    .modal-title { font-size: 16px; font-weight: 800; color: var(--text-primary); }
+    .modal-subtitle { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+    .modal-close {
+      background: none; border: none; font-size: 22px; color: var(--text-secondary);
+      cursor: pointer; padding: 4px; line-height: 1; border-radius: 4px;
+    }
+    .modal-close:hover { color: var(--text-primary); background: #E5E7EB; }
+
+    .modal-body { padding: 20px; overflow-y: auto; flex: 1; }
+    .modal-footer {
+      padding: 14px 20px; border-top: 1px solid var(--border);
+      background: #F8FAFA; display: flex; justify-content: flex-end; gap: 12px;
+    }
+
+    .form-group { margin-bottom: 16px; }
+    .form-group:last-child { margin-bottom: 0; }
+    .form-label {
+      display: block; font-size: 12px; font-weight: 700;
+      color: var(--text-primary); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.3px;
+    }
+    .form-label .req { color: var(--danger); margin-left: 2px; }
+    .form-input {
+      width: 100%; padding: 10px 12px; font-size: 13px; font-family: inherit;
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
+      background: #FFFFFF; color: var(--text-primary); box-sizing: border-box;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .form-input:focus {
+      outline: none; border-color: var(--brand-primary);
+      box-shadow: 0 0 0 3px rgba(22, 131, 75, 0.15);
+    }
+    .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    
+    .modal-alert {
+      padding: 10px 14px; border-radius: var(--radius-sm); font-size: 12px;
+      font-weight: 600; margin-bottom: 16px; display: none; align-items: center; gap: 8px;
+    }
+    .modal-alert.danger {
+      display: flex; background: var(--danger-bg); border: 1px solid #FCA5A5; color: var(--danger);
+    }
+    .modal-alert.warning {
+      display: flex; background: var(--warning-bg); border: 1px solid #FCD34D; color: var(--warning);
+    }
+
+    /* Details Grid */
+    .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+    .details-item { background: #F8FAFA; border: 1px solid var(--border); border-radius: 4px; padding: 10px 12px; }
+    .details-item-full { grid-column: span 2; }
+    .details-label { font-size: 10px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 2px; }
+    .details-value { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+
+    .clickable-row { cursor: pointer; }
+    .clickable-row:hover { background: #FAFBFB; }
   </style>
 </head>
 <body>
@@ -53,11 +130,12 @@
       <header class="top-header">
         <div class="header-search">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-          <input type="text" placeholder="Search inspections...">
+          <input type="text" placeholder="Search inspections..." id="insp-search-input">
         </div>
         <div class="header-links">
           <a href="dashboard.html" class="header-link">HQ Dashboard</a>
-          <a href="#" class="header-link active">SECL Operational Zone</a>
+          <a href="secl-zone.html" class="header-link">SECL Operational Zone</a>
+          <a href="dgms-portal.html" class="header-link active">DGMS Regulatory Portal</a>
         </div>
         <div class="system-status-pill"><div class="status-dot"></div> System Operational</div>
         <div class="header-time"></div>
@@ -71,17 +149,17 @@
             <div class="page-subtitle">Schedule, execute and track inspections and corrective actions across all mines.</div>
           </div>
           <div class="controls-right">
-            <button class="btn btn-primary" onclick="window.showToast('Schedule Inspection Modal Opened', 'info')">+ Schedule Inspection</button>
+            <button class="btn btn-primary" id="btn-open-schedule" onclick="openScheduleModal()">+ Schedule Inspection</button>
           </div>
         </div>
 
         <!-- SECTION 1: KPIs -->
         <div class="kpi-grid-5">
-          <div class="kpi-card"><div class="kpi-val text-success" id="insp-completed">-</div><div class="kpi-label">Completed</div></div>
-          <div class="kpi-card"><div class="kpi-val" style="color:var(--info)" id="insp-scheduled">-</div><div class="kpi-label">Scheduled</div></div>
-          <div class="kpi-card"><div class="kpi-val" style="color:var(--brand-primary)" id="insp-inprogress">-</div><div class="kpi-label">In Progress</div></div>
-          <div class="kpi-card" style="border-bottom:3px solid var(--danger)"><div class="kpi-val text-danger" id="insp-critical">-</div><div class="kpi-label">Critical Findings</div></div>
-          <div class="kpi-card"><div class="kpi-val text-danger" id="insp-overdue">-</div><div class="kpi-label">Overdue</div></div>
+          <div class="kpi-card"><div class="kpi-val text-success" id="insp-completed">12</div><div class="kpi-label">Completed</div></div>
+          <div class="kpi-card"><div class="kpi-val" style="color:var(--info)" id="insp-scheduled">3</div><div class="kpi-label">Scheduled</div></div>
+          <div class="kpi-card"><div class="kpi-val" style="color:var(--brand-primary)" id="insp-inprogress">1</div><div class="kpi-label">In Progress</div></div>
+          <div class="kpi-card" style="border-bottom:3px solid var(--danger)"><div class="kpi-val text-danger" id="insp-critical">11</div><div class="kpi-label">Critical Findings</div></div>
+          <div class="kpi-card"><div class="kpi-val text-danger" id="insp-overdue">4</div><div class="kpi-label">Overdue</div></div>
         </div>
 
         <div class="layout-grid">
@@ -90,29 +168,12 @@
             <div class="card-light" style="padding:0">
               <div class="calendar-wrapper">
                 <div class="cal-header">
-                  <button class="btn btn-secondary btn-sm">&lt;</button>
-                  <div class="cal-title">September 2026</div>
-                  <button class="btn btn-secondary btn-sm">&gt;</button>
+                  <button class="btn btn-secondary btn-sm" onclick="changeMonth(-1)">&lt;</button>
+                  <div class="cal-title" id="cal-month-title">September 2026</div>
+                  <button class="btn btn-secondary btn-sm" onclick="changeMonth(1)">&gt;</button>
                 </div>
-                <div class="cal-grid">
-                  <div class="cal-day-name">Sun</div><div class="cal-day-name">Mon</div><div class="cal-day-name">Tue</div><div class="cal-day-name">Wed</div><div class="cal-day-name">Thu</div><div class="cal-day-name">Fri</div><div class="cal-day-name">Sat</div>
-                  
-                  <!-- Simulating weeks -->
-                  <div class="cal-day muted"><div class="day-num">30</div></div>
-                  <div class="cal-day muted"><div class="day-num">31</div></div>
-                  <div class="cal-day"><div class="day-num">1</div><div class="cal-event ev-green">INS-081 (Safety)</div><div class="cal-event ev-green">INS-082 (Env)</div></div>
-                  <div class="cal-day"><div class="day-num">2</div><div class="cal-event ev-green">INS-083 (Prod)</div></div>
-                  <div class="cal-day"><div class="day-num">3</div></div>
-                  <div class="cal-day"><div class="day-num">4</div><div class="cal-event ev-red">INS-084 (Safety)</div></div>
-                  <div class="cal-day"><div class="day-num">5</div></div>
-                  
-                  <div class="cal-day"><div class="day-num">6</div></div>
-                  <div class="cal-day"><div class="day-num">7</div><div class="cal-event ev-green">INS-085 (Labour)</div></div>
-                  <div class="cal-day"><div class="day-num">8</div><div class="cal-event ev-red">INS-086 (Safety)</div></div>
-                  <div class="cal-day" style="background:var(--brand-light);border:1px solid var(--brand-primary)"><div class="day-num font-bold text-success">9 (Today)</div><div class="cal-event ev-amber">INS-087 (Env)</div><div class="cal-event ev-teal">INS-088 (Safety)</div></div>
-                  <div class="cal-day"><div class="day-num">10</div></div>
-                  <div class="cal-day"><div class="day-num">11</div><div class="cal-event ev-teal">INS-089 (Prod)</div></div>
-                  <div class="cal-day"><div class="day-num">12</div></div>
+                <div class="cal-grid" id="calendar-grid">
+                  <!-- Dynamically populated -->
                 </div>
               </div>
             </div>
@@ -120,16 +181,22 @@
 
           <!-- SECTION 4: CORRECTIVE ACTIONS -->
           <div>
-            <h3 class="text-sm font-bold mb-4">Open Corrective Actions</h3>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+              <h3 class="text-sm font-bold">Open Corrective Actions</h3>
+              <span class="badge badge-danger" id="ca-count-badge">5 Active</span>
+            </div>
             <div class="ca-list" id="ca-list">
-              <!-- Populated by JS from REAL_MINES critical risk mines -->
+              <!-- Populated by JS -->
             </div>
           </div>
         </div>
 
         <!-- SECTION 3: INSPECTION LIST -->
         <div class="card-light">
-          <h3 class="text-sm font-bold mb-4">Recent & Upcoming Inspections</h3>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+            <h3 class="text-sm font-bold">Recent & Upcoming Inspections</h3>
+            <div style="font-size:12px; color:var(--text-secondary);" id="inspection-count-label">Loading database records...</div>
+          </div>
           <div class="table-wrapper">
             <table>
               <thead>
@@ -138,16 +205,16 @@
                   <th>Type</th>
                   <th>Mine</th>
                   <th>Inspector</th>
-                  <th>Date</th>
+                  <th>Date & Time</th>
                   <th>Status</th>
                   <th>Findings</th>
                   <th>Critical</th>
                   <th>Actions</th>
                 </tr>
               </thead>
-          <tbody id="inspection-tbody">
-            <!-- Dynamically populated -->
-          </tbody>
+              <tbody id="inspection-tbody">
+                <!-- Dynamically populated -->
+              </tbody>
             </table>
           </div>
         </div>
@@ -156,88 +223,855 @@
     </div>
   </div>
 
+  <!-- =========================================================
+       MODAL 1: SCHEDULE INSPECTION
+       ========================================================= -->
+  <div class="modal-overlay" id="schedule-modal" role="dialog" aria-modal="true" aria-labelledby="sch-title">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div>
+          <div class="modal-title" id="sch-title">Schedule New Inspection</div>
+          <div class="modal-subtitle">Directly registers inspection in central CoalGuard database & audit chain</div>
+        </div>
+        <button class="modal-close" onclick="closeScheduleModal()" aria-label="Close modal">&times;</button>
+      </div>
+
+      <form id="schedule-form" onsubmit="handleScheduleSubmit(event)">
+        <div class="modal-body">
+          <!-- Inline Alert for Validation/Conflict -->
+          <div class="modal-alert" id="modal-alert">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <span id="modal-alert-msg"></span>
+          </div>
+
+          <!-- Mine Dropdown -->
+          <div class="form-group">
+            <label class="form-label" for="sch-mine">Mine Site <span class="req">*</span></label>
+            <select class="form-input" id="sch-mine" required>
+              <option value="">-- Select Coal Mine --</option>
+            </select>
+          </div>
+
+          <!-- Inspection Type -->
+          <div class="form-group">
+            <label class="form-label" for="sch-type">Inspection Type <span class="req">*</span></label>
+            <select class="form-input" id="sch-type" required>
+              <option value="Safety (DGMS)">Safety (DGMS)</option>
+              <option value="Environmental">Environmental</option>
+              <option value="Production">Production</option>
+              <option value="Labour / Workforce">Labour / Workforce</option>
+              <option value="Compliance">Compliance</option>
+            </select>
+          </div>
+
+          <!-- Date and Time -->
+          <div class="form-row-2">
+            <div class="form-group">
+              <label class="form-label" for="sch-date">Inspection Date <span class="req">*</span></label>
+              <input type="date" class="form-input" id="sch-date" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="sch-time">Inspection Time <span class="req">*</span></label>
+              <select class="form-input" id="sch-time" required>
+                <option value="09:00 AM">09:00 AM</option>
+                <option value="09:30 AM">09:30 AM</option>
+                <option value="10:00 AM">10:00 AM</option>
+                <option value="10:30 AM" selected>10:30 AM</option>
+                <option value="11:00 AM">11:00 AM</option>
+                <option value="11:30 AM">11:30 AM</option>
+                <option value="12:00 PM">12:00 PM</option>
+                <option value="01:30 PM">01:30 PM</option>
+                <option value="02:00 PM">02:00 PM</option>
+                <option value="02:30 PM">02:30 PM</option>
+                <option value="03:00 PM">03:00 PM</option>
+                <option value="03:30 PM">03:30 PM</option>
+                <option value="04:00 PM">04:00 PM</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Officer and Priority -->
+          <div class="form-row-2">
+            <div class="form-group">
+              <label class="form-label" for="sch-officer">Assigned Officer / Inspector <span class="req">*</span></label>
+              <select class="form-input" id="sch-officer" required>
+                <option value="">-- Select Officer --</option>
+                <option value="V. Kumar">V. Kumar (Mine Mgr)</option>
+                <option value="G.S. Mehta">G.S. Mehta (DGMS Director)</option>
+                <option value="R.K. Tripathi">R.K. Tripathi (Sr. Insp)</option>
+                <option value="D.N. Sharma">D.N. Sharma (Safety Officer)</option>
+                <option value="K.V. Rao">K.V. Rao (Strata Specialist)</option>
+                <option value="S. Patel">S. Patel (Env Auditor)</option>
+                <option value="A. Kumar">A. Kumar (HEMM Inspector)</option>
+                <option value="P. Singh">P. Singh (Ventilation Officer)</option>
+                <option value="M.L. Gupta">M.L. Gupta (Blasting Officer)</option>
+                <option value="S.K. Mishra">S.K. Mishra (Fire Zone Insp)</option>
+                <option value="B.N. Tiwari">B.N. Tiwari (Subsidence Auditor)</option>
+                <option value="A. Patel">A. Patel (Safety Off.)</option>
+                <option value="R. Sharma">R. Sharma (Contractor EHS)</option>
+                <option value="M. Singh">M. Singh (Shift Overman)</option>
+                <option value="K. Nair">K. Nair (Geotechnical)</option>
+                <option value="P. Rao">P. Rao (Air Quality)</option>
+                <option value="L. Verma">L. Verma (Water Monitoring)</option>
+                <option value="N. Das">N. Das (Production Auditor)</option>
+                <option value="S. Reddy">S. Reddy (EHS Dept)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="sch-priority">Priority <span class="req">*</span></label>
+              <select class="form-input" id="sch-priority" required>
+                <option value="Low">Low</option>
+                <option value="Medium">Medium</option>
+                <option value="High" selected>High</option>
+                <option value="Critical">Critical</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Objective / Description -->
+          <div class="form-group">
+            <label class="form-label" for="sch-desc">Description / Inspection Objective</label>
+            <textarea class="form-input" id="sch-desc" rows="2" placeholder="e.g. Quarterly underground safety and roof bolt integrity audit."></textarea>
+          </div>
+
+          <!-- Notes -->
+          <div class="form-group">
+            <label class="form-label" for="sch-notes">Optional Notes</label>
+            <textarea class="form-input" id="sch-notes" rows="2" placeholder="Internal instructions, required PPE, safety gear, or telemetry review..."></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeScheduleModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btn-submit-schedule">Schedule Inspection</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       MODAL 2: INSPECTION DETAILS & WORKFLOW
+       ========================================================= -->
+  <div class="modal-overlay" id="details-modal" role="dialog" aria-modal="true" aria-labelledby="dt-title">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div>
+          <div class="modal-title" id="dt-title">Inspection Details</div>
+          <div class="modal-subtitle" id="dt-id-subtitle">Record ID</div>
+        </div>
+        <button class="modal-close" onclick="closeDetailsModal()" aria-label="Close modal">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="details-grid">
+          <div class="details-item">
+            <div class="details-label">Mine Site</div>
+            <div class="details-value" id="dt-mine">-</div>
+          </div>
+          <div class="details-item">
+            <div class="details-label">Inspection Type</div>
+            <div class="details-value" id="dt-type">-</div>
+          </div>
+          <div class="details-item">
+            <div class="details-label">Date & Time</div>
+            <div class="details-value" id="dt-datetime">-</div>
+          </div>
+          <div class="details-item">
+            <div class="details-label">Assigned Officer</div>
+            <div class="details-value" id="dt-inspector">-</div>
+          </div>
+          <div class="details-item">
+            <div class="details-label">Priority Level</div>
+            <div class="details-value" id="dt-priority">-</div>
+          </div>
+          <div class="details-item">
+            <div class="details-label">Lifecycle Status</div>
+            <div class="details-value" id="dt-status">-</div>
+          </div>
+          <div class="details-item details-item-full">
+            <div class="details-label">Description / Objective</div>
+            <div class="details-value" id="dt-desc" style="font-weight:400; line-height:1.4;">-</div>
+          </div>
+          <div class="details-item details-item-full" id="dt-notes-wrap">
+            <div class="details-label">Notes</div>
+            <div class="details-value" id="dt-notes" style="font-weight:400; font-size:12px; color:var(--text-secondary);">-</div>
+          </div>
+          <div class="details-item" id="dt-findings-wrap">
+            <div class="details-label">Total Findings</div>
+            <div class="details-value font-bold" id="dt-findings">0</div>
+          </div>
+          <div class="details-item" id="dt-critical-wrap">
+            <div class="details-label">Critical Findings</div>
+            <div class="details-value font-bold text-danger" id="dt-critical">0</div>
+          </div>
+        </div>
+
+        <div id="dt-action-banner" style="background:#F0FDF4; border:1px solid #BBF7D0; border-radius:4px; padding:10px 14px; font-size:12px; color:#166534; display:none;">
+          <strong>Lifecycle Info:</strong> Newly scheduled inspections do not create corrective actions until findings are formally recorded during execution.
+        </div>
+      </div>
+
+      <div class="modal-footer" id="dt-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeDetailsModal()">Close</button>
+        <div id="dt-workflow-btns" style="display:inline-flex; gap:8px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       MODAL 3: ACTION DETAILS
+       ========================================================= -->
+  <div class="modal-overlay" id="action-modal" role="dialog" aria-modal="true" aria-labelledby="act-title">
+    <div class="modal-card" style="max-width:520px;">
+      <div class="modal-header">
+        <div>
+          <div class="modal-title" id="act-title">Corrective Action Review</div>
+          <div class="modal-subtitle" id="act-mine">-</div>
+        </div>
+        <button class="modal-close" onclick="closeActionModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="margin-bottom:14px;">
+          <span class="badge badge-danger" id="act-priority-badge" style="font-size:11px;">CRITICAL</span>
+        </div>
+        <div style="font-size:14px; font-weight:700; color:var(--text-primary); margin-bottom:12px; line-height:1.4;" id="act-issue">-</div>
+        <div class="details-grid">
+          <div class="details-item">
+            <div class="details-label">Assigned Person</div>
+            <div class="details-value" id="act-assigned">-</div>
+          </div>
+          <div class="details-item">
+            <div class="details-label">Target Resolution Due</div>
+            <div class="details-value" id="act-due">-</div>
+          </div>
+        </div>
+        <div style="margin-top:12px;">
+          <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:700; margin-bottom:6px;">
+            <span>Mitigation Progress</span>
+            <span id="act-progress-text">70%</span>
+          </div>
+          <div class="pb-bg" style="height:8px;"><div class="pb-fill" id="act-progress-bar" style="width:70%;"></div></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeActionModal()">Close</button>
+        <button class="btn btn-primary" onclick="markActionResolved()">Mark Resolved</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCRIPTS -->
+  <script src="js/api.js"></script>
   <script src="js/main.js"></script>
   <script src="js/mines-db.js"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      if (typeof INSPECTIONS_DB === 'undefined') return;
+    /* ==========================================================
+       State Management
+       ========================================================== */
+    let allInspections = [];
+    let currentCalDate = new Date(2026, 8, 10); // September 2026
+    let currentActionElement = null;
 
-      // ── Populate KPIs from INSPECTIONS_DB
-      document.getElementById('insp-completed').textContent  = INSPECTIONS_DB.filter(i => i.status === 'Completed').length;
-      document.getElementById('insp-scheduled').textContent  = INSPECTIONS_DB.filter(i => i.status === 'Scheduled').length;
-      document.getElementById('insp-inprogress').textContent = INSPECTIONS_DB.filter(i => i.status === 'In Progress').length;
-      document.getElementById('insp-critical').textContent   = INSPECTIONS_DB.reduce((acc, i) => acc + i.critical, 0);
-      document.getElementById('insp-overdue').textContent    = INSPECTIONS_DB.filter(i => i.status === 'Overdue').length;
+    /* ==========================================================
+       Init
+       ========================================================== */
+    document.addEventListener('DOMContentLoaded', async () => {
+      populateMineDropdown();
+      setDefaultDates();
+      await loadInspections();
+      setupInspectionSearch();
+      populateCorrectiveActions();
+    });
 
-      // ── Populate inspection table
-      const tbody = document.getElementById('inspection-tbody');
-      if (tbody) {
-        INSPECTIONS_DB.slice(0, 12).forEach(ins => {
-          const statusClass = ins.status === 'Completed' ? 'badge-success'
-                            : ins.status === 'In Progress' ? 'badge-warning'
-                            : ins.status === 'Overdue' ? 'badge-danger'
-                            : 'badge-info';
-          const actionBtn = ins.status === 'In Progress' ? '<button class="btn btn-secondary btn-sm" onclick="window.mockAction(this,\'Sync joined\')">Join Sync</button>'
-                          : ins.status === 'Overdue'     ? '<button class="btn btn-secondary btn-sm text-danger" onclick="window.mockAction(this,\'Escalation sent\')">Escalate</button>'
-                          : ins.status === 'Scheduled'   ? '<button class="btn btn-secondary btn-sm" onclick="window.mockAction(this,\'Inspection briefed\')">Brief</button>'
-                          : '<button class="btn btn-secondary btn-sm" onclick="window.mockAction(this,\'Report viewed\')">View Report</button>';
-          const findingsCell = ins.findings > 0 ? ins.findings : '-';
-          const critCell     = ins.critical > 0 ? `<span class="text-danger font-bold">${ins.critical}</span>` : (ins.status === 'Completed' ? '0' : '-');
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td class="font-bold">${ins.id}</td>
-            <td>${ins.type}</td>
-            <td>${ins.mine}</td>
-            <td>${ins.inspector}</td>
-            <td class="font-bold">${ins.date}</td>
-            <td><span class="badge ${statusClass}">${ins.status}</span></td>
-            <td>${findingsCell}</td>
-            <td>${critCell}</td>
-            <td>${actionBtn}</td>
-          `;
-          tbody.appendChild(tr);
-        });
+    function populateMineDropdown() {
+      const select = document.getElementById('sch-mine');
+      if (!select) return;
+      const minesSource = (typeof REAL_MINES !== 'undefined' && REAL_MINES.length) ? REAL_MINES : (typeof MOCK !== 'undefined' ? MOCK.mines : []);
+      
+      // Sort alphabetically
+      const sorted = [...minesSource].sort((a, b) => a.name.localeCompare(b.name));
+      sorted.forEach(m => {
+        const opt = document.createElement('option');
+        opt.value = m.name;
+        opt.textContent = `${m.name} (${m.sub || 'CIL'}) – ${m.type || 'Opencast'}`;
+        select.appendChild(opt);
+      });
+    }
+
+    function setDefaultDates() {
+      const dateInput = document.getElementById('sch-date');
+      if (dateInput) {
+        // Current system date or default 2026-09-18
+        const now = new Date();
+        const y = now.getFullYear();
+        const m = String(now.getMonth() + 1).padStart(2, '0');
+        const d = String(now.getDate()).padStart(2, '0');
+        dateInput.min = `${y}-${m}-${d}`;
+        // Default suggestion for user
+        dateInput.value = '2026-09-18';
+      }
+    }
+
+    /* ==========================================================
+       Data Loading from Backend REST API
+       ========================================================== */
+    async function loadInspections() {
+      try {
+        const data = await API.getInspections();
+        if (Array.isArray(data) && data.length > 0) {
+          allInspections = data;
+        } else if (typeof INSPECTIONS_DB !== 'undefined') {
+          allInspections = INSPECTIONS_DB.map(i => ({
+            id: i.id,
+            type: i.type,
+            mine_name: i.mine,
+            inspector: i.inspector,
+            date: i.dateRaw ? i.dateRaw.toISOString().split('T')[0] : '2026-09-01',
+            time: '10:00 AM',
+            priority: i.risk === 'Critical' ? 'Critical' : i.risk === 'High' ? 'High' : 'Medium',
+            status: i.status ? i.status.toLowerCase() : 'completed',
+            findings: i.findings || 0,
+            critical: i.critical || 0,
+            description: i.reason || 'Routine inspection'
+          }));
+        }
+      } catch (e) {
+        console.warn('Could not reach backend API, using local database cache:', e);
+        if (typeof INSPECTIONS_DB !== 'undefined') {
+          allInspections = INSPECTIONS_DB.map(i => ({
+            id: i.id,
+            type: i.type,
+            mine_name: i.mine,
+            inspector: i.inspector,
+            date: i.dateRaw ? i.dateRaw.toISOString().split('T')[0] : '2026-09-01',
+            time: '10:00 AM',
+            priority: i.risk === 'Critical' ? 'Critical' : i.risk === 'High' ? 'High' : 'Medium',
+            status: i.status ? i.status.toLowerCase() : 'completed',
+            findings: i.findings || 0,
+            critical: i.critical || 0,
+            description: i.reason || 'Routine inspection'
+          }));
+        }
       }
 
-      // ── Populate Corrective Actions from highest-risk mines
-      const caList = document.getElementById('ca-list');
-      if (caList) {
-        const today = new Date();
-        const critMines = REAL_MINES.filter(m => m.risk === 'Critical').slice(0, 3);
-        const highMines = REAL_MINES.filter(m => m.risk === 'High').slice(0, 2);
-        const actionMines = [...critMines, ...highMines];
-        const ASSIGNED = ['V. Kumar (Mine Mgr)', 'S. Reddy (EHS Dept)', 'A. Patel (Safety Off.)', 'R. Sharma (Contractor)', 'M. Singh (Shift Overman)'];
-        const CA_ISSUES = [
-          'Immediate strata reinforcement required in active panels.',
-          'Excess dust accumulation on main haul road — spray system offline.',
-          'Ventilation fan efficiency drop detected — airflow below threshold.',
-          'Methane sensor calibration overdue — manual monitoring initiated.',
-          'HEMM brake failure reported — unit grounded pending inspection.',
-        ];
-        actionMines.forEach((mine, idx) => {
-          const priority = mine.risk === 'Critical' ? 'critical' : 'high';
-          const prog = [70, 20, 45, 10, 60][idx % 5];
-          const dueDate = new Date(today); dueDate.setDate(dueDate.getDate() + [2, 5, 7, 3, 8][idx % 5]);
-          const dueFmt  = dueDate.toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
-          const div = document.createElement('div');
-          div.className = `ca-card ${priority}`;
-          div.innerHTML = `
-            <div class="ca-priority ${priority}">${priority.toUpperCase()}</div>
-            <div class="ca-issue">${CA_ISSUES[idx % CA_ISSUES.length]}</div>
-            <div class="ca-meta">
-              <span><strong>Mine:</strong> ${mine.name}</span>
-              <span><strong>Assigned To:</strong> ${ASSIGNED[idx % ASSIGNED.length]}</span>
-              <span class="${priority === 'critical' ? 'text-danger font-bold' : ''}"><strong>Due:</strong> ${dueFmt}</span>
-            </div>
-            <div class="ca-progress">
-              <div class="pb-bg"><div class="pb-fill" style="width:${prog}%"></div></div>
-              <div class="pb-text"><span>Progress</span><span>${prog}%</span></div>
-            </div>
-            <button class="btn btn-secondary btn-sm" style="width:100%; margin-top:8px;" onclick="window.mockAction(this,'Action details opened')">View Action</button>
-          `;
-          caList.appendChild(div);
+      updateKPIs();
+      renderCalendar();
+      renderInspectionTable();
+    }
+
+    /* ==========================================================
+       KPI Calculations
+       ========================================================== */
+    function updateKPIs() {
+      const completed  = allInspections.filter(i => (i.status || '').toLowerCase() === 'completed').length;
+      const scheduled  = allInspections.filter(i => (i.status || '').toLowerCase() === 'scheduled').length;
+      const inprogress = allInspections.filter(i => (i.status || '').toLowerCase() === 'in-progress' || (i.status || '').toLowerCase() === 'in progress').length;
+      const critical   = allInspections.reduce((acc, i) => acc + (parseInt(i.critical, 10) || 0), 0);
+      const overdue    = allInspections.filter(i => (i.status || '').toLowerCase() === 'overdue').length;
+
+      document.getElementById('insp-completed').textContent  = completed;
+      document.getElementById('insp-scheduled').textContent  = scheduled;
+      document.getElementById('insp-inprogress').textContent = inprogress;
+      document.getElementById('insp-critical').textContent   = critical;
+      document.getElementById('insp-overdue').textContent    = overdue;
+
+      const label = document.getElementById('inspection-count-label');
+      if (label) {
+        label.textContent = `${allInspections.length} total inspections recorded in system`;
+      }
+    }
+
+    /* ==========================================================
+       Calendar Engine
+       ========================================================== */
+    function renderCalendar() {
+      const grid = document.getElementById('calendar-grid');
+      const titleEl = document.getElementById('cal-month-title');
+      if (!grid || !titleEl) return;
+
+      const year = currentCalDate.getFullYear();
+      const month = currentCalDate.getMonth(); // 0-indexed (8 = September)
+      
+      const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+      titleEl.textContent = `${monthNames[month]} ${year}`;
+
+      grid.innerHTML = `
+        <div class="cal-day-name">Sun</div><div class="cal-day-name">Mon</div>
+        <div class="cal-day-name">Tue</div><div class="cal-day-name">Wed</div>
+        <div class="cal-day-name">Thu</div><div class="cal-day-name">Fri</div>
+        <div class="cal-day-name">Sat</div>
+      `;
+
+      const firstDayIndex = new Date(year, month, 1).getDay(); // Day of week (0-6)
+      const lastDate = new Date(year, month + 1, 0).getDate(); // Days in current month
+      const prevLastDate = new Date(year, month, 0).getDate(); // Days in previous month
+
+      // Padded days from previous month
+      for (let i = firstDayIndex - 1; i >= 0; i--) {
+        const dayNum = prevLastDate - i;
+        const cell = document.createElement('div');
+        cell.className = 'cal-day muted';
+        cell.innerHTML = `<div class="day-num">${dayNum}</div>`;
+        grid.appendChild(cell);
+      }
+
+      // Current month days
+      const today = new Date();
+      for (let day = 1; day <= lastDate; day++) {
+        const cell = document.createElement('div');
+        const isToday = (year === 2026 && month === 8 && day === 10) || (year === today.getFullYear() && month === today.getMonth() && day === today.getDate());
+        cell.className = 'cal-day' + (isToday ? ' today' : '');
+
+        const dayNumHtml = isToday
+          ? `<div class="day-num font-bold text-success"><span>${day}</span><span style="font-size:9px;text-transform:uppercase;">Today</span></div>`
+          : `<div class="day-num"><span>${day}</span></div>`;
+
+        cell.innerHTML = dayNumHtml;
+
+        // Find inspections on this date
+        const dateStrDay = String(day).padStart(2, '0');
+        const monthStr = String(month + 1).padStart(2, '0');
+        const fullDatePattern = `${year}-${monthStr}-${dateStrDay}`;
+
+        const dayInspections = allInspections.filter(i => {
+          if (!i.date) return false;
+          if (i.date.startsWith(fullDatePattern)) return true;
+          // Handle loose text date formats e.g. "01 Sept 2026"
+          const parsed = new Date(i.date);
+          return parsed.getFullYear() === year && parsed.getMonth() === month && parsed.getDate() === day;
         });
+
+        dayInspections.forEach(ins => {
+          const ev = document.createElement('div');
+          const typeLower = (ins.type || '').toLowerCase();
+          const prioLower = (ins.priority || '').toLowerCase();
+
+          let colorClass = 'ev-teal';
+          if (prioLower === 'critical' || typeLower.includes('fire') || ins.critical > 0) {
+            colorClass = 'ev-red';
+          } else if (prioLower === 'high' || (ins.status || '').toLowerCase() === 'in-progress') {
+            colorClass = 'ev-amber';
+          } else if (typeLower.includes('safety') || typeLower.includes('dgms') || (ins.status || '').toLowerCase() === 'completed') {
+            colorClass = 'ev-green';
+          }
+
+          // Short label e.g. "INS-090 (Safety)"
+          const shortType = ins.type ? ins.type.split(' ')[0].replace(/[^a-zA-Z]/g, '') : 'Audit';
+          ev.className = `cal-event ${colorClass}`;
+          ev.textContent = `${ins.id} (${shortType})`;
+          ev.title = `${ins.id}: ${ins.mine_name || ins.mine} - ${ins.type} [${ins.status}]`;
+          ev.onclick = (e) => {
+            e.stopPropagation();
+            showInspectionDetails(ins.id);
+          };
+          cell.appendChild(ev);
+        });
+
+        grid.appendChild(cell);
+      }
+
+      // Trailing padding to complete grid
+      const totalCells = firstDayIndex + lastDate;
+      const nextDays = (7 - (totalCells % 7)) % 7;
+      for (let i = 1; i <= nextDays; i++) {
+        const cell = document.createElement('div');
+        cell.className = 'cal-day muted';
+        cell.innerHTML = `<div class="day-num">${i}</div>`;
+        grid.appendChild(cell);
+      }
+    }
+
+    function changeMonth(delta) {
+      currentCalDate.setMonth(currentCalDate.getMonth() + delta);
+      renderCalendar();
+    }
+
+    /* ==========================================================
+       Inspection Table Engine
+       ========================================================== */
+    function renderInspectionTable(filterText = '') {
+      const tbody = document.getElementById('inspection-tbody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      let items = [...allInspections];
+      if (filterText) {
+        const q = filterText.toLowerCase();
+        items = items.filter(i => 
+          (i.id && i.id.toLowerCase().includes(q)) ||
+          (i.type && i.type.toLowerCase().includes(q)) ||
+          ((i.mine_name || i.mine) && (i.mine_name || i.mine).toLowerCase().includes(q)) ||
+          (i.inspector && i.inspector.toLowerCase().includes(q)) ||
+          (i.status && i.status.toLowerCase().includes(q))
+        );
+      }
+
+      // Sort by date DESC
+      items.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+
+      items.slice(0, 15).forEach(ins => {
+        const status = (ins.status || 'scheduled').toLowerCase();
+        const statusClass = status === 'completed' ? 'badge-success'
+                          : status === 'in-progress' ? 'badge-warning'
+                          : status === 'overdue' ? 'badge-danger'
+                          : 'badge-info';
+
+        const statusLabel = status === 'in-progress' ? 'In Progress'
+                          : status.charAt(0).toUpperCase() + status.slice(1);
+
+        const actionBtn = status === 'in-progress' ? `<button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); completeInspectionWorkflow('${ins.id}')">Record Findings</button>`
+                        : status === 'overdue'     ? `<button class="btn btn-secondary btn-sm text-danger" onclick="event.stopPropagation(); showInspectionDetails('${ins.id}')">Review</button>`
+                        : status === 'scheduled'   ? `<button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); startInspectionWorkflow('${ins.id}')">Start</button>`
+                        : `<button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); showInspectionDetails('${ins.id}')">View Details</button>`;
+
+        const findingsVal = parseInt(ins.findings, 10) > 0 ? ins.findings : (status === 'completed' ? '0' : '-');
+        const critVal = parseInt(ins.critical, 10) > 0 
+          ? `<span class="text-danger font-bold">${ins.critical}</span>` 
+          : (status === 'completed' ? '0' : '-');
+
+        const tr = document.createElement('tr');
+        tr.className = 'clickable-row';
+        tr.onclick = () => showInspectionDetails(ins.id);
+        tr.innerHTML = `
+          <td class="font-bold">${ins.id}</td>
+          <td>${ins.type || 'General Inspection'}</td>
+          <td><strong>${ins.mine_name || ins.mine || '-'}</strong></td>
+          <td>${ins.inspector || '-'}</td>
+          <td class="font-bold">${ins.date} ${ins.time ? `<span style="font-size:11px;color:var(--text-secondary);font-weight:normal;">(${ins.time})</span>` : ''}</td>
+          <td><span class="badge ${statusClass}">${statusLabel}</span></td>
+          <td>${findingsVal}</td>
+          <td>${critVal}</td>
+          <td>${actionBtn}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      if (items.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding:24px; color:var(--text-muted);">No inspections found matching search.</td></tr>`;
+      }
+    }
+
+    function setupInspectionSearch() {
+      const input = document.getElementById('insp-search-input');
+      if (input) {
+        input.addEventListener('input', (e) => {
+          renderInspectionTable(e.target.value.trim());
+        });
+      }
+    }
+
+    /* ==========================================================
+       Schedule Inspection Modal Workflow
+       ========================================================== */
+    function openScheduleModal() {
+      hideModalAlert();
+      const modal = document.getElementById('schedule-modal');
+      if (modal) {
+        modal.classList.add('open');
+        document.getElementById('sch-mine').focus();
+      }
+    }
+
+    function closeScheduleModal() {
+      const modal = document.getElementById('schedule-modal');
+      if (modal) modal.classList.remove('open');
+      hideModalAlert();
+    }
+
+    function showModalAlert(msg, type = 'danger') {
+      const alertEl = document.getElementById('modal-alert');
+      const msgEl = document.getElementById('modal-alert-msg');
+      if (alertEl && msgEl) {
+        alertEl.className = `modal-alert ${type}`;
+        msgEl.textContent = msg;
+        alertEl.style.display = 'flex';
+      }
+    }
+
+    function hideModalAlert() {
+      const alertEl = document.getElementById('modal-alert');
+      if (alertEl) alertEl.style.display = 'none';
+    }
+
+    async function handleScheduleSubmit(e) {
+      e.preventDefault();
+      hideModalAlert();
+
+      const mine = document.getElementById('sch-mine').value.trim();
+      const type = document.getElementById('sch-type').value.trim();
+      const date = document.getElementById('sch-date').value.trim();
+      const time = document.getElementById('sch-time').value.trim();
+      const officer = document.getElementById('sch-officer').value.trim();
+      const priority = document.getElementById('sch-priority').value.trim();
+      const description = document.getElementById('sch-desc').value.trim();
+      const notes = document.getElementById('sch-notes').value.trim();
+
+      // Form validation
+      if (!mine) {
+        showModalAlert('Please select a coal mine.');
+        return;
+      }
+      if (!type) {
+        showModalAlert('Inspection type is required.');
+        return;
+      }
+      if (!date) {
+        showModalAlert('Inspection date is required.');
+        return;
+      }
+      if (!time) {
+        showModalAlert('Inspection time is required.');
+        return;
+      }
+      if (!officer) {
+        showModalAlert('Assigned officer is required.');
+        return;
+      }
+      if (!priority) {
+        showModalAlert('Priority is required.');
+        return;
+      }
+
+      // Past date check
+      const now = new Date();
+      const todayFormatted = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      if (date < todayFormatted) {
+        showModalAlert('Inspection date cannot be in the past.');
+        return;
+      }
+
+      // UI submission state
+      const submitBtn = document.getElementById('btn-submit-schedule');
+      const originalBtnText = submitBtn.innerHTML;
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="animate-spin" style="animation:spin 1s linear infinite; display:inline-block; margin-right:6px; vertical-align:middle;"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Scheduling...`;
+
+      try {
+        const payload = {
+          mineId: mine,
+          inspectionType: type,
+          date: date,
+          time: time,
+          assignedOfficer: officer,
+          priority: priority,
+          description: description,
+          notes: notes,
+          status: 'scheduled'
+        };
+
+        const created = await API.createInspection(payload);
+
+        // Success!
+        closeScheduleModal();
+        await loadInspections();
+
+        // Switch calendar to inspection date month if different
+        const insDate = new Date(date);
+        if (!isNaN(insDate.getTime()) && insDate.getMonth() !== currentCalDate.getMonth()) {
+          currentCalDate = insDate;
+          renderCalendar();
+        }
+
+        window.showToast(`Inspection ${created.id} scheduled successfully.`, 'success', 4500);
+
+        // Reset form for next usage
+        document.getElementById('schedule-form').reset();
+        setDefaultDates();
+      } catch (err) {
+        console.error('Failed to schedule inspection:', err);
+        const errMsg = err.message || 'Unable to schedule inspection. Please try again.';
+        showModalAlert(errMsg, 'danger');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalBtnText;
+      }
+    }
+
+    /* ==========================================================
+       Inspection Details Modal & Lifecycle Workflow
+       ========================================================== */
+    function showInspectionDetails(id) {
+      const ins = allInspections.find(i => i.id === id);
+      if (!ins) return;
+
+      document.getElementById('dt-title').textContent = `${ins.id} – Inspection Record`;
+      document.getElementById('dt-id-subtitle').textContent = `Status: ${(ins.status || 'scheduled').toUpperCase()}`;
+      document.getElementById('dt-mine').textContent = ins.mine_name || ins.mine || '-';
+      document.getElementById('dt-type').textContent = ins.type || 'General';
+      document.getElementById('dt-datetime').textContent = `${ins.date} ${ins.time ? '• ' + ins.time : ''}`;
+      document.getElementById('dt-inspector').textContent = ins.inspector || '-';
+      document.getElementById('dt-priority').textContent = ins.priority || 'Medium';
+
+      const statusBadge = (ins.status || 'scheduled').toLowerCase();
+      document.getElementById('dt-status').innerHTML = `<span class="badge ${statusBadge === 'completed' ? 'badge-success' : statusBadge === 'in-progress' ? 'badge-warning' : 'badge-info'}">${ins.status}</span>`;
+
+      document.getElementById('dt-desc').textContent = ins.description || 'No formal objective notes filed.';
+      document.getElementById('dt-notes').textContent = ins.notes || 'None';
+
+      const findings = parseInt(ins.findings, 10) || 0;
+      const critical = parseInt(ins.critical, 10) || 0;
+      document.getElementById('dt-findings').textContent = findings;
+      document.getElementById('dt-critical').textContent = critical;
+
+      const actionBanner = document.getElementById('dt-action-banner');
+      const workflowBtns = document.getElementById('dt-workflow-btns');
+      workflowBtns.innerHTML = '';
+
+      if (statusBadge === 'scheduled') {
+        actionBanner.style.display = 'block';
+        workflowBtns.innerHTML = `<button class="btn btn-primary" onclick="startInspectionWorkflow('${ins.id}')">Start Inspection</button>`;
+      } else if (statusBadge === 'in-progress') {
+        actionBanner.style.display = 'none';
+        workflowBtns.innerHTML = `<button class="btn btn-primary" onclick="completeInspectionWorkflow('${ins.id}')">Record Findings & Complete</button>`;
+      } else {
+        actionBanner.style.display = 'none';
+      }
+
+      document.getElementById('details-modal').classList.add('open');
+    }
+
+    function closeDetailsModal() {
+      document.getElementById('details-modal').classList.remove('open');
+    }
+
+    async function startInspectionWorkflow(id) {
+      closeDetailsModal();
+      try {
+        await API.updateInspection(id, { status: 'in-progress' });
+        window.showToast(`Inspection ${id} is now IN PROGRESS.`, 'info');
+        await loadInspections();
+      } catch (e) {
+        console.warn('Backend update failed:', e);
+        // Local state update fallback
+        const item = allInspections.find(i => i.id === id);
+        if (item) item.status = 'in-progress';
+        updateKPIs();
+        renderCalendar();
+        renderInspectionTable();
+      }
+    }
+
+    async function completeInspectionWorkflow(id) {
+      closeDetailsModal();
+      const findingsStr = prompt(`Record Findings for ${id}:\nEnter number of non-compliances found (0-10):`, '2');
+      if (findingsStr === null) return;
+      const findings = parseInt(findingsStr, 10) || 0;
+
+      let critical = 0;
+      if (findings > 0) {
+        const critStr = prompt(`Of the ${findings} findings, how many are CRITICAL?`, '1');
+        critical = parseInt(critStr, 10) || 0;
+      }
+
+      try {
+        await API.updateInspection(id, {
+          status: 'completed',
+          findings: findings,
+          critical: critical
+        });
+
+        window.showToast(`Inspection ${id} completed. ${findings} findings logged.`, 'success');
+        await loadInspections();
+
+        if (critical > 0) {
+          setTimeout(() => {
+            window.showToast(`⚠️ Corrective Action triggered for ${critical} critical hazard(s).`, 'warning', 5000);
+          }, 800);
+        }
+      } catch (e) {
+        console.warn('Backend completion update failed:', e);
+        const item = allInspections.find(i => i.id === id);
+        if (item) {
+          item.status = 'completed';
+          item.findings = findings;
+          item.critical = critical;
+        }
+        updateKPIs();
+        renderCalendar();
+        renderInspectionTable();
+      }
+    }
+
+    /* ==========================================================
+       Corrective Actions Workflow
+       ========================================================== */
+    function populateCorrectiveActions() {
+      const caList = document.getElementById('ca-list');
+      if (!caList) return;
+      caList.innerHTML = '';
+
+      const actions = [
+        { id:'CA-101', mine:'Churcha RO', priority:'critical', issue:'Immediate strata reinforcement required in active underground panels.', assigned:'V. Kumar (Mine Mgr)', due:'12 Sep 2026', progress:70 },
+        { id:'CA-102', mine:'Moonidih', priority:'critical', issue:'Methane drainage exhaust valve calibration and sensor baseline reset.', assigned:'R.K. Tripathi (Sr. Insp)', due:'14 Sep 2026', progress:20 },
+        { id:'CA-103', mine:'SECL Gevra', priority:'high', issue:'Excess dust accumulation on main haul road — misting system offline.', assigned:'S. Reddy (EHS Dept)', due:'16 Sep 2026', progress:45 },
+        { id:'CA-104', mine:'Adriyala Shaft', priority:'critical', issue:'Longwall convergence reading 48mm/day — reinforce chock shields.', assigned:'K.V. Rao (Strata Specialist)', due:'13 Sep 2026', progress:10 },
+        { id:'CA-105', mine:'Jayant OC', priority:'high', issue:'HEMM dragline emergency braking linkage defect — unit grounded.', assigned:'A. Kumar (HEMM Inspector)', due:'18 Sep 2026', progress:60 },
+      ];
+
+      actions.forEach(a => {
+        const div = document.createElement('div');
+        div.className = `ca-card ${a.priority}`;
+        div.innerHTML = `
+          <div class="ca-priority ${a.priority}">${a.priority.toUpperCase()}</div>
+          <div class="ca-issue">${a.issue}</div>
+          <div class="ca-meta">
+            <span><strong>Mine:</strong> ${a.mine}</span>
+            <span><strong>Assigned To:</strong> ${a.assigned}</span>
+            <span class="${a.priority === 'critical' ? 'text-danger font-bold' : ''}"><strong>Due:</strong> ${a.due}</span>
+          </div>
+          <div class="ca-progress">
+            <div class="pb-bg"><div class="pb-fill" style="width:${a.progress}%"></div></div>
+            <div class="pb-text"><span>Mitigation Progress</span><span>${a.progress}%</span></div>
+          </div>
+          <button class="btn btn-secondary btn-sm" style="width:100%; margin-top:8px;" onclick="openActionModal(this, '${a.id}', '${a.mine}', '${a.issue.replace(/'/g, "\\'")}', '${a.assigned}', '${a.due}', ${a.progress}, '${a.priority}')">View Action</button>
+        `;
+        caList.appendChild(div);
+      });
+    }
+
+    function openActionModal(btn, id, mine, issue, assigned, due, progress, priority) {
+      currentActionElement = btn ? btn.closest('.ca-card') : null;
+      document.getElementById('act-title').textContent = `${id} – Corrective Action`;
+      document.getElementById('act-mine').textContent = `Mine: ${mine}`;
+      document.getElementById('act-issue').textContent = issue;
+      document.getElementById('act-assigned').textContent = assigned;
+      document.getElementById('act-due').textContent = due;
+      document.getElementById('act-progress-text').textContent = `${progress}%`;
+      document.getElementById('act-progress-bar').style.width = `${progress}%`;
+
+      const badge = document.getElementById('act-priority-badge');
+      badge.textContent = priority.toUpperCase();
+      badge.className = `badge ${priority === 'critical' ? 'badge-danger' : 'badge-warning'}`;
+
+      document.getElementById('action-modal').classList.add('open');
+    }
+
+    function closeActionModal() {
+      document.getElementById('action-modal').classList.remove('open');
+      currentActionElement = null;
+    }
+
+    function markActionResolved() {
+      if (currentActionElement) {
+        currentActionElement.style.transition = 'all 0.3s ease';
+        currentActionElement.style.opacity = '0.4';
+        const progFill = currentActionElement.querySelector('.pb-fill');
+        const progText = currentActionElement.querySelector('.pb-text span:last-child');
+        if (progFill) progFill.style.width = '100%';
+        if (progText) progText.textContent = '100% (Resolved)';
+      }
+      closeActionModal();
+      window.showToast('Corrective Action marked as RESOLVED and archived.', 'success');
+    }
+
+    // Keyboard support: ESC closes any open modal
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeScheduleModal();
+        closeDetailsModal();
+        closeActionModal();
       }
     });
   </script>
+</body>
 </html>

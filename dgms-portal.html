@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DGMS Regulatory Command Center – CoalGuard</title>
+  <link rel="stylesheet" href="css/main.css">
+  <style>
+    /* ── DGMS Regulatory Command Center Scoped Layout ─────────── */
+    .regulatory-banner {
+      background: #FFFFFF;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 20px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      box-shadow: var(--shadow-sm);
+    }
+    .regulatory-identity { display: flex; flex-direction: column; gap: 4px; }
+    .regulatory-meta-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    
+    .dgms-badge-gov {
+      background: #EEF2FF;
+      color: #3730A3;
+      border: 1px solid #C7D2FE;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 3px 10px;
+      border-radius: 4px;
+      letter-spacing: 0.5px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .reg-status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--success);
+      background: var(--success-bg);
+      border: 1px solid var(--border-success);
+      padding: 3px 8px;
+      border-radius: 12px;
+      letter-spacing: 0.3px;
+    }
+    .reg-status-dot {
+      width: 6px; height: 6px; border-radius: 50%; background: var(--success);
+      box-shadow: 0 0 6px var(--success); animation: pulse 2s infinite;
+    }
+    .reg-sync-text { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+    .reg-actions { display: flex; gap: 10px; align-items: center; flex-shrink: 0; }
+
+    /* KPI Grid */
+    .dgms-kpi-grid-5 {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 14px;
+    }
+    @media (max-width: 1200px) {
+      .dgms-kpi-grid-5 { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 768px) {
+      .dgms-kpi-grid-5 { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    /* 2-Column Command Row */
+    .command-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    @media (max-width: 1024px) {
+      .command-grid-2 { grid-template-columns: 1fr; }
+    }
+
+    .command-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .command-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 14px;
+    }
+    .command-card-title { font-size: 15px; font-weight: 800; color: var(--text-primary); margin-bottom: 2px; }
+    .command-card-sub { font-size: 12px; color: var(--text-secondary); }
+
+    /* Regulatory Priority Cards */
+    .priority-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+    .priority-item {
+      background: #FAFAFA;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: background-color var(--trans-fast);
+      cursor: pointer;
+    }
+    .priority-item:hover { background: #F5F7F6; }
+    .priority-item.critical { border-left: 4px solid var(--danger); background: #FFFDFD; }
+    .priority-item.critical:hover { background: #FDF2F2; }
+    .priority-item.overdue { border-left: 4px solid var(--amber); background: #FFFDF8; }
+    .priority-item.overdue:hover { background: #FEF8E8; }
+    .priority-item.review { border-left: 4px solid var(--info); }
+    .priority-icon { width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+    .priority-title { font-size: 13px; font-weight: 700; color: var(--text-primary); }
+    .priority-desc { font-size: 11px; color: var(--text-secondary); margin-top: 1px; }
+
+    /* Filter Bar */
+    .filter-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+    .search-input-wrap {
+      position: relative;
+      flex: 1;
+      max-width: 380px;
+    }
+    .search-input-wrap svg {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+    }
+    .search-input-wrap input {
+      width: 100%;
+      padding: 8px 12px 8px 36px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      background: white;
+      transition: border-color var(--trans-fast);
+    }
+    .search-input-wrap input:focus { border-color: var(--brand-primary); }
+
+    /* Regulatory Activity Timeline */
+    .activity-timeline { display: flex; flex-direction: column; gap: 10px; max-height: 250px; overflow-y: auto; }
+    .activity-item {
+      padding: 10px 12px;
+      background: #FAFAFA;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+    .activity-date {
+      font-size: 11px; font-weight: 800; color: var(--text-secondary);
+      background: #EAEFEA; padding: 2px 6px; border-radius: 4px; white-space: nowrap;
+    }
+    .activity-text { font-size: 12px; color: var(--text-primary); }
+    .activity-mine { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+
+    /* Audit Ledger */
+    .audit-verified-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #DCFCE7;
+      border: 1px solid #86EFAC;
+      color: #166534;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.3px;
+    }
+    .audit-ledger-box {
+      background: #F8FAFC;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      max-height: 190px;
+      overflow-y: auto;
+    }
+    .audit-entry-row {
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: white;
+      border-radius: 4px;
+      margin-bottom: 6px;
+    }
+    .audit-entry-row:last-child { margin-bottom: 0; }
+    .hash-pill {
+      background: #EBF0EC;
+      color: #16834B;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <div id="sidebar-mount"></div>
+
+    <div class="main-content">
+      <!-- TOP HEADER -->
+      <header class="top-header">
+        <div class="header-search">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="text" placeholder="Search DGMS circulars, mines, audits... (⌘K)">
+        </div>
+        <div class="header-links">
+          <a href="dashboard.html" class="header-link">HQ Dashboard</a>
+          <a href="secl-zone.html" class="header-link">SECL Operational Zone</a>
+          <a href="dgms-portal.html" class="header-link active">DGMS Regulatory Portal</a>
+        </div>
+        <div class="system-status-pill">
+          <div class="status-dot"></div> DGMS Statutory Portal Active
+        </div>
+        <div class="header-time" id="live-clock"></div>
+        <button class="btn-emergency">Emergency Dispatch</button>
+      </header>
+
+      <main class="page-wrapper">
+        <!-- A. REGULATORY HEADER -->
+        <div class="regulatory-banner">
+          <div class="regulatory-identity">
+            <div class="regulatory-meta-bar">
+              <span class="dgms-badge-gov">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                DIRECTORATE GENERAL OF MINES SAFETY
+              </span>
+              <span style="font-size:12px; color:var(--text-secondary); font-weight:600;">Ministry of Labour & Employment &bull; Government of India</span>
+              <div class="reg-status-pill">
+                <div class="reg-status-dot"></div> REGULATORY SYSTEM ACTIVE
+              </div>
+              <span class="reg-sync-text">Last sync: <span id="dgms-sync-time">17:33 IST</span></span>
+            </div>
+            <h1 class="page-title" style="font-size: 24px; font-weight: 800; letter-spacing: -0.4px; margin: 4px 0 2px 0;">DGMS Regulatory Oversight Command Center</h1>
+            <div class="page-subtitle">Statutory compliance oversight across coal mining operations under Coal Mines Regulations (CMR 2017), Mines Act 1952, and digital enforcement directives.</div>
+          </div>
+          <div class="reg-actions">
+            <button class="btn btn-secondary" onclick="location.href='compliance.html'" style="font-weight:600;">
+              Full Compliance Roster
+            </button>
+            <button class="btn btn-primary" onclick="location.href='inspections.html'" style="display:inline-flex; align-items:center; gap:6px; font-weight:700;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              + Schedule Inspection
+            </button>
+          </div>
+        </div>
+
+        <!-- B. COMPLIANCE KPI STRIP (5 Structured Cards) -->
+        <div class="dgms-kpi-grid-5">
+          <div class="kpi-card info">
+            <div class="kpi-label">Total Mines</div>
+            <div class="kpi-val" id="dgms-kpi-total">79</div>
+            <div class="kpi-sub">National Jurisdiction</div>
+          </div>
+          <div class="kpi-card success">
+            <div class="kpi-label">Compliant</div>
+            <div class="kpi-val text-success" id="dgms-kpi-comp">54</div>
+            <div class="kpi-sub up">68.4% Compliance Rate</div>
+          </div>
+          <div class="kpi-card warning">
+            <div class="kpi-label">Non-Compliant</div>
+            <div class="kpi-val" style="color:var(--amber);" id="dgms-kpi-noncomp">25</div>
+            <div class="kpi-sub">Under Notice / Review</div>
+          </div>
+          <div class="kpi-card danger">
+            <div class="kpi-label">Critical Findings</div>
+            <div class="kpi-val text-danger" id="dgms-kpi-crit">18</div>
+            <div class="kpi-sub">Strata & Gas Hazards</div>
+          </div>
+          <div class="kpi-card danger">
+            <div class="kpi-label">Overdue Actions</div>
+            <div class="kpi-val text-danger" id="dgms-kpi-overdue">6</div>
+            <div class="kpi-sub">>30 Days Remediation</div>
+          </div>
+        </div>
+
+        <!-- C. REGULATORY RISK OVERVIEW (Two Columns) -->
+        <div class="command-grid-2">
+          <!-- LEFT: COMPLIANCE HEALTH PILLARS -->
+          <div class="command-card">
+            <div>
+              <div class="command-card-header">
+                <div>
+                  <div class="command-card-title">Statutory Compliance Health</div>
+                  <div class="command-card-sub">Core safety pillars under CMR 2017 and central safety directorate benchmarks.</div>
+                </div>
+                <span class="badge badge-success" style="font-size:10px;">68.4% NATIONAL RATING</span>
+              </div>
+
+              <!-- Statutory Pillar Progress Meters -->
+              <div class="stat-meter">
+                <div class="stat-meter-header">
+                  <span class="stat-meter-label">Safety Compliance (CMR 2017 & Strata Bolting)</span>
+                  <span class="stat-meter-val" style="color:var(--amber);">65% &bull; Elevated Notice</span>
+                </div>
+                <div class="stat-meter-track"><div class="stat-meter-fill warning" style="width: 65%;"></div></div>
+              </div>
+
+              <div class="stat-meter">
+                <div class="stat-meter-header">
+                  <span class="stat-meter-label">Environmental Clearances (MoEFCC / Water Sprinklers)</span>
+                  <span class="stat-meter-val text-success">82% &bull; Compliant</span>
+                </div>
+                <div class="stat-meter-track"><div class="stat-meter-fill success" style="width: 82%;"></div></div>
+              </div>
+
+              <div class="stat-meter">
+                <div class="stat-meter-header">
+                  <span class="stat-meter-label">Statutory Form-IV Returns & Telemetry</span>
+                  <span class="stat-meter-val" style="color:var(--brand-teal);">74% &bull; On Track</span>
+                </div>
+                <div class="stat-meter-track"><div class="stat-meter-fill teal" style="width: 74%;"></div></div>
+              </div>
+
+              <div class="stat-meter">
+                <div class="stat-meter-header">
+                  <span class="stat-meter-label">Labour & Contractor Welfare (Mines Rules 1955)</span>
+                  <span class="stat-meter-val text-success">88% &bull; Certified</span>
+                </div>
+                <div class="stat-meter-track"><div class="stat-meter-fill success" style="width: 88%;"></div></div>
+              </div>
+
+              <div class="stat-meter">
+                <div class="stat-meter-header">
+                  <span class="stat-meter-label">Inspection Directives Remediation Closure</span>
+                  <span class="stat-meter-val text-danger">58% &bull; Action Required</span>
+                </div>
+                <div class="stat-meter-track"><div class="stat-meter-fill danger" style="width: 58%;"></div></div>
+              </div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:14px; padding-top:10px; border-top:1px solid var(--border); font-size:11px; color:var(--text-muted);">
+              <span>Directives Escalated: 6 over statutory 30-day window</span>
+              <a href="compliance.html" style="color:var(--brand-primary); font-weight:700;">Full Compliance Roster &rarr;</a>
+            </div>
+          </div>
+
+          <!-- RIGHT: REGULATORY PRIORITIES & DIRECTIVES -->
+          <div class="command-card">
+            <div>
+              <div class="command-card-header">
+                <div>
+                  <div class="command-card-title">Regulatory Priorities</div>
+                  <div class="command-card-sub">Immediate regulatory enforcement mandates and operational notices.</div>
+                </div>
+                <span class="badge badge-danger" style="font-size:10px;">DIRECTORATE MANDATES</span>
+              </div>
+
+              <div class="priority-list">
+                <div class="priority-item critical" onclick="filterByPriority('OVERDUE')" title="Click to filter critical & overdue filings">
+                  <div class="priority-icon" style="background:#FEE2E2; color:var(--danger);">⚠️</div>
+                  <div style="flex:1;">
+                    <div class="priority-title">18 Critical Findings</div>
+                    <div class="priority-desc">Immediate rectification required under CMR Reg 104 (Strata & Slope Stability).</div>
+                  </div>
+                  <span class="badge badge-danger">Immediate</span>
+                </div>
+
+                <div class="priority-item overdue" onclick="filterByPriority('OVERDUE')" title="Click to filter overdue actions">
+                  <div class="priority-icon" style="background:#FEF3C7; color:var(--amber);">⏱️</div>
+                  <div style="flex:1;">
+                    <div class="priority-title">6 Overdue Remediations</div>
+                    <div class="priority-desc">Remedial action orders pending beyond mandatory 30-day compliance window.</div>
+                  </div>
+                  <span class="badge badge-warning">> 30 Days</span>
+                </div>
+
+                <div class="priority-item review" onclick="filterByPriority('UNDER_REVIEW')" title="Click to filter mines under review">
+                  <div class="priority-icon" style="background:#E0F2FE; color:var(--info);">📋</div>
+                  <div style="flex:1;">
+                    <div class="priority-title">25 Mines Under Review</div>
+                    <div class="priority-desc">Formal technical inquiries active; bi-weekly telemetry submissions mandatory.</div>
+                  </div>
+                  <span class="badge badge-info">Active</span>
+                </div>
+              </div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; padding-top:10px; border-top:1px solid var(--border); font-size:11px;">
+              <span style="color:var(--text-muted);">Quick Filter table below by priority level:</span>
+              <button class="btn btn-secondary btn-sm" onclick="filterByPriority('ALL')" style="font-weight:700; font-size:11px; padding:3px 8px;">
+                Reset Filter
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- D. COMPLIANCE MONITORING (Statutory Table) -->
+        <div class="card-light">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px;">
+            <div>
+              <h2 style="font-size: 16px; font-weight: 800; color: var(--text-primary); margin-bottom: 2px;">Compliance Monitoring</h2>
+              <div style="font-size: 12px; color: var(--text-secondary);">Direct statutory oversight under Coal Mines Regulations (CMR) 2017, DGMS Technical Circulars and environmental clearances.</div>
+            </div>
+            <div style="font-size: 12px; font-weight: 700; color: var(--text-muted);" id="comp-counter">Showing 8 of 8 Active Filings</div>
+          </div>
+
+          <div class="filter-bar">
+            <div class="search-input-wrap">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              <input type="text" id="comp-search" placeholder="Search by mine, regulation or officer...">
+            </div>
+            <div class="filter-selects">
+              <select id="comp-filter-status" style="padding:7px 12px; border:1px solid var(--border); border-radius:var(--radius-sm); font-size:12px; font-weight:600; background:white; color:var(--text-primary);">
+                <option value="ALL">All Statuses</option>
+                <option value="COMPLIANT">Compliant</option>
+                <option value="UNDER_REVIEW">Under Review</option>
+                <option value="OVERDUE">Overdue</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Mine Site & Filing</th>
+                  <th>Statutory Regulation</th>
+                  <th>Compliance Category</th>
+                  <th>Regulatory Status</th>
+                  <th>Statutory Due Date</th>
+                  <th>Responsible DGMS Officer</th>
+                  <th>Last Verified</th>
+                  <th style="text-align:right;">Action</th>
+                </tr>
+              </thead>
+              <tbody id="dgms-compliance-tbody">
+                <!-- Populated dynamically via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- E. REGULATORY ACTIVITY & AUDIT INTEGRITY (Two Columns) -->
+        <div class="command-grid-2">
+          <!-- LEFT: REGULATORY & ENFORCEMENT ACTIVITY -->
+          <div class="command-card">
+            <div>
+              <div class="command-card-header">
+                <div>
+                  <div class="command-card-title">Regulatory Activity</div>
+                  <div class="command-card-sub">Recent statutory milestones, inspections, and formal corrective orders.</div>
+                </div>
+                <span class="badge badge-info" style="font-size:10px;">AUDIT TRAIL</span>
+              </div>
+
+              <div class="activity-timeline">
+                <div class="activity-item">
+                  <div class="activity-date">09 Sep 2026</div>
+                  <div style="flex:1;">
+                    <div class="activity-text"><strong>Compliance review completed</strong> &bull; CMR Reg 104 Verified</div>
+                    <div class="activity-mine">Gevra OC &bull; Dy. DGMS R. K. Sharma</div>
+                  </div>
+                  <span class="badge badge-success">Signed</span>
+                </div>
+
+                <div class="activity-item">
+                  <div class="activity-date">08 Sep 2026</div>
+                  <div style="flex:1;">
+                    <div class="activity-text"><strong>Special Inspection scheduled</strong> &bull; Continuous Miner Face</div>
+                    <div class="activity-mine">Churcha RO &bull; Inspecting Officer Dr. V. P. Nayak</div>
+                  </div>
+                  <span class="badge badge-warning">Scheduled</span>
+                </div>
+
+                <div class="activity-item">
+                  <div class="activity-date">07 Sep 2026</div>
+                  <div style="flex:1;">
+                    <div class="activity-text"><strong>Critical finding recorded</strong> &bull; Overburden Dump Slope</div>
+                    <div class="activity-mine">Kusmunda OC &bull; Remediation Order Issued</div>
+                  </div>
+                  <span class="badge badge-danger">Notice</span>
+                </div>
+
+                <div class="activity-item">
+                  <div class="activity-date">05 Sep 2026</div>
+                  <div style="flex:1;">
+                    <div class="activity-text"><strong>Show-Cause Directive issued</strong> &bull; Ventilation Airway Velocity</div>
+                    <div class="activity-mine">Surakachhar UG &bull; 15-Day Rectification Order</div>
+                  </div>
+                  <span class="badge badge-danger">Overdue</span>
+                </div>
+              </div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:14px; padding-top:10px; border-top:1px solid var(--border); font-size:11px;">
+              <span style="color:var(--text-muted);">Inspection Management integration connected</span>
+              <a href="inspections.html" style="color:var(--brand-primary); font-weight:700;">View Inspection Modules &rarr;</a>
+            </div>
+          </div>
+
+          <!-- RIGHT: AUDIT INTEGRITY & CRYPTOGRAPHIC LEDGER -->
+          <div class="command-card">
+            <div>
+              <div class="command-card-header">
+                <div>
+                  <div class="command-card-title">Audit Integrity & Cryptographic Ledger</div>
+                  <div class="command-card-sub">Real-time governance audit events secured via SHA-256 hash chains.</div>
+                </div>
+                <div class="audit-verified-badge">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg>
+                  <span>HASH CHAIN HEALTHY</span>
+                </div>
+              </div>
+
+              <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:12px; background:#F8FAFC; border:1px solid var(--border); border-radius:var(--radius-sm); padding:10px 14px; font-size:12px;">
+                <div>
+                  <div style="font-size:10px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Chained Records</div>
+                  <div style="font-weight:800; color:var(--brand-primary); font-size:14px;">1,248 Verified</div>
+                </div>
+                <div>
+                  <div style="font-size:10px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Current Block Hash</div>
+                  <div style="font-family:'JetBrains Mono', monospace; font-size:11px; font-weight:700; color:var(--text-primary);" id="dgms-ledger-latest-hash">97a651b914c1</div>
+                </div>
+              </div>
+
+              <div class="audit-ledger-box" id="dgms-audit-ledger">
+                <!-- Dynamically populated audit feed -->
+              </div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:14px; padding-top:10px; border-top:1px solid var(--border); font-size:11px;">
+              <span style="color:var(--text-muted);">Cryptographic proof secured on CoalGuard node</span>
+              <a href="reports.html" style="color:var(--brand-primary); font-weight:700;">View Audit Trail &rarr;</a>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- COMPLIANCE REVIEW MODAL -->
+  <div class="modal-overlay" id="dgms-review-modal">
+    <div class="modal-card modal-lg" role="dialog" aria-modal="true">
+      <div class="modal-header">
+        <div>
+          <div class="modal-title" id="crm-title">Statutory Compliance Review</div>
+          <div class="modal-subtitle" id="crm-subtitle">DGMS Inspection & Regulation Assessment</div>
+        </div>
+        <button class="modal-close" onclick="window.closeModal('dgms-review-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:12px; margin-bottom:16px; background:#F8FAFC; padding:14px; border-radius:var(--radius-sm); border:1px solid var(--border);">
+          <div>
+            <div style="font-size:11px; font-weight:700; color:var(--text-secondary);">MINE SITE</div>
+            <div style="font-size:14px; font-weight:800; color:var(--text-primary);" id="crm-mine">-</div>
+          </div>
+          <div>
+            <div style="font-size:11px; font-weight:700; color:var(--text-secondary);">REGULATION</div>
+            <div style="font-size:13px; font-weight:700;" id="crm-reg">-</div>
+          </div>
+          <div>
+            <div style="font-size:11px; font-weight:700; color:var(--text-secondary);">CURRENT STATUS</div>
+            <div id="crm-status" style="margin-top:2px;">-</div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Reviewer Notes & Action Directives</label>
+          <textarea class="form-textarea" rows="3" id="crm-notes" placeholder="Enter DGMS review observations, corrective orders, and compliance directives..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer" style="justify-content:space-between;">
+        <button type="button" class="btn btn-secondary" onclick="window.closeModal('dgms-review-modal')">Close</button>
+        <button type="button" class="btn btn-primary" onclick="window.saveComplianceReview()">Save Regulatory Sign-Off</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/main.js"></script>
+  <script src="js/mines-db.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Compliance sample data grounded in CoalGuard master database
+      const complianceRecords = [
+        { id: 'COMP-101', mine: 'Gevra OC', reg: 'CMR 2017 Reg 104', category: 'Strata & Slope', status: 'UNDER_REVIEW', due: '24 Sep 2026', officer: 'R. K. Sharma, Dy. DGMS', lastReview: '02 Sep 2026' },
+        { id: 'COMP-102', mine: 'Churcha RO', reg: 'CMR 2017 Reg 153', category: 'Underground Gas', status: 'OVERDUE', due: '12 Sep 2026', officer: 'Dr. V. P. Nayak, DGMS', lastReview: '28 Aug 2026' },
+        { id: 'COMP-103', mine: 'Kusmunda OC', reg: 'Mines Act Sec 22A', category: 'Blasting & Noise', status: 'UNDER_REVIEW', due: '05 Oct 2026', officer: 'P. Sengupta, Insp.', lastReview: '04 Sep 2026' },
+        { id: 'COMP-104', mine: 'Dipka OC', reg: 'DGMS Circ 02/2023', category: 'HEMM Safety', status: 'COMPLIANT', due: '30 Oct 2026', officer: 'M. S. Verma, DGMS', lastReview: '01 Sep 2026' },
+        { id: 'COMP-105', mine: 'Bhubaneswari OC', reg: 'CMR 2017 Reg 108', category: 'Haul Road Safety', status: 'COMPLIANT', due: '15 Nov 2026', officer: 'A. K. Mishra, Insp.', lastReview: '20 Aug 2026' },
+        { id: 'COMP-106', mine: 'Surakachhar', reg: 'CMR 2017 Reg 144', category: 'Ventilation Balance', status: 'OVERDUE', due: '10 Sep 2026', officer: 'R. K. Sharma, Dy. DGMS', lastReview: '25 Aug 2026' },
+        { id: 'COMP-107', mine: 'Dudhichua OC', reg: 'Mines Rules 1955', category: 'Contractor PPE', status: 'COMPLIANT', due: '12 Nov 2026', officer: 'S. N. Rao, DGMS', lastReview: '05 Sep 2026' },
+        { id: 'COMP-108', mine: 'Jayant OC', reg: 'Air Act Sec 21', category: 'PM10 Emission', status: 'COMPLIANT', due: '08 Dec 2026', officer: 'K. L. Patel, DGMS', lastReview: '02 Sep 2026' },
+      ];
+
+      // Audit sample events
+      const auditEvents = [
+        { id: 'AU1789040787550', action: 'INCIDENT_CREATED', meta: 'Methane outburst telemetry alarm at Churcha RO', hash: '8f2b1a9c3d4e5f60', time: '10 min ago' },
+        { id: 'AU1789040787526', action: 'CONTRACTOR_REGISTERED', meta: 'Jai Bharat Mining Co. verified with 345 workers', hash: '5c2e1a9b3d4f7a81', time: '45 min ago' },
+        { id: 'AU1789040787513', action: 'COMPLIANCE_STATUS_UPDATED', meta: 'COMP-104 status set to COMPLIANT by M. S. Verma', hash: '97a651b914c1a263', time: '1 hr ago' },
+        { id: 'AU1789040787499', action: 'EMERGENCY_DISPATCH_CREATED', meta: 'Emergency response team mobilized to Churcha Level 5', hash: '3e4f2a1b7c8d9e0f', time: '2 hrs ago' },
+      ];
+
+      const compTbody = document.getElementById('dgms-compliance-tbody');
+      const auditBox = document.getElementById('dgms-audit-ledger');
+      const searchInput = document.getElementById('comp-search');
+      const statusFilter = document.getElementById('comp-filter-status');
+      const counterEl = document.getElementById('comp-counter');
+
+      function escapeHtml(s) {
+        if (!s) return '';
+        return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      }
+
+      // Update sync time
+      const syncEl = document.getElementById('dgms-sync-time');
+      if (syncEl) {
+        const now = new Date();
+        syncEl.textContent = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata', hour12: false }) + ' IST';
+      }
+
+      function renderCompliance() {
+        const q = (searchInput.value || '').toLowerCase().trim();
+        const s = statusFilter.value;
+
+        const filtered = complianceRecords.filter(r => {
+          const matchQ = !q || r.mine.toLowerCase().includes(q) || r.reg.toLowerCase().includes(q) || r.officer.toLowerCase().includes(q) || r.id.toLowerCase().includes(q);
+          const matchS = s === 'ALL' || r.status === s;
+          return matchQ && matchS;
+        });
+
+        counterEl.textContent = `Showing ${filtered.length} of ${complianceRecords.length} Active Filings`;
+
+        if (filtered.length === 0) {
+          compTbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:28px; color:var(--text-secondary);">No statutory compliance filings match your filter criteria.</td></tr>`;
+          return;
+        }
+
+        compTbody.innerHTML = filtered.map(r => {
+          const badgeClass = r.status === 'COMPLIANT' ? 'badge-success' : r.status === 'OVERDUE' ? 'badge-danger' : 'badge-warning';
+          const isOverdue = r.status === 'OVERDUE';
+          return `
+            <tr>
+              <td>
+                <div style="font-weight:800; font-size:14px; color:var(--brand-primary);">${escapeHtml(r.mine)}</div>
+                <div style="font-size:11px; color:var(--text-secondary); font-family:monospace;">${r.id}</div>
+              </td>
+              <td><span style="font-weight:700; font-size:13px;">${escapeHtml(r.reg)}</span></td>
+              <td><span style="font-size:12px; color:var(--text-secondary);">${escapeHtml(r.category)}</span></td>
+              <td><span class="badge ${badgeClass}">${r.status.replace('_', ' ')}</span></td>
+              <td>
+                <span style="font-size:12px; font-weight:${isOverdue ? '800' : '600'}; color:${isOverdue ? 'var(--danger)' : 'var(--text-primary)'};">
+                  ${isOverdue ? '⚠️ ' : ''}${r.due}
+                </span>
+              </td>
+              <td><span style="font-size:12px; font-weight:500;">${escapeHtml(r.officer)}</span></td>
+              <td><span style="font-size:12px; color:var(--text-secondary);">${r.lastReview}</span></td>
+              <td style="text-align:right;">
+                <button class="btn btn-secondary" onclick="window.openComplianceReview('${r.id}', '${escapeHtml(r.mine)}', '${escapeHtml(r.reg)}', '${r.status}')" style="font-size:11px; padding:4px 12px; font-weight:700;">
+                  Review
+                </button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      function renderAudit() {
+        auditBox.innerHTML = auditEvents.map(a => `
+          <div class="audit-entry-row">
+            <div>
+              <span style="color:var(--brand-primary); font-weight:700;">${a.action}</span>
+              <span style="color:var(--text-secondary); margin-left:8px; font-size:11px;">[${a.id}] &bull; ${escapeHtml(a.meta)}</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span class="hash-pill">${a.hash}</span>
+              <span style="color:var(--text-muted); font-size:10px;">${a.time}</span>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      // Quick filter priority function
+      window.filterByPriority = function(status) {
+        statusFilter.value = status;
+        renderCompliance();
+        const searchEl = document.getElementById('comp-search');
+        if (searchEl && typeof searchEl.scrollIntoView === 'function') {
+          searchEl.scrollIntoView({ behavior: 'smooth' });
+        }
+      };
+
+      // Support query parameters (?mine=... or ?mineId=...)
+      const urlParams = new URLSearchParams(window.location.search);
+      const mineParam = urlParams.get('mine') || urlParams.get('mineId');
+      if (mineParam) {
+        searchInput.value = decodeURIComponent(mineParam);
+      }
+
+      searchInput.addEventListener('input', renderCompliance);
+      statusFilter.addEventListener('change', renderCompliance);
+
+      renderCompliance();
+      renderAudit();
+
+      // Modal Review Handler
+      window.openComplianceReview = function(id, mine, reg, status) {
+        document.getElementById('crm-title').textContent = `Statutory Review — ${id}`;
+        document.getElementById('crm-mine').textContent = mine;
+        document.getElementById('crm-reg').textContent = reg;
+        const badgeClass = status === 'COMPLIANT' ? 'badge-success' : status === 'OVERDUE' ? 'badge-danger' : 'badge-warning';
+        document.getElementById('crm-status').innerHTML = `<span class="badge ${badgeClass}">${status.replace('_', ' ')}</span>`;
+        document.getElementById('crm-notes').value = `Compliance verified by DGMS Regional Directorate. Field telemetry parameters conform to mandatory statutory safety rules under CMR 2017.`;
+        window.openModal('dgms-review-modal');
+      };
+
+      window.saveComplianceReview = function() {
+        window.closeModal('dgms-review-modal');
+        window.showToast('✓ Statutory Compliance Review saved and chained to DGMS Audit Ledger.', 'success');
+      };
+    });
+  </script>
+</body>
+</html>

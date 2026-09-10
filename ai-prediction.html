@@ -56,12 +56,6 @@
       background: #FFFFFF; border: 1px solid var(--border); border-radius: 3px; padding: 2px 4px; font-size: 10px; font-weight: 600; color: var(--text-muted);
     }
 
-    .header-links {
-      display: flex; gap: 24px; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-right: auto;
-    }
-    .header-link.active {
-      color: var(--text-primary); border-bottom: 2px solid var(--success); padding-bottom: 18px; margin-bottom: -20px;
-    }
 
     .system-status-pill {
       display: flex; align-items: center; gap: 6px; background: var(--success-bg); border: 1px solid rgba(22,131,75,0.2); padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; color: var(--success);
@@ -250,9 +244,9 @@
           <span class="shortcut">⌘K</span>
         </div>
         <div class="header-links">
-          <a href="dashboard.html" class="header-link">HQ Dashboard</a>
-          <a href="#" class="header-link active">SECL Operational Zone</a>
-          <a href="#" class="header-link">DGMS Regulatory Portal</a>
+          <a href="dashboard.html" class="header-link active">HQ Dashboard</a>
+          <a href="secl-zone.html" class="header-link">SECL Operational Zone</a>
+          <a href="dgms-portal.html" class="header-link">DGMS Regulatory Portal</a>
         </div>
         <div class="system-status-pill">
           <div class="status-dot"></div> System Operational
@@ -594,7 +588,7 @@
                   <div class="active" id="btnBaseline" onclick="switchDT('baseline')">Baseline</div>
                   <div id="btnFan" onclick="switchDT('fan')">After 74% Fan</div>
                 </div>
-                <button class="btn-dt-run" onclick="window.mockAction(this, 'Simulation complete: safe levels reached in 14m')">
+                <button class="btn-dt-run" onclick="window.openActionPlanModal()">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
                   Generate Action Plan
                 </button>
@@ -922,6 +916,86 @@
         el.style.cursor = 'grab';
       });
     });
+
+    window.openActionPlanModal = function() {
+      window.openModal('action-plan-modal');
+    };
+
+    window.executeActionPlan = function() {
+      // Apply the digital twin fan update
+      if (typeof switchDT === 'function') switchDT('fan');
+      
+      const fanSlider = document.getElementById('fanSlider');
+      if (fanSlider) {
+        fanSlider.value = 74;
+        const fanVal = document.getElementById('fanVal');
+        if (fanVal) fanVal.innerText = '74%';
+      }
+
+      window.closeModal('action-plan-modal');
+      window.showToast('AI Action Plan Executed: Auxiliary Fan #4 elevated to 74%. Methane dilution underway.', 'success', 5000);
+    };
   </script>
+
+  <!-- MODAL: DIGITAL TWIN ACTION PLAN -->
+  <div class="modal-overlay" id="action-plan-modal">
+    <div class="modal-card modal-lg" role="dialog" aria-modal="true">
+      <div class="modal-header danger-header">
+        <div>
+          <div class="modal-title" style="display:flex;align-items:center;gap:8px;color:var(--danger);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+            AI METHANE SURGE ACTION PLAN
+          </div>
+          <div class="modal-subtitle">Digital Mine Twin Simulation • Section 3B / Incline #4 Cross-Section</div>
+        </div>
+        <button class="modal-close" onclick="window.closeModal('action-plan-modal')">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-row-3" style="background:#FEF2F2; border:1px solid #FECACA; border-radius:var(--radius-sm); padding:12px 14px; margin-bottom:16px;">
+          <div>
+            <div style="font-size:10px; font-weight:700; text-transform:uppercase; color:#991B1B;">Active CH₄ Peak</div>
+            <div style="font-size:16px; font-weight:900; color:var(--danger);">1.34% (Elevated)</div>
+          </div>
+          <div>
+            <div style="font-size:10px; font-weight:700; text-transform:uppercase; color:#991B1B;">Statutory Threshold</div>
+            <div style="font-size:16px; font-weight:700; color:#17221C;">1.25% Max TLV</div>
+          </div>
+          <div>
+            <div style="font-size:10px; font-weight:700; text-transform:uppercase; color:#991B1B;">Time to Dilution</div>
+            <div style="font-size:16px; font-weight:800; color:var(--success);">14 Minutes</div>
+          </div>
+        </div>
+
+        <h4 style="font-size:11px; font-weight:800; text-transform:uppercase; color:var(--text-secondary); margin-bottom:10px; letter-spacing:0.5px;">Prescribed Mitigation Sequence</h4>
+        
+        <div style="display:flex; flex-direction:column; gap:10px; font-size:12px; margin-bottom:18px;">
+          <div style="display:flex; gap:10px; background:#F8FAFA; padding:10px; border-radius:4px; border:1px solid var(--border);">
+            <div style="background:var(--brand-primary); color:white; font-weight:800; width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:11px;">1</div>
+            <div><strong>Ventilation Ramp:</strong> Boost Auxiliary Fan #4 capacity from 42% to <strong>74%</strong> (18.2 m³/s airflow delivery).</div>
+          </div>
+          <div style="display:flex; gap:10px; background:#F8FAFA; padding:10px; border-radius:4px; border:1px solid var(--border);">
+            <div style="background:var(--brand-primary); color:white; font-weight:800; width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:11px;">2</div>
+            <div><strong>Electrical Isolation:</strong> Automatically trip circuit breaker feeding non-intrinsically safe equipment at Section 3B face.</div>
+          </div>
+          <div style="display:flex; gap:10px; background:#F8FAFA; padding:10px; border-radius:4px; border:1px solid var(--border);">
+            <div style="background:var(--brand-primary); color:white; font-weight:800; width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:11px;">3</div>
+            <div><strong>Workforce Withdrawal:</strong> Instruct 14 face workers to withdraw to Fresh Air Station (Zone C) via Incline #4.</div>
+          </div>
+        </div>
+
+        <div style="font-size:11px; color:var(--text-secondary); line-height:1.4;">
+          * Execution will directly synchronize aerodynamic vectors with digital twin simulation and broadcast DGMS event alert.
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="window.closeModal('action-plan-modal')">DISMISS</button>
+        <button type="button" class="btn btn-primary" onclick="window.executeActionPlan()" style="padding:10px 24px;font-weight:700;">
+          APPLY AI VENTILATION ACTION (74% FAN)
+        </button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

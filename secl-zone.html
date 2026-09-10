@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SECL Operational Command Center – CoalGuard</title>
+  <link rel="stylesheet" href="css/main.css">
+  <style>
+    /* ── SECL Command Center Scoped Layout ────────────────── */
+    .zone-banner {
+      background: #FFFFFF;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 20px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      box-shadow: var(--shadow-sm);
+    }
+    .zone-identity { display: flex; flex-direction: column; gap: 4px; }
+    .zone-meta-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .zone-status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--success);
+      background: var(--success-bg);
+      border: 1px solid var(--border-success);
+      padding: 3px 8px;
+      border-radius: 12px;
+      letter-spacing: 0.3px;
+    }
+    .zone-status-dot {
+      width: 6px; height: 6px; border-radius: 50%; background: var(--success);
+      box-shadow: 0 0 6px var(--success); animation: pulse 2s infinite;
+    }
+    .zone-sync-text { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+    .zone-actions { display: flex; gap: 10px; align-items: center; flex-shrink: 0; }
+
+    /* KPI Strip */
+    .secl-kpi-grid-6 {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 14px;
+    }
+    @media (max-width: 1280px) {
+      .secl-kpi-grid-6 { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 768px) {
+      .secl-kpi-grid-6 { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    /* Command Section: 2 Columns */
+    .command-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1.15fr;
+      gap: 16px;
+    }
+    @media (max-width: 1024px) {
+      .command-grid-2 { grid-template-columns: 1fr; }
+    }
+
+    .command-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .command-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 14px;
+    }
+    .command-card-title { font-size: 15px; font-weight: 800; color: var(--text-primary); margin-bottom: 2px; }
+    .command-card-sub { font-size: 12px; color: var(--text-secondary); }
+
+    /* Operational Risk Breakdown */
+    .risk-score-display {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 12px 16px;
+      background: #FFFDF8;
+      border: 1px solid var(--border-amber);
+      border-radius: var(--radius-sm);
+      margin-bottom: 16px;
+    }
+    .risk-score-large {
+      font-size: 32px;
+      font-weight: 900;
+      color: var(--amber);
+      line-height: 1;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Live Alerts Feed */
+    .alert-feed-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 275px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+    .alert-feed-item {
+      background: #FAFCFA;
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--amber);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      transition: background-color var(--trans-fast), transform var(--trans-fast);
+      cursor: pointer;
+    }
+    .alert-feed-item:hover {
+      background: #F3F7F4;
+      transform: translateX(2px);
+    }
+    .alert-feed-item.critical {
+      border-left-color: var(--danger);
+      background: #FFFBFB;
+    }
+    .alert-feed-item.critical:hover { background: #FDF2F2; }
+
+    .alert-top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .alert-mine-name {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+    .alert-time-tag { font-size: 11px; color: var(--text-muted); font-weight: 500; }
+    .alert-summary-text { font-size: 12px; color: var(--text-primary); line-height: 1.35; }
+
+    /* Filter Bar */
+    .filter-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+    .search-input-wrap {
+      position: relative;
+      flex: 1;
+      max-width: 380px;
+    }
+    .search-input-wrap svg {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+    }
+    .search-input-wrap input {
+      width: 100%;
+      padding: 8px 12px 8px 36px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      background: white;
+      transition: border-color var(--trans-fast);
+    }
+    .search-input-wrap input:focus { border-color: var(--brand-primary); }
+
+    .filter-selects {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .filter-selects select {
+      padding: 7px 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 600;
+      background: white;
+      color: var(--text-primary);
+    }
+
+    /* Alert chips in table */
+    .alert-chip-danger {
+      background: var(--danger-bg);
+      color: var(--danger);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .alert-chip-warning {
+      background: var(--warning-bg);
+      color: var(--amber);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .alert-chip-success {
+      background: var(--success-bg);
+      color: var(--success);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 12px;
+    }
+
+    /* Operational Insights Grid */
+    .insights-strip-5 {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+    }
+    @media (max-width: 1100px) {
+      .insights-strip-5 { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 640px) {
+      .insights-strip-5 { grid-template-columns: 1fr; }
+    }
+    .insight-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .insight-label { font-size: 10px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    .insight-val { font-size: 16px; font-weight: 800; color: var(--text-primary); }
+    .insight-desc { font-size: 11px; color: var(--text-secondary); line-height: 1.3; }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <div id="sidebar-mount"></div>
+
+    <div class="main-content">
+      <!-- TOP HEADER -->
+      <header class="top-header">
+        <div class="header-search">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="text" placeholder="Search SECL mines, telemetry, reports... (⌘K)">
+        </div>
+        <div class="header-links">
+          <a href="dashboard.html" class="header-link">HQ Dashboard</a>
+          <a href="secl-zone.html" class="header-link active">SECL Operational Zone</a>
+          <a href="dgms-portal.html" class="header-link">DGMS Regulatory Portal</a>
+        </div>
+        <div class="system-status-pill">
+          <div class="status-dot"></div> SECL Telemetry Online
+        </div>
+        <div class="header-time" id="live-clock"></div>
+        <button class="btn-outline-grey" style="padding: 6px; width: 32px; height: 32px; justify-content:center;" onclick="document.getElementById('secl-command-row')?.scrollIntoView({behavior:'smooth'})" title="View Active Alerts">🔔</button>
+        <button class="btn-emergency">Emergency Dispatch</button>
+      </header>
+
+      <main class="page-wrapper">
+        <!-- A. ZONE HEADER -->
+        <div class="zone-banner">
+          <div class="zone-identity">
+            <div class="zone-meta-bar">
+              <span class="badge badge-info" style="font-size:10px; font-weight:800;">SUBSIDIARY OPERATIONS</span>
+              <span style="font-size:12px; color:var(--text-secondary); font-weight:600;">HQ: Bilaspur, Chhattisgarh &bull; CIL Regional Command</span>
+              <div class="zone-status-pill">
+                <div class="zone-status-dot"></div> TELEMETRY ONLINE
+              </div>
+              <span class="zone-sync-text">Last sync: <span id="secl-sync-time">17:33 IST</span></span>
+            </div>
+            <h1 class="page-title" style="font-size: 24px; font-weight: 800; letter-spacing: -0.4px; margin: 4px 0 2px 0;">SECL Operational Command Center</h1>
+            <div class="page-subtitle">South Eastern Coalfields Limited &bull; Real-time extraction pacing, strata telemetry & localized hazard surveillance across Korba & Mand-Raigarh fields.</div>
+          </div>
+          <div class="zone-actions">
+            <button class="btn btn-secondary" onclick="window.print()" style="display:inline-flex; align-items:center; gap:6px; font-weight:600;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+              Export Digest
+            </button>
+            <button class="btn btn-primary" onclick="location.href='mine-intelligence.html?mine=SECL001&alert=ALT-SECL001'" style="display:inline-flex; align-items:center; gap:6px; font-weight:700;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m2 10 10 4 10-4-10-4Z"/><path d="m2 14 10 4 10-4"/><path d="m2 18 10 4 10-4"/></svg>
+              AI Strategy Center
+            </button>
+          </div>
+        </div>
+
+        <!-- B. EXECUTIVE KPI STRIP (6 Structured Cards) -->
+        <div class="secl-kpi-grid-6">
+          <div class="kpi-card info">
+            <div class="kpi-label">Active Mines</div>
+            <div class="kpi-val" id="secl-kpi-mines">13</div>
+            <div class="kpi-sub">SECL Production Units</div>
+          </div>
+          <div class="kpi-card success">
+            <div class="kpi-label">Annual Extraction</div>
+            <div class="kpi-val" id="secl-kpi-prod">~165 MT</div>
+            <div class="kpi-sub up">▲ 4.2% YoY Pacing</div>
+          </div>
+          <div class="kpi-card warning">
+            <div class="kpi-label">Overall Risk</div>
+            <div class="kpi-val" id="secl-kpi-risk" style="color:var(--amber);">HIGH</div>
+            <div class="kpi-sub">Index: 68 / 100</div>
+          </div>
+          <div class="kpi-card danger">
+            <div class="kpi-label">Active Alerts</div>
+            <div class="kpi-val text-danger" id="secl-kpi-alerts">5</div>
+            <div class="kpi-sub">1 Critical &bull; 4 High</div>
+          </div>
+          <div class="kpi-card danger">
+            <div class="kpi-label">Critical Findings</div>
+            <div class="kpi-val text-danger" id="secl-kpi-findings">14</div>
+            <div class="kpi-sub">DGMS Remediations</div>
+          </div>
+          <div class="kpi-card success">
+            <div class="kpi-label">Compliance Status</div>
+            <div class="kpi-val text-success" id="secl-kpi-comp">66.4%</div>
+            <div class="kpi-sub">Subsidiary Index</div>
+          </div>
+        </div>
+
+        <!-- C. OPERATIONAL RISK & ALERT COMMAND SECTION (Two Columns) -->
+        <div class="command-grid-2" id="secl-command-row">
+          <!-- LEFT: OPERATIONAL RISK BREAKDOWN -->
+          <div class="command-card">
+            <div>
+              <div class="command-card-header">
+                <div>
+                  <div class="command-card-title">Operational Risk Synthesis</div>
+                  <div class="command-card-sub">Real-time multivariate risk vectors across 13 SECL operating units.</div>
+                </div>
+                <span class="badge badge-warning" style="font-size:10px;">HIGH RISK</span>
+              </div>
+
+              <div class="risk-score-display">
+                <div class="risk-score-large">68<span style="font-size:16px; color:var(--text-muted); font-weight:600;">/100</span></div>
+                <div style="font-size:12px; color:var(--text-secondary); line-height:1.4;">
+                  Composite subsidiary safety and hazard score calculated from IoT pit strata telemetry, fleet density, and statutory notices.
+                </div>
+              </div>
+
+              <!-- Risk Vector Progress Meters -->
+              <div class="stat-meter">
+                <div class="stat-meter-header">
+                  <span class="stat-meter-label">Safety Risk Vector (HEMM & Strata)</span>
+                  <span class="stat-meter-val" style="color:var(--danger);">78% &bull; Critical</span>
+                </div>
+                <div class="stat-meter-track"><div class="stat-meter-fill danger" style="width: 78%;"></div></div>
+              </div>
+
+              <div class="stat-meter">
+                <div class="stat-meter-header">
+                  <span class="stat-meter-label">Production Bottleneck Risk (OBR / Fleet)</span>
+                  <span class="stat-meter-val" style="color:var(--amber);">69% &bull; High</span>
+                </div>
+                <div class="stat-meter-track"><div class="stat-meter-fill warning" style="width: 69%;"></div></div>
+              </div>
+
+              <div class="stat-meter">
+                <div class="stat-meter-header">
+                  <span class="stat-meter-label">Statutory Compliance Risk (CMR 2017)</span>
+                  <span class="stat-meter-val" style="color:var(--brand-teal);">42% &bull; Moderate</span>
+                </div>
+                <div class="stat-meter-track"><div class="stat-meter-fill teal" style="width: 42%;"></div></div>
+              </div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:16px; padding-top:12px; border-top:1px solid var(--border); font-size:11px; color:var(--text-muted);">
+              <span>Dominant Hazard: HEMM Traffic Proximity</span>
+              <a href="analytics.html" style="color:var(--brand-primary); font-weight:700;">View Risk Analytics &rarr;</a>
+            </div>
+          </div>
+
+          <!-- RIGHT: LIVE OPERATIONAL ALERTS FEED -->
+          <div class="command-card">
+            <div>
+              <div class="command-card-header">
+                <div>
+                  <div class="command-card-title">Live Operational Alerts</div>
+                  <div class="command-card-sub">Active sensor alarms, slope radars, and continuous miner telemetry.</div>
+                </div>
+                <span class="badge badge-danger" id="secl-active-alerts-badge">5 ACTIVE ALERTS</span>
+              </div>
+
+              <div class="alert-feed-list" id="secl-alerts-grid">
+                <!-- Dynamically Populated via JS -->
+              </div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:16px; padding-top:12px; border-top:1px solid var(--border); font-size:12px;">
+              <span style="font-size:11px; color:var(--text-muted);">Click alert to trigger immediate AI mitigation</span>
+              <button class="btn btn-secondary btn-sm" onclick="location.href='mine-intelligence.html?mine=SECL001&alert=ALT-SECL001'" style="font-weight:700; font-size:11px; padding:4px 10px;">
+                Investigate All &rarr;
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- D. MINE OPERATIONS SECTION (Interactive Table) -->
+        <div class="card-light">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px;">
+            <div>
+              <h2 style="font-size: 16px; font-weight: 800; color: var(--text-primary); margin-bottom: 2px;">Mine Operations</h2>
+              <div style="font-size: 12px; color: var(--text-secondary);">Interactive operational roster for South Eastern Coalfields Limited. Click any row to open Mine Intelligence.</div>
+            </div>
+            <div style="font-size: 12px; font-weight: 700; color: var(--text-muted);" id="secl-table-counter">Showing 13 mines</div>
+          </div>
+
+          <div class="filter-bar">
+            <div class="search-input-wrap">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              <input type="text" id="secl-search" placeholder="Filter by mine name, type, or coal grade...">
+            </div>
+            <div class="filter-selects">
+              <select id="filter-type">
+                <option value="ALL">All Categories</option>
+                <option value="Opencast">Opencast</option>
+                <option value="Underground">Underground</option>
+              </select>
+              <select id="filter-risk">
+                <option value="ALL">All Risk Levels</option>
+                <option value="Critical">Critical</option>
+                <option value="High">High Risk</option>
+                <option value="Medium">Medium Risk</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Mine Name & ID</th>
+                  <th>Location / Area</th>
+                  <th>Category & Method</th>
+                  <th>Operational Status</th>
+                  <th>Risk Level</th>
+                  <th>Annual Production</th>
+                  <th>Active Alerts</th>
+                  <th style="text-align:right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="secl-mines-tbody">
+                <!-- Dynamically populated from REAL_MINES -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- F. OPERATIONAL INSIGHTS (5 Compact Analytics Cards) -->
+        <div>
+          <div style="font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-secondary); margin-bottom:8px;">
+            Operational Insights & Benchmarks
+          </div>
+          <div class="insights-strip-5">
+            <div class="insight-card">
+              <div class="insight-label">Production Pacing</div>
+              <div class="insight-val" style="color:var(--success);">▲ 4.2% YoY</div>
+              <div class="insight-desc">Tracking ahead of 160 MT target; Gevra & Kusmunda driving volume.</div>
+            </div>
+            <div class="insight-card">
+              <div class="insight-label">Safety Trend</div>
+              <div class="insight-val" style="color:var(--success);">↓ 18% Incident Rate</div>
+              <div class="insight-desc">Zero fatal incidents over 180 consecutive operating days.</div>
+            </div>
+            <div class="insight-card">
+              <div class="insight-label">Top Risk Exposure</div>
+              <div class="insight-val" style="color:var(--danger);">Gevra OC (Risk 78)</div>
+              <div class="insight-desc">Mega-pit scale requires automated proximity warnings on haul roads.</div>
+            </div>
+            <div class="insight-card">
+              <div class="insight-label">Frequent Hazard</div>
+              <div class="insight-val" style="color:var(--amber);">HEMM Traffic (43%)</div>
+              <div class="insight-desc">High haulage congestion at peak shift changeover periods.</div>
+            </div>
+            <div class="insight-card">
+              <div class="insight-label">Compliance Gap</div>
+              <div class="insight-val" style="color:var(--brand-primary);">33.6% to Target</div>
+              <div class="insight-desc">Subsidiary target: achieve &ge;80% statutory score by Q4 audit.</div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="js/main.js"></script>
+  <script src="js/mines-db.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // 1. Filter SECL mines from master database
+      const seclMines = (typeof REAL_MINES !== 'undefined' ? REAL_MINES : []).filter(m => m.sub === 'SECL' || m.subsidiary === 'SECL');
+      
+      const tbody = document.getElementById('secl-mines-tbody');
+      const searchInput = document.getElementById('secl-search');
+      const typeFilter = document.getElementById('filter-type');
+      const riskFilter = document.getElementById('filter-risk');
+      const counterEl = document.getElementById('secl-table-counter');
+      const alertsGrid = document.getElementById('secl-alerts-grid');
+
+      // Populate KPIs
+      const critCount = seclMines.filter(m => m.risk === 'Critical').length;
+      const highCount = seclMines.filter(m => m.risk === 'High').length;
+      const totalAlerts = critCount + highCount;
+      const avgComp = (seclMines.reduce((acc, m) => acc + (m.compliance || 65), 0) / (seclMines.length || 1)).toFixed(1);
+
+      document.getElementById('secl-kpi-mines').textContent = seclMines.length;
+      document.getElementById('secl-kpi-alerts').textContent = totalAlerts;
+      document.getElementById('secl-kpi-comp').textContent = `${avgComp}%`;
+
+      // Helper: Escape HTML
+      function escapeHtml(s) {
+        if (!s) return '';
+        return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      }
+
+      // Update sync time
+      const syncEl = document.getElementById('secl-sync-time');
+      if (syncEl) {
+        const now = new Date();
+        syncEl.textContent = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata', hour12: false }) + ' IST';
+      }
+
+      // Render Table
+      function renderTable() {
+        const query = (searchInput.value || '').toLowerCase().trim();
+        const typeVal = typeFilter.value;
+        const riskVal = riskFilter.value;
+
+        const filtered = seclMines.filter(mine => {
+          const matchQuery = !query || mine.name.toLowerCase().includes(query) || mine.grade.toLowerCase().includes(query) || (mine.id && mine.id.toLowerCase().includes(query));
+          const matchType = typeVal === 'ALL' || mine.type === typeVal;
+          const matchRisk = riskVal === 'ALL' || mine.risk === riskVal;
+          return matchQuery && matchType && matchRisk;
+        });
+
+        counterEl.textContent = `Showing ${filtered.length} of ${seclMines.length} SECL mines`;
+
+        if (filtered.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:32px; color:var(--text-secondary);">No SECL mines matching your filter criteria.</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = filtered.map(m => {
+          const riskBadgeClass = m.risk === 'Critical' ? 'badge-danger' : m.risk === 'High' ? 'badge-warning' : 'badge-success';
+          const alertChip = m.risk === 'Critical' 
+            ? `<span class="alert-chip-danger"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg> 1 Critical</span>`
+            : m.risk === 'High'
+            ? `<span class="alert-chip-warning"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg> 1 High</span>`
+            : `<span class="alert-chip-success">&check; Normal</span>`;
+
+          const statusText = m.risk === 'Critical' ? 'Intensive Monitoring' : m.risk === 'High' ? 'Elevated Surveillance' : 'Standard Extraction';
+          const locationText = m.type === 'Underground' ? 'Hasdeo / Korba Field' : 'Korba Basin, CG';
+          const alertId = `ALT-${m.id}`;
+
+          return `
+            <tr class="clickable-row" onclick="handleRowClick(event, '${encodeURIComponent(m.id)}', '${encodeURIComponent(alertId)}')" title="Click to view full operational intelligence for ${escapeHtml(m.name)}">
+              <td>
+                <div style="font-weight:800; color:var(--brand-primary); font-size:14px;">${escapeHtml(m.name)}</div>
+                <div style="font-size:11px; color:var(--text-secondary); font-family:monospace;">ID: ${m.id}</div>
+              </td>
+              <td>
+                <div style="font-size:13px; font-weight:600; color:var(--text-primary);">${locationText}</div>
+                <div style="font-size:11px; color:var(--text-secondary);">${m.lat}&deg;N, ${m.lng}&deg;E</div>
+              </td>
+              <td>
+                <span style="font-size:12px; font-weight:600; color:var(--text-primary);">${m.type}</span>
+                <div style="font-size:11px; color:var(--text-secondary);">${escapeHtml(m.mechanization ? m.mechanization.split('/')[0].trim() : 'Mechanized')}</div>
+              </td>
+              <td>
+                <div style="display:flex; align-items:center; gap:6px;">
+                  <span style="width:7px; height:7px; border-radius:50%; background:${m.risk==='Critical'?'var(--danger)':m.risk==='High'?'var(--amber)':'var(--success)'};"></span>
+                  <span style="font-size:12px; font-weight:600;">${statusText}</span>
+                </div>
+              </td>
+              <td>
+                <span class="badge ${riskBadgeClass}">${m.risk.toUpperCase()}</span>
+              </td>
+              <td>
+                <span style="font-weight:700; font-size:13px;">${escapeHtml(m.prod)}</span>
+                <div style="font-size:11px; color:var(--text-secondary);">${escapeHtml(m.grade.split('(')[0].trim())}</div>
+              </td>
+              <td>${alertChip}</td>
+              <td style="text-align:right;">
+                <div style="display:flex; gap:6px; justify-content:flex-end;">
+                  <button class="btn btn-secondary" onclick="event.stopPropagation(); location.href='mine-intelligence.html?mine=${encodeURIComponent(m.id)}&alert=${encodeURIComponent(alertId)}'" style="font-size:11px; padding:5px 10px; font-weight:700;" title="Open Strategy & Intelligence Brief">
+                    Review
+                  </button>
+                  <button class="btn btn-secondary" onclick="event.stopPropagation(); location.href='gis-map.html?mine=${encodeURIComponent(m.id)}'" style="font-size:11px; padding:5px 8px;" title="View on Geospatial Map">
+                    🗺️
+                  </button>
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      // Interactive row click handler
+      window.handleRowClick = function(e, mineId, alertId) {
+        if (e.target.closest('button') || e.target.closest('a')) return;
+        location.href = `mine-intelligence.html?mine=${mineId}&alert=${alertId}`;
+      };
+
+      // Render Active Alerts Feed
+      function renderAlerts() {
+        const alertingMines = seclMines.filter(m => m.risk === 'Critical' || m.risk === 'High');
+        if (alertingMines.length === 0) {
+          alertsGrid.innerHTML = `<div style="padding:24px; color:var(--text-secondary); text-align:center;">No active hazard alerts recorded for SECL at this time.</div>`;
+          return;
+        }
+
+        alertsGrid.innerHTML = alertingMines.map((m, idx) => {
+          const isCritical = m.risk === 'Critical';
+          const alertId = `ALT-${m.id}`;
+          const title = m.reason ? m.reason.split(';')[0] : 'Operational hazard detected';
+          const timeAgo = idx === 0 ? '12 min ago' : idx === 1 ? '27 min ago' : idx === 2 ? '41 min ago' : '58 min ago';
+
+          return `
+            <div class="alert-feed-item ${isCritical ? 'critical' : ''}" onclick="location.href='mine-intelligence.html?mine=${encodeURIComponent(m.id)}&alert=${encodeURIComponent(alertId)}'">
+              <div class="alert-top-row">
+                <div style="display:flex; align-items:center; gap:6px;">
+                  <span class="badge ${isCritical ? 'badge-danger' : 'badge-warning'}" style="font-size:9px; padding:1px 6px;">${isCritical ? 'CRITICAL' : 'HIGH RISK'}</span>
+                  <span class="alert-mine-name">${escapeHtml(m.name)} &bull; ${escapeHtml(m.type)}</span>
+                </div>
+                <span class="alert-time-tag">${timeAgo}</span>
+              </div>
+              <div class="alert-summary-text">${escapeHtml(title)}</div>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-top:2px; font-size:11px; color:var(--text-muted);">
+                <span>ID: ${alertId}</span>
+                <span style="color:var(--brand-primary); font-weight:700;">Prescribe Solution &rarr;</span>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // Event Listeners
+      searchInput.addEventListener('input', renderTable);
+      typeFilter.addEventListener('change', renderTable);
+      riskFilter.addEventListener('change', renderTable);
+
+      // Support query parameters (?mine=... or ?mineId=...)
+      const urlParams = new URLSearchParams(window.location.search);
+      const mineParam = urlParams.get('mine') || urlParams.get('mineId');
+      if (mineParam) {
+        const cleanParam = decodeURIComponent(mineParam).toLowerCase().trim();
+        const matched = seclMines.find(m => m.id.toLowerCase() === cleanParam || m.name.toLowerCase().includes(cleanParam));
+        if (matched) {
+          searchInput.value = matched.name;
+        } else {
+          searchInput.value = decodeURIComponent(mineParam);
+        }
+      }
+
+      renderTable();
+      renderAlerts();
+    });
+  </script>
+</body>
+</html>

@@ -48,8 +48,9 @@
           <input type="text" placeholder="Search analytics models...">
         </div>
         <div class="header-links">
-          <a href="dashboard.html" class="header-link">HQ Dashboard</a>
-          <a href="#" class="header-link active">SECL Operational Zone</a>
+          <a href="dashboard.html" class="header-link active">HQ Dashboard</a>
+          <a href="secl-zone.html" class="header-link">SECL Operational Zone</a>
+          <a href="dgms-portal.html" class="header-link">DGMS Regulatory Portal</a>
         </div>
         <div class="system-status-pill"><div class="status-dot"></div> AI Engine Operational</div>
         <div class="header-time"></div>
@@ -63,7 +64,7 @@
             <div class="page-subtitle">Aggregate machine learning risk vectors across the national network.</div>
           </div>
           <div class="controls-right">
-            <button class="btn btn-outline-grey">Export AI Report (PDF)</button>
+            <button class="btn btn-outline-grey" onclick="window.print()">Export AI Report (PDF)</button>
           </div>
         </div>
 
@@ -115,7 +116,7 @@
               <div class="ac-conf">94% Confidence</div>
             </div>
             <div class="ac-desc" id="anomaly-ventilation">Main fan flow rate dropped by 18% over a 3-minute window without manual operator input.</div>
-            <button class="btn btn-secondary btn-sm" style="width:100%">Investigate Log</button>
+            <button class="btn btn-secondary btn-sm" style="width:100%" onclick="location.href='reports.html'">Investigate Log</button>
           </div>
 
           <div class="anomaly-card" style="border-left-color:var(--danger)">
@@ -133,7 +134,7 @@
               <div class="ac-conf" style="background:var(--warning-bg);color:var(--amber)">82% Confidence</div>
             </div>
             <div class="ac-desc" id="anomaly-fatigue">Mining crew showing clustered erratic equipment telemetry suggestive of operator fatigue.</div>
-            <button class="btn btn-secondary btn-sm" style="width:100%">Alert Shift Manager</button>
+            <button class="btn btn-secondary btn-sm" style="width:100%" onclick="window.openEmergencyModal()">Alert Shift Manager</button>
           </div>
         </div>
 

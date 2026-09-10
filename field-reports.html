@@ -28,9 +28,138 @@
     .phone-input { width: 100%; border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; font-size: 13px; color: var(--text-primary); }
     .phone-textarea { width: 100%; border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; font-size: 13px; color: var(--text-primary); height: 80px; resize: none; }
     
-    .phone-photo-btn { width: 100%; border: 1px dashed var(--brand-primary); background: var(--brand-light); color: var(--brand-primary); padding: 24px; border-radius: 6px; text-align: center; font-size: 12px; font-weight: 700; display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; }
-    
-    .phone-submit { width: 100%; background: var(--brand-primary); color: white; border: none; padding: 14px; border-radius: 6px; font-size: 14px; font-weight: 800; margin-top: 8px; }
+    .phone-photo-btn {
+      width: 100%;
+      border: 1.5px dashed var(--brand-primary);
+      background: var(--brand-light);
+      color: var(--brand-primary);
+      padding: 20px;
+      border-radius: 8px;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease-in-out;
+      position: relative;
+      outline: none;
+      user-select: none;
+    }
+    .phone-photo-btn:hover {
+      background: rgba(13, 148, 136, 0.12);
+      border-color: #0d9488;
+      box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
+    }
+    .phone-photo-btn:focus-visible {
+      border-color: #0d9488;
+      box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.25);
+    }
+    .phone-photo-btn:active {
+      transform: scale(0.985);
+    }
+    .phone-photo-btn.has-photo {
+      padding: 8px;
+      border-style: solid;
+      border-color: var(--border);
+      background: #ffffff;
+      cursor: default;
+    }
+    .photo-preview-wrapper {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    .photo-preview-img {
+      width: 100%;
+      max-height: 170px;
+      object-fit: cover;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      display: block;
+    }
+    .photo-meta-bar {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      color: var(--text-secondary);
+      padding: 6px 8px;
+      background: #f8fafc;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+    }
+    .photo-meta-info {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 600;
+      color: var(--text-primary);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 180px;
+    }
+    .photo-action-btn {
+      background: none;
+      border: 1px solid transparent;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      padding: 3px 8px;
+      border-radius: 4px;
+      transition: all 0.15s ease;
+    }
+    .photo-change-btn {
+      color: var(--brand-primary);
+      background: var(--brand-light);
+      border-color: rgba(13, 148, 136, 0.2);
+    }
+    .photo-change-btn:hover {
+      background: rgba(13, 148, 136, 0.2);
+    }
+    .photo-remove-btn {
+      color: var(--danger);
+      background: rgba(239, 68, 68, 0.08);
+      border-color: rgba(239, 68, 68, 0.2);
+    }
+    .photo-remove-btn:hover {
+      background: rgba(239, 68, 68, 0.18);
+    }
+    .feed-item {
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .feed-item:hover {
+      border-color: var(--brand-primary);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+      transform: translateY(-1px);
+    }
+    .phone-submit {
+      width: 100%;
+      background: var(--brand-primary);
+      color: white;
+      border: none;
+      padding: 14px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 800;
+      margin-top: 8px;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+    .phone-submit:hover:not(:disabled) {
+      filter: brightness(1.08);
+    }
+    .phone-submit:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+    }
     
     .phone-meta { background: #E8F4EE; border-radius: 6px; padding: 10px; font-size: 10px; color: var(--text-secondary); margin-bottom: 16px; border: 1px solid var(--border-success); }
     .phone-meta span { font-weight: 700; color: var(--text-primary); display: block; margin-bottom: 2px; }
@@ -62,7 +191,8 @@
         </div>
         <div class="header-links">
           <a href="dashboard.html" class="header-link">HQ Dashboard</a>
-          <a href="#" class="header-link active">SECL Operational Zone</a>
+          <a href="secl-zone.html" class="header-link active">SECL Operational Zone</a>
+          <a href="dgms-portal.html" class="header-link">DGMS Regulatory Portal</a>
         </div>
         
         <!-- Language Control -->
@@ -128,52 +258,135 @@
                 
                 <div class="phone-form-group">
                   <label>Incident Type</label>
-                  <select class="phone-input"><option>Equipment Failure</option><option>Strata Collapse</option><option>Fire/Heating</option></select>
+                  <select class="phone-input" id="incident-type-select">
+                    <option value="Equipment Failure">Equipment Failure</option>
+                    <option value="Strata Collapse">Strata Collapse</option>
+                    <option value="Fire/Heating">Fire / Heating</option>
+                    <option value="Gas Influx">Gas Influx / CH4 Spurt</option>
+                    <option value="Environmental Breach">Environmental Breach</option>
+                  </select>
                 </div>
 
                 <div class="phone-form-group">
                   <label>Severity</label>
-                  <select class="phone-input" style="border-color:var(--danger); color:var(--danger); font-weight:700;"><option>High (Immediate Action)</option></select>
+                  <select class="phone-input" id="incident-severity-select" style="border-color:var(--danger); color:var(--danger); font-weight:700;">
+                    <option value="critical">Critical (Immediate Stop Work)</option>
+                    <option value="high" selected>High (Urgent Action)</option>
+                    <option value="medium">Medium (Controlled)</option>
+                  </select>
                 </div>
 
                 <div class="phone-form-group">
                   <label>Description</label>
-                  <textarea class="phone-textarea" placeholder="Describe the incident..."></textarea>
+                  <textarea class="phone-textarea" id="incident-desc-textarea" placeholder="Describe the incident, location and initial measures..."></textarea>
                 </div>
 
                 <div class="phone-form-group">
-                  <label>Photo Evidence</label>
-                  <div class="phone-photo-btn">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                    Tap to capture photo
+                  <label for="incident-photo-zone">Photo Evidence</label>
+                  <input
+                    type="file"
+                    id="incident-photo-input"
+                    accept="image/jpeg,image/png,image/webp"
+                    capture="environment"
+                    style="display:none;"
+                    onchange="handlePhotoSelected(event, 'incident')"
+                  >
+                  <div
+                    class="phone-photo-btn"
+                    id="incident-photo-zone"
+                    tabindex="0"
+                    role="button"
+                    aria-label="Capture or upload photo evidence"
+                    onclick="triggerPhotoPicker('incident')"
+                    onkeydown="handlePhotoKeydown(event, 'incident')"
+                  >
+                    <div id="incident-photo-placeholder" style="display:flex; flex-direction:column; align-items:center; gap:8px;">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                      <div>Tap to capture photo</div>
+                      <div style="font-size:10px; color:var(--text-muted); font-weight:500;">Camera or file (JPG, PNG, WebP &bull; Max 10 MB)</div>
+                    </div>
+
+                    <div id="incident-photo-preview-container" class="photo-preview-wrapper" style="display:none;" onclick="event.stopPropagation();">
+                      <img id="incident-photo-img" class="photo-preview-img" alt="Captured photo evidence" onclick="triggerPhotoPicker('incident')" title="Click to replace photo">
+                      <div class="photo-meta-bar">
+                        <div class="photo-meta-info" id="incident-photo-meta">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                          <span id="incident-photo-name">evidence.jpg</span>
+                          <span id="incident-photo-size" style="color:var(--text-muted); font-weight:normal;">(0.0 MB)</span>
+                        </div>
+                        <div style="display:flex; gap:4px;">
+                          <button type="button" class="photo-action-btn photo-change-btn" onclick="triggerPhotoPicker('incident')" title="Change photo">Change</button>
+                          <button type="button" class="photo-action-btn photo-remove-btn" onclick="removePhotoEvidence('incident')" title="Remove photo">&times; Remove</button>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                <button class="phone-submit" onclick="window.showToast('Incident saved to offline queue', 'success')">Submit Incident</button>
+                <button class="phone-submit" id="incident-submit-btn" onclick="window.submitFieldIncident()">Submit Incident</button>
                 </div>
 
                 <!-- OBSERVATION TAB -->
                 <div id="tab-observation" class="phone-tab-content" style="display:none;">
                   <div class="phone-form-group">
                     <label>Observation Category</label>
-                    <select class="phone-input"><option>Hazard Identification</option><option>Positive Safety Practice</option></select>
+                    <select class="phone-input" id="obs-category-select">
+                      <option value="Hazard Identification">Hazard Identification</option>
+                      <option value="Positive Safety Practice">Positive Safety Practice</option>
+                      <option value="PPE Violation">PPE Non-Compliance</option>
+                      <option value="Ventilation Check">Ventilation Check</option>
+                    </select>
                   </div>
                   <div class="phone-form-group">
                     <label>Location Details</label>
-                    <input type="text" class="phone-input" placeholder="e.g. Conveyor Belt 3">
+                    <input type="text" class="phone-input" id="obs-location-input" placeholder="e.g. Conveyor Belt 3 / Substation #4">
                   </div>
                   <div class="phone-form-group">
                     <label>Description</label>
-                    <textarea class="phone-textarea" placeholder="What did you observe?"></textarea>
+                    <textarea class="phone-textarea" id="obs-desc-textarea" placeholder="What did you observe?"></textarea>
                   </div>
                   <div class="phone-form-group">
-                    <label>Photo Evidence</label>
-                    <div class="phone-photo-btn">
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                      Tap to capture photo
+                    <label for="obs-photo-zone">Photo Evidence</label>
+                    <input
+                      type="file"
+                      id="obs-photo-input"
+                      accept="image/jpeg,image/png,image/webp"
+                      capture="environment"
+                      style="display:none;"
+                      onchange="handlePhotoSelected(event, 'obs')"
+                    >
+                    <div
+                      class="phone-photo-btn"
+                      id="obs-photo-zone"
+                      tabindex="0"
+                      role="button"
+                      aria-label="Capture or upload observation photo"
+                      onclick="triggerPhotoPicker('obs')"
+                      onkeydown="handlePhotoKeydown(event, 'obs')"
+                    >
+                      <div id="obs-photo-placeholder" style="display:flex; flex-direction:column; align-items:center; gap:8px;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                        <div>Tap to capture photo</div>
+                        <div style="font-size:10px; color:var(--text-muted); font-weight:500;">Camera or file (JPG, PNG, WebP &bull; Max 10 MB)</div>
+                      </div>
+
+                      <div id="obs-photo-preview-container" class="photo-preview-wrapper" style="display:none;" onclick="event.stopPropagation();">
+                        <img id="obs-photo-img" class="photo-preview-img" alt="Captured observation photo" onclick="triggerPhotoPicker('obs')" title="Click to replace photo">
+                        <div class="photo-meta-bar">
+                          <div class="photo-meta-info" id="obs-photo-meta">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                            <span id="obs-photo-name">evidence.jpg</span>
+                            <span id="obs-photo-size" style="color:var(--text-muted); font-weight:normal;">(0.0 MB)</span>
+                          </div>
+                          <div style="display:flex; gap:4px;">
+                            <button type="button" class="photo-action-btn photo-change-btn" onclick="triggerPhotoPicker('obs')" title="Change photo">Change</button>
+                            <button type="button" class="photo-action-btn photo-remove-btn" onclick="removePhotoEvidence('obs')" title="Remove photo">&times; Remove</button>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                  <button class="phone-submit" onclick="window.showToast('Observation logged safely', 'success')">Log Observation</button>
+                  <button class="phone-submit" id="obs-submit-btn" onclick="window.submitFieldObservation()">Log Observation</button>
                 </div>
 
                 <!-- ATTENDANCE TAB -->
@@ -219,9 +432,80 @@
     </div>
   </div>
 
+  <!-- INCIDENT DETAIL MODAL -->
+  <div id="incident-detail-modal" class="modal-overlay">
+    <div class="modal-card modal-lg" role="dialog" aria-modal="true" aria-labelledby="idm-title">
+      <div class="modal-header">
+        <div>
+          <div class="modal-title" id="idm-title" style="display:flex;align-items:center;gap:8px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+            Incident Record: <span id="idm-id" style="font-family:monospace;color:var(--brand-primary);"></span>
+          </div>
+          <div class="modal-subtitle">DGMS statutory mine incident report and verified evidentiary documentation</div>
+        </div>
+        <button class="modal-close-btn" onclick="window.closeModal('incident-detail-modal')">&times;</button>
+      </div>
+      <div class="modal-body" id="idm-body" style="padding:20px; display:flex; flex-direction:column; gap:20px;">
+        <!-- Metadata Grid -->
+        <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:12px; background:#f8fafc; border:1px solid var(--border); border-radius:8px; padding:16px;">
+          <div>
+            <div style="font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:2px;">Mine Location</div>
+            <div id="idm-mine" style="font-weight:700; font-size:13px; color:var(--text-primary);">--</div>
+          </div>
+          <div>
+            <div style="font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:2px;">Incident Type</div>
+            <div id="idm-type" style="font-weight:700; font-size:13px; color:var(--text-primary);">--</div>
+          </div>
+          <div>
+            <div style="font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:2px;">Severity</div>
+            <div id="idm-severity"><span class="badge badge-danger">HIGH</span></div>
+          </div>
+          <div>
+            <div style="font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:2px;">Status</div>
+            <div id="idm-status"><span class="badge badge-warning">OPEN</span></div>
+          </div>
+          <div>
+            <div style="font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:2px;">Reporter</div>
+            <div id="idm-reporter" style="font-size:12px; font-weight:600; color:var(--text-secondary);">--</div>
+          </div>
+          <div>
+            <div style="font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:2px;">Logged Timestamp</div>
+            <div id="idm-time" style="font-size:12px; font-weight:600; color:var(--text-secondary);">--</div>
+          </div>
+        </div>
+
+        <!-- Description Block -->
+        <div>
+          <div style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:6px;">Incident Description & Immediate Measures</div>
+          <div id="idm-desc" style="background:#ffffff; border:1px solid var(--border); border-radius:6px; padding:14px; font-size:13px; line-height:1.6; color:var(--text-primary);">--</div>
+        </div>
+
+        <!-- PHOTO EVIDENCE SECTION -->
+        <div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <div style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; display:flex; align-items:center; gap:6px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              PHOTO EVIDENCE
+            </div>
+            <span id="idm-photo-badge" class="badge badge-success" style="display:none;">VERIFIED ATTACHED</span>
+          </div>
+          <div id="idm-photo-container" style="background:#f8fafc; border:1px solid var(--border); border-radius:8px; padding:16px; text-align:center;">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer" style="display:flex; justify-content:flex-end; gap:8px;">
+        <button class="btn btn-secondary" onclick="window.closeModal('incident-detail-modal')">Close Record</button>
+      </div>
+    </div>
+  </div>
+
   <script src="js/main.js"></script>
   <script src="js/mines-db.js"></script>
   <script>
+    window.incidentPhotoState = null;
+    window.obsPhotoState = null;
+
     function switchPhoneTab(tabId, el) {
       document.querySelectorAll('.ptab').forEach(t => t.classList.remove('active'));
       el.classList.add('active');
@@ -229,18 +513,295 @@
       document.getElementById('tab-' + tabId).style.display = 'block';
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
-      if (typeof REAL_MINES === 'undefined') return;
+    // Trigger the real native file picker / camera
+    window.triggerPhotoPicker = function(type = 'incident') {
+      const input = document.getElementById(`${type}-photo-input`);
+      if (input) {
+        input.click();
+      }
+    };
 
-      // ── Populate Mine Location dropdown with all 79 real mines
-      const mineSelect = document.getElementById('mine-location-select');
-      if (mineSelect) {
-        [...REAL_MINES].sort((a,b) => a.name.localeCompare(b.name)).forEach(m => {
-          const opt = document.createElement('option');
-          opt.value = m.name;
-          opt.textContent = `${m.name} (${m.sub})`;
-          mineSelect.appendChild(opt);
+    // Keyboard accessibility for photo zone (Enter or Space)
+    window.handlePhotoKeydown = function(e, type = 'incident') {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        window.triggerPhotoPicker(type);
+      }
+    };
+
+    // Client-side image optimization (downscales large field photos while preserving clarity)
+    function optimizeImageFile(file, maxWidth = 1920, maxHeight = 1920, quality = 0.85) {
+      return new Promise((resolve) => {
+        if (file.size <= 1.5 * 1024 * 1024) {
+          return resolve(file);
+        }
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            let width = img.width;
+            let height = img.height;
+            if (width > maxWidth || height > maxHeight) {
+              if (width > height) {
+                height = Math.round((height * maxWidth) / width);
+                width = maxWidth;
+              } else {
+                width = Math.round((width * maxHeight) / height);
+                height = maxHeight;
+              }
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+
+            const outType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+            canvas.toBlob((blob) => {
+              if (!blob || blob.size >= file.size) {
+                resolve(file);
+              } else {
+                const optFile = new File([blob], file.name, {
+                  type: outType,
+                  lastModified: Date.now()
+                });
+                resolve(optFile);
+              }
+            }, outType, quality);
+          };
+          img.onerror = () => resolve(file);
+          img.src = e.target.result;
+        };
+        reader.onerror = () => resolve(file);
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // Handle real file selection & validation
+    window.handlePhotoSelected = async function(e, type = 'incident') {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+
+      // 1. Validate file type
+      const allowedMimes = ['image/jpeg', 'image/png', 'image/webp'];
+      const ext = file.name.split('.').pop().toLowerCase();
+      const allowedExts = ['jpg', 'jpeg', 'png', 'webp'];
+      if (!allowedMimes.includes(file.type) && !allowedExts.includes(ext)) {
+        window.showToast('Please select a valid image file (JPG, PNG, or WebP).', 'warning', 4500);
+        window.removePhotoEvidence(type);
+        return;
+      }
+
+      // 2. Validate file size (10 MB maximum)
+      if (file.size > 10 * 1024 * 1024) {
+        window.showToast('Photo must be smaller than 10 MB.', 'warning', 4500);
+        window.removePhotoEvidence(type);
+        return;
+      }
+
+      // 3. Optimize image if large
+      let finalFile = file;
+      try {
+        finalFile = await optimizeImageFile(file);
+      } catch (optErr) {
+        console.warn('Image optimization skipped:', optErr);
+      }
+
+      // 4. Update preview and store state
+      const objectUrl = URL.createObjectURL(finalFile);
+      const state = {
+        file: finalFile,
+        name: file.name,
+        size: finalFile.size,
+        previewUrl: objectUrl
+      };
+
+      if (type === 'incident') {
+        window.incidentPhotoState = state;
+      } else {
+        window.obsPhotoState = state;
+      }
+
+      const zone = document.getElementById(`${type}-photo-zone`);
+      const placeholder = document.getElementById(`${type}-photo-placeholder`);
+      const previewCont = document.getElementById(`${type}-photo-preview-container`);
+      const previewImg = document.getElementById(`${type}-photo-img`);
+      const nameEl = document.getElementById(`${type}-photo-name`);
+      const sizeEl = document.getElementById(`${type}-photo-size`);
+
+      if (previewImg) previewImg.src = objectUrl;
+      if (nameEl) nameEl.textContent = file.name;
+      if (sizeEl) {
+        const mb = (finalFile.size / (1024 * 1024)).toFixed(1);
+        const kb = Math.round(finalFile.size / 1024);
+        sizeEl.textContent = finalFile.size >= 1024 * 1024 ? `(${mb} MB)` : `(${kb} KB)`;
+      }
+
+      if (placeholder) placeholder.style.display = 'none';
+      if (previewCont) previewCont.style.display = 'flex';
+      if (zone) zone.classList.add('has-photo');
+    };
+
+    // Remove selected photo evidence and reset to placeholder
+    window.removePhotoEvidence = function(type = 'incident') {
+      const input = document.getElementById(`${type}-photo-input`);
+      if (input) input.value = '';
+
+      if (type === 'incident') {
+        if (window.incidentPhotoState && window.incidentPhotoState.previewUrl) {
+          try { URL.revokeObjectURL(window.incidentPhotoState.previewUrl); } catch(e){}
+        }
+        window.incidentPhotoState = null;
+      } else {
+        if (window.obsPhotoState && window.obsPhotoState.previewUrl) {
+          try { URL.revokeObjectURL(window.obsPhotoState.previewUrl); } catch(e){}
+        }
+        window.obsPhotoState = null;
+      }
+
+      const zone = document.getElementById(`${type}-photo-zone`);
+      const placeholder = document.getElementById(`${type}-photo-placeholder`);
+      const previewCont = document.getElementById(`${type}-photo-preview-container`);
+      const previewImg = document.getElementById(`${type}-photo-img`);
+
+      if (previewImg) previewImg.src = '';
+      if (placeholder) placeholder.style.display = 'flex';
+      if (previewCont) previewCont.style.display = 'none';
+      if (zone) zone.classList.remove('has-photo');
+    };
+
+    // Open Incident Detail Modal with persisted photo evidence
+    window.viewIncidentDetails = async function(incidentId) {
+      try {
+        const res = await fetch(`http://localhost:3001/api/incidents/${incidentId}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const d = await res.json();
+
+        document.getElementById('idm-id').textContent = d.id;
+        document.getElementById('idm-mine').textContent = d.mine_name || 'SECL Gevra';
+        document.getElementById('idm-type').textContent = d.type || 'Equipment Failure';
+
+        const sevBadge = (d.severity || 'medium').toLowerCase();
+        const sevEl = document.getElementById('idm-severity');
+        const sevClass = sevBadge === 'critical' ? 'badge-danger' : sevBadge === 'high' ? 'badge-danger' : 'badge-warning';
+        sevEl.innerHTML = `<span class="badge ${sevClass}">${(d.severity || 'HIGH').toUpperCase()}</span>`;
+
+        const stEl = document.getElementById('idm-status');
+        const stClass = d.status === 'resolved' ? 'badge-success' : 'badge-warning';
+        stEl.innerHTML = `<span class="badge ${stClass}">${(d.status || 'OPEN').toUpperCase()}</span>`;
+
+        document.getElementById('idm-reporter').textContent = d.reporter || 'Field Inspector';
+        document.getElementById('idm-time').textContent = d.created_at || d.date || 'Recent';
+        document.getElementById('idm-desc').textContent = d.description || 'No detailed narrative provided.';
+
+        const photoCont = document.getElementById('idm-photo-container');
+        const photoBadge = document.getElementById('idm-photo-badge');
+
+        if (d.photo_url) {
+          photoBadge.style.display = 'inline-block';
+          const fullUrl = `http://localhost:3001${d.photo_url}`;
+          photoCont.innerHTML = `
+            <div style="display:flex; flex-direction:column; align-items:center; gap:12px;">
+              <a href="${fullUrl}" target="_blank" title="Click to view full resolution" style="display:block; max-width:100%; text-decoration:none;">
+                <img src="${fullUrl}" alt="Photo Evidence for ${d.id}" style="max-height:300px; max-width:100%; border-radius:6px; border:1px solid var(--border); box-shadow:0 4px 12px rgba(0,0,0,0.08); object-fit:contain; transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+              </a>
+              <div style="font-size:11px; color:var(--text-secondary); display:flex; align-items:center; gap:8px;">
+                <span>📸 Persisted File: <strong>${d.photo_filename || 'photo_evidence.jpg'}</strong></span>
+                &bull;
+                <a href="${fullUrl}" target="_blank" style="color:var(--brand-primary); font-weight:700; text-decoration:underline;">Open Full Size</a>
+              </div>
+            </div>
+          `;
+        } else {
+          photoBadge.style.display = 'none';
+          photoCont.innerHTML = `
+            <div style="padding:24px 12px; color:var(--text-muted); font-size:12px;">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom:6px; opacity:0.6;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="3" x2="21" y2="21"/></svg>
+              <div>No photographic evidence attached to this incident record.</div>
+            </div>
+          `;
+        }
+
+        window.openModal('incident-detail-modal');
+      } catch (err) {
+        console.error('Error opening incident details:', err);
+        window.showToast('Could not load incident details: ' + err.message, 'danger');
+      }
+    };
+
+    // Load Live Field Feed from persistent backend database
+    async function loadLiveFieldFeed() {
+      const feedContainer = document.getElementById('live-field-feed');
+      if (!feedContainer) return;
+
+      try {
+        const res = await fetch('http://localhost:3001/api/incidents');
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const incidents = await res.json();
+
+        feedContainer.innerHTML = '';
+
+        if (!incidents || incidents.length === 0) {
+          feedContainer.innerHTML = '<div style="padding:20px; text-align:center; color:var(--text-muted); font-size:12px;">No field incidents recorded.</div>';
+          return;
+        }
+
+        incidents.forEach(inc => {
+          const isDanger = (inc.severity || '').toLowerCase() === 'critical' || (inc.severity || '').toLowerCase() === 'high';
+          const div = document.createElement('div');
+          div.className = `feed-item ${isDanger ? 'danger' : 'warning'}`;
+          div.setAttribute('role', 'button');
+          div.setAttribute('tabindex', '0');
+          div.title = 'Click to view full incident details';
+          div.onclick = () => window.viewIncidentDetails(inc.id);
+          div.onkeydown = (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              window.viewIncidentDetails(inc.id);
+            }
+          };
+
+          const timeDisplay = inc.created_at || inc.date || 'Recent';
+          const hasPhoto = !!inc.photo_url;
+
+          div.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:4px;">
+              <div class="fi-time">${timeDisplay}</div>
+              <div style="display:flex; gap:6px; align-items:center;">
+                ${hasPhoto ? '<span class="badge badge-success" style="font-size:9px; padding:2px 6px; display:inline-flex; align-items:center; gap:3px;"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg> Photo Evidence</span>' : ''}
+                <span class="badge ${isDanger ? 'badge-danger' : 'badge-warning'}" style="font-size:9px; padding:2px 6px;">${(inc.severity || 'HIGH').toUpperCase()}</span>
+              </div>
+            </div>
+            <div class="fi-type">${inc.type || 'Incident'} <span style="font-size:11px; font-family:monospace; color:var(--brand-primary); font-weight:600;">(${inc.id})</span></div>
+            <div class="fi-meta">
+              <span>Mine:</span> ${inc.mine_name || 'SECL Gevra'}<br>
+              <span>Submitted by:</span> ${inc.reporter || 'Field Inspector'}<br>
+              <span>Details:</span> ${inc.description || ''}
+            </div>
+            <div style="margin-top:10px; display:flex; justify-content:flex-end;">
+              <button type="button" class="btn btn-sm btn-secondary" style="font-size:11px; padding:3px 10px;" onclick="event.stopPropagation(); window.viewIncidentDetails('${inc.id}')">View Details &rarr;</button>
+            </div>
+          `;
+          feedContainer.appendChild(div);
         });
+
+      } catch (err) {
+        console.error('Error loading live field feed:', err);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      // ── Populate Mine Location dropdown with all 79 real mines
+      if (typeof REAL_MINES !== 'undefined') {
+        const mineSelect = document.getElementById('mine-location-select');
+        if (mineSelect) {
+          [...REAL_MINES].sort((a,b) => a.name.localeCompare(b.name)).forEach(m => {
+            const opt = document.createElement('option');
+            opt.value = m.name;
+            opt.textContent = `${m.name} (${m.sub})`;
+            mineSelect.appendChild(opt);
+          });
+        }
       }
 
       // ── Populate Contractor dropdown from CONTRACTORS_DB
@@ -254,118 +815,125 @@
         });
       }
 
-      // ── Populate Live Field Feed from real mine data
-      const feedContainer = document.getElementById('live-field-feed');
-      if (feedContainer) {
-        const feedMines = [
-          ...REAL_MINES.filter(m => m.risk === 'Critical').slice(0, 3),
-          ...REAL_MINES.filter(m => m.risk === 'High').slice(0, 3),
-          ...REAL_MINES.filter(m => m.type === 'Underground').slice(0, 2),
-        ];
-        const FEED_TYPES = [
-          { type:'Incident Report',       cls:'danger', icon:'INCIDENT',    reporters:['Shift Overman', 'Safety Officer', 'Control Room'] },
-          { type:'Safety Observation',    cls:'warning',icon:'SAFETY OBV',  reporters:['Field Inspector', 'Site Engineer', 'Ventilation Officer'] },
-          { type:'Shift Attendance Sync', cls:'',       icon:'ATTENDANCE',  reporters:['Biometric Kiosk', 'Attendance System', 'Shift Supervisor'] },
-        ];
-        const ISSUES = [
-          'Dust suppression system offline. Manual watering initiated.',
-          'Auxiliary fan vibrating excessively. Maintenance logged.',
-          'Equipment failure (Dumper) — unit grounded.',
-          'Roof movement detected in section. Temporary evacuation in progress.',
-          'Methane alert at 1.2% — area evacuated per protocol.',
-          'Workers present, 3 absent. Replacement arranged.',
-        ];
-        const times = ['2 min ago', '14 min ago', '31 min ago', '42 min ago', '1 hr ago', '1.5 hr ago', '2 hr ago', '3 hr ago'];
-        feedMines.forEach((mine, idx) => {
-          const ft = FEED_TYPES[idx % FEED_TYPES.length];
-          const div = document.createElement('div');
-          div.className = `feed-item ${ft.cls}`;
-          div.innerHTML = `
-            <div class="fi-time">${times[idx % times.length]}</div>
-            <div class="fi-type">${ft.type}</div>
-            <div class="fi-meta">
-              <span>Mine:</span> ${mine.name}<br>
-              <span>Submitted by:</span> ${ft.reporters[idx % ft.reporters.length]}<br>
-              <span>Location:</span> GPS ${mine.lat.toFixed(4)}° N, ${mine.lng.toFixed(4)}° E<br>
-              <span>Issue:</span> ${ISSUES[idx % ISSUES.length]}
-              ${ft.cls === 'danger' ? '<br><span class="badge badge-danger mt-2">HIGH SEVERITY</span>' : ''}
-            </div>
-          `;
-          feedContainer.appendChild(div);
-        });
+      // ── Load live field feed from persistent database
+      loadLiveFieldFeed();
+    });
+
+    // Submit incident with photo evidence via multipart/form-data
+    window.submitFieldIncident = async function() {
+      const mineSelect = document.getElementById('mine-location-select');
+      const mine = mineSelect ? mineSelect.value : '';
+      const type = document.getElementById('incident-type-select')?.value || 'Equipment Failure';
+      const severity = document.getElementById('incident-severity-select')?.value || 'high';
+      const desc = (document.getElementById('incident-desc-textarea')?.value || '').trim();
+
+      if (!mine) {
+        window.showToast('Please select the Mine Location.', 'warning');
+        if (mineSelect) mineSelect.focus();
+        return;
+      }
+      if (!desc) {
+        window.showToast('Please provide a description of the incident.', 'warning');
+        document.getElementById('incident-desc-textarea')?.focus();
+        return;
       }
 
-      // ── Live feed simulator (adds new events from real mines periodically)
-      const feedContainer2 = document.getElementById('live-field-feed');
-      const liveEvents = [
-        ...REAL_MINES.filter(m => m.risk === 'Critical').map(m => ({ type:'Incident', label:'INCIDENT LOG', color:'danger', user:'Control Room', desc:`${m.reason.split(';')[0]} — action initiated.`, mine:m.name })),
-        ...REAL_MINES.filter(m => m.risk === 'High').slice(0,5).map(m => ({ type:'Observation', label:'SAFETY OBV', color:'warning', user:'Field Inspector', desc:`Risk factor observed: ${m.reason.split(';')[0]}.`, mine:m.name })),
-        ...REAL_MINES.filter(m => m.type === 'Underground').slice(0,4).map(m => ({ type:'Attendance', label:'ATTENDANCE', color:'info', user:'Biometric System', desc:`Shift check-in at ${m.name}: workers logged in.`, mine:m.name })),
-      ];
-      setInterval(() => {
-        if (!feedContainer2) return;
-        const ev = liveEvents[Math.floor(Math.random() * liveEvents.length)];
-        const timeStr = new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+      const btn = document.getElementById('incident-submit-btn');
+      const origText = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = 'Submitting incident & photo...';
+
+      const formData = new FormData();
+      formData.append('type', type);
+      formData.append('mine_name', mine);
+      formData.append('severity', severity);
+      formData.append('description', desc);
+      formData.append('reporter', 'A. Sharma (Field Inspector)');
+      formData.append('geo_lat', '23.4218');
+      formData.append('geo_lng', '82.2194');
+
+      if (window.incidentPhotoState && window.incidentPhotoState.file) {
+        formData.append('photo', window.incidentPhotoState.file, window.incidentPhotoState.name || 'photo_evidence.jpg');
+      }
+
+      try {
+        const res = await fetch('http://localhost:3001/api/incidents', {
+          method: 'POST',
+          headers: { 'x-user': 'Field Inspector A. Sharma' },
+          body: formData
+        });
+
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || `HTTP ${res.status}`);
+        }
+        const created = await res.json();
+
+        // Reset form & photo preview on confirmed success
+        document.getElementById('incident-desc-textarea').value = '';
+        window.removePhotoEvidence('incident');
+
+        const hasPhoto = created.photo_attached === 'YES' || !!created.photo_url;
+        window.showToast(
+          `✓ Incident ${created.id} submitted successfully.${hasPhoto ? ' Photo evidence attached.' : ''}`,
+          'success',
+          5000
+        );
+
+        // Refresh feed with the new persisted incident from SQLite
+        await loadLiveFieldFeed();
+
+      } catch (err) {
+        console.error('Incident submission error:', err);
+        if (err.message && (err.message.includes('Photo') || err.message.includes('image') || err.message.includes('file'))) {
+          window.showToast(`Photo upload failed. Please try again: ${err.message}`, 'danger', 5000);
+        } else {
+          window.showToast(`Unable to submit incident. Please try again: ${err.message}`, 'danger', 5000);
+        }
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = origText;
+      }
+    };
+
+    // Log safety observation
+    window.submitFieldObservation = function() {
+      const cat = document.getElementById('obs-category-select')?.value || 'Hazard Identification';
+      const loc = (document.getElementById('obs-location-input')?.value || '').trim() || 'Sector Incline';
+      const desc = (document.getElementById('obs-desc-textarea')?.value || '').trim();
+
+      if (!desc) {
+        window.showToast('Please describe your safety observation.', 'warning');
+        document.getElementById('obs-desc-textarea')?.focus();
+        return;
+      }
+
+      const feedContainer = document.getElementById('live-field-feed');
+      if (feedContainer) {
         const div = document.createElement('div');
-        div.className = `feed-item ${ev.color === 'danger' ? 'danger' : ev.color === 'warning' ? 'warning' : ''}`;
-        div.style.cssText = 'opacity:0;transform:translateY(-10px);transition:all 0.35s ease';
+        div.className = 'feed-item warning';
+        div.style.cssText = 'opacity:0;transform:translateY(-10px);transition:all 0.35s ease;';
         div.innerHTML = `
-          <div class="fi-time">${timeStr}</div>
-          <div class="fi-type">${ev.type}</div>
-          <div class="fi-meta"><span>Mine:</span> ${ev.mine}<br><span>By:</span> ${ev.user}<br>${ev.desc}</div>
+          <div class="fi-time">Just Now</div>
+          <div class="fi-type">${cat}</div>
+          <div class="fi-meta">
+            <span>Location:</span> ${loc}<br>
+            <span>By:</span> Field Supervisor<br>
+            <span>Observation:</span> ${desc}
+            ${window.obsPhotoState ? '<br><span class="badge badge-success mt-2">PHOTO ATTACHED</span>' : ''}
+          </div>
         `;
-        feedContainer2.prepend(div);
+        feedContainer.prepend(div);
         void div.offsetWidth;
         div.style.opacity = '1';
         div.style.transform = 'translateY(0)';
-        if (feedContainer2.children.length > 10) feedContainer2.removeChild(feedContainer2.lastChild);
-      }, 7000);
-    });
-  </script>
+      }
 
-    // Dynamic Live Feed Simulator
-    document.addEventListener('DOMContentLoaded', () => {
-      const feedContainer = document.querySelector('.feed-container');
-      const mockEvents = [
-        { type: 'Attendance', label: 'ATTENDANCE PING', color: 'info', user: 'V. Kumar', desc: 'Clocked in at Dipka OC.' },
-        { type: 'Observation', label: 'SAFETY OBV', color: 'amber', user: 'S. Singh', desc: 'Water accumulation near Sector 4 pump.' },
-        { type: 'Incident', label: 'INCIDENT LOG', color: 'danger', user: 'R. Patel', desc: 'Minor slip and fall near incline 2.' },
-        { type: 'Attendance', label: 'ATTENDANCE PING', color: 'info', user: 'Contractor #442', desc: 'Clocked out from Gevra.' }
-      ];
-      
-      setInterval(() => {
-        if(!feedContainer) return;
-        const ev = mockEvents[Math.floor(Math.random() * mockEvents.length)];
-        const timeStr = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'});
-        
-        const card = document.createElement('div');
-        card.className = 'feed-card';
-        card.style.opacity = '0';
-        card.style.transform = 'translateY(-10px)';
-        card.style.transition = 'all 0.3s ease';
-        
-        card.innerHTML = `
-          <div class="fc-header">
-            <span class="badge badge-${ev.color}">${ev.label}</span>
-            <span class="fc-time">Just Now</span>
-          </div>
-          <div class="fc-body">
-            <strong>${ev.user}:</strong> ${ev.desc}
-          </div>
-        `;
-        
-        feedContainer.prepend(card);
-        
-        // Trigger reflow for animation
-        void card.offsetWidth;
-        card.style.opacity = '1';
-        card.style.transform = 'translateY(0)';
-        
-        if (feedContainer.children.length > 10) {
-          feedContainer.removeChild(feedContainer.lastChild);
-        }
-      }, 7000); // Inject new event every 7 seconds
-    });
+      document.getElementById('obs-desc-textarea').value = '';
+      document.getElementById('obs-location-input').value = '';
+      window.removePhotoEvidence('obs');
+      window.showToast('Safety observation logged and added to field feed.', 'success', 4000);
+    };
   </script>
 </body>
 </html>

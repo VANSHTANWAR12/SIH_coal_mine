@@ -60,15 +60,15 @@
           <input type="text" placeholder="Search mines, contractors, reports... (⌘K)">
         </div>
         <div class="header-links">
-          <a href="#" class="header-link active">HQ Dashboard</a>
-          <a href="#" class="header-link">SECL Operational Zone</a>
-          <a href="#" class="header-link">DGMS Regulatory Portal</a>
+          <a href="dashboard.html" class="header-link active">HQ Dashboard</a>
+          <a href="secl-zone.html" class="header-link">SECL Operational Zone</a>
+          <a href="dgms-portal.html" class="header-link">DGMS Regulatory Portal</a>
         </div>
         <div class="system-status-pill">
           <div class="status-dot"></div> System Operational
         </div>
         <div class="header-time" id="live-clock"></div>
-        <button class="btn-outline-grey" style="padding: 6px; width: 32px; height: 32px; justify-content:center;">🔔</button>
+        <button class="btn-outline-grey" style="padding: 6px; width: 32px; height: 32px; justify-content:center;" onclick="document.getElementById('live-alerts-container')?.scrollIntoView({behavior:'smooth'})" title="View Active Alerts">🔔</button>
         <button class="btn-emergency">Emergency Dispatch</button>
       </header>
 
@@ -125,6 +125,45 @@
             <div id="live-alerts-container">
               <!-- Dynamically populated via JS -->
             </div>
+          </div>
+        </div>
+
+        <!-- SECTION: ACTIVE EMERGENCIES & EMERGENCY DISPATCH HISTORY -->
+        <div class="card-light mb-6" id="active-emergencies-card" style="border-left: 4px solid var(--danger);">
+          <div class="flex justify-between items-center mb-4">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <h3 class="text-sm font-bold" style="display:flex;align-items:center;gap:8px;">
+                <span style="color:var(--danger);font-size:16px;">🚨</span> Emergency Dispatch History & Active Emergencies
+              </h3>
+              <span class="badge badge-danger" id="ed-live-counter">0 ACTIVE</span>
+            </div>
+            <div style="display:flex;gap:8px;">
+              <button class="btn btn-secondary btn-sm" onclick="window.fetchAndRenderEmergencyDispatches()">↻ Refresh</button>
+              <button class="btn btn-emergency btn-sm" onclick="window.openEmergencyDispatchModal()">+ New Emergency Dispatch</button>
+            </div>
+          </div>
+
+          <div class="table-wrapper">
+            <table id="emergency-dispatches-table">
+              <thead>
+                <tr>
+                  <th>Dispatch ID</th>
+                  <th>Mine Site</th>
+                  <th>Affected Zone</th>
+                  <th>Incident Type</th>
+                  <th>Severity</th>
+                  <th>Response Teams</th>
+                  <th>Dispatched At</th>
+                  <th>Lifecycle Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="emergency-dispatches-tbody">
+                <tr>
+                  <td colspan="9" style="text-align:center;padding:24px;color:var(--text-muted);">Loading emergency dispatches from central database...</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
 
@@ -240,7 +279,7 @@
             <td>${riskBadge}</td>
             <td>${m.production.toFixed(1)}</td>
             <td>${inspStr}</td>
-            <td><button class="btn btn-secondary btn-sm" onclick="window.mockAction(this,'Mine drawer opened')">View Drawer</button></td>
+            <td><button class="btn btn-secondary btn-sm" onclick="window.openMineDrawer('${m.name}')">View Drawer</button></td>
           `;
           tbody.appendChild(tr);
         });
@@ -304,10 +343,14 @@
         REAL_MINES.forEach(mine => {
           if (mine.risk === 'Critical') {
             count++;
-            html += `<div class="alert-item"><div class="alert-time">${rand(15)} min ago</div><div class="alert-content"><span class="badge badge-danger mb-2">CRITICAL</span><div class="alert-title">${mine.reason.split(';')[0]}</div><div class="alert-meta">${mine.name} &bull; ${mine.sub} Zone</div></div><button class="btn btn-secondary alert-action" onclick="location.href='mine-intelligence.html'">Investigate</button></div>`;
+            const alertId = `ALT-${mine.id}`;
+            const targetUrl = `mine-intelligence.html?mine=${encodeURIComponent(mine.id)}&alert=${encodeURIComponent(alertId)}`;
+            html += `<div class="alert-item"><div class="alert-time">${rand(15)} min ago</div><div class="alert-content"><span class="badge badge-danger mb-2">CRITICAL</span><div class="alert-title">${mine.reason.split(';')[0]}</div><div class="alert-meta">${mine.name} &bull; ${mine.sub} Zone</div></div><button class="btn btn-secondary alert-action" onclick="location.href='${targetUrl}'">Investigate</button></div>`;
           } else if (mine.risk === 'High') {
             count++;
-            html += `<div class="alert-item"><div class="alert-time">${rand(45)+15} min ago</div><div class="alert-content"><span class="badge badge-warning mb-2" style="background:var(--amber);color:white">HIGH RISK</span><div class="alert-title">${mine.reason.split(';')[0]}</div><div class="alert-meta">${mine.name} &bull; ${mine.type} Ops</div></div><button class="btn btn-secondary alert-action" onclick="location.href='mine-intelligence.html'">Review</button></div>`;
+            const alertId = `ALT-${mine.id}`;
+            const targetUrl = `mine-intelligence.html?mine=${encodeURIComponent(mine.id)}&alert=${encodeURIComponent(alertId)}`;
+            html += `<div class="alert-item"><div class="alert-time">${rand(45)+15} min ago</div><div class="alert-content"><span class="badge badge-warning mb-2" style="background:var(--amber);color:white">HIGH RISK</span><div class="alert-title">${mine.reason.split(';')[0]}</div><div class="alert-meta">${mine.name} &bull; ${mine.type} Ops</div></div><button class="btn btn-secondary alert-action" onclick="location.href='${targetUrl}'">Review</button></div>`;
           } else if (mine.compliance < 60) {
             count++;
             html += `<div class="alert-item"><div class="alert-time">${rand(120)} min ago</div><div class="alert-content"><span class="badge badge-info mb-2">COMPLIANCE</span><div class="alert-title">Statutory compliance score critically low (${mine.compliance}%)</div><div class="alert-meta">${mine.name} &bull; Needs Audit</div></div><button class="btn btn-secondary alert-action" onclick="location.href='compliance.html'">Audit</button></div>`;
@@ -341,7 +384,91 @@
         item.style.transform = 'translateY(0)';
         if (timeline.children.length > 6) timeline.removeChild(timeline.lastChild);
       }, 9000);
+
+      // Fetch persistent emergency dispatches
+      if (typeof window.fetchAndRenderEmergencyDispatches === 'function') {
+        window.fetchAndRenderEmergencyDispatches();
+      }
     });
+
+    window.openMineDrawer = function(mineName) {
+      if (typeof REAL_MINES === 'undefined') return;
+      const m = REAL_MINES.find(x => x.name === mineName);
+      if (!m) return;
+
+      document.getElementById('md-title').textContent = m.name;
+      document.getElementById('md-subtitle').textContent = `${m.sub} Subsidiary • ${m.type} Operations • Location: ${m.lat}°N, ${m.lng}°E`;
+      
+      const riskBadgeClass = m.risk === 'Critical' ? 'badge-danger' : m.risk === 'High' ? 'badge-warning' : 'badge-success';
+      document.getElementById('md-risk-badge').innerHTML = `<span class="badge ${riskBadgeClass}">${m.risk.toUpperCase()} RISK</span>`;
+      
+      const compClass = m.compliance >= 80 ? 'text-success' : m.compliance >= 65 ? 'text-warning' : 'text-danger';
+      document.getElementById('md-compliance').innerHTML = `<span class="${compClass} font-bold">${m.compliance}%</span>`;
+      document.getElementById('md-production').textContent = `${m.production} MTPA`;
+      document.getElementById('md-grade').textContent = m.grade || 'Thermal Grade';
+      document.getElementById('md-gassiness').textContent = m.gassiness || (m.type === 'Underground' ? 'Degree II' : 'N/A (Opencast)');
+      document.getElementById('md-reason').textContent = m.reason || 'Operational status nominal under DGMS statutory supervision.';
+
+      document.getElementById('md-btn-emergency').onclick = () => {
+        window.closeModal('mine-drawer-modal');
+        window.openEmergencyDispatchModal(m.name);
+      };
+
+      window.openModal('mine-drawer-modal');
+    };
   </script>
+
+  <!-- MODAL: MINE INTELLIGENCE DRAWER -->
+  <div class="modal-overlay" id="mine-drawer-modal">
+    <div class="modal-card modal-lg" role="dialog" aria-modal="true">
+      <div class="modal-header">
+        <div>
+          <div class="modal-title" id="md-title">Mine Intelligence Overview</div>
+          <div class="modal-subtitle" id="md-subtitle">Detailed operational parameters & statutory telemetry</div>
+        </div>
+        <button class="modal-close" onclick="window.closeModal('mine-drawer-modal')">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-row-3" style="background:#F8FAFA; border:1px solid var(--border); border-radius:var(--radius-sm); padding:14px; margin-bottom:18px;">
+          <div>
+            <div style="font-size:10px; font-weight:700; text-transform:uppercase; color:var(--text-secondary);">Risk Assessment</div>
+            <div id="md-risk-badge" style="margin-top:4px;">—</div>
+          </div>
+          <div>
+            <div style="font-size:10px; font-weight:700; text-transform:uppercase; color:var(--text-secondary);">Statutory Compliance</div>
+            <div id="md-compliance" style="font-size:16px; margin-top:2px;">—</div>
+          </div>
+          <div>
+            <div style="font-size:10px; font-weight:700; text-transform:uppercase; color:var(--text-secondary);">Annual Production</div>
+            <div id="md-production" style="font-size:16px; font-weight:800; color:var(--text-primary); margin-top:2px;">—</div>
+          </div>
+        </div>
+
+        <div class="form-row-2" style="margin-bottom:16px;">
+          <div>
+            <div style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-secondary);">Coal Grade / GCV</div>
+            <div id="md-grade" style="font-size:13px; font-weight:600; color:var(--text-primary); margin-top:2px;">—</div>
+          </div>
+          <div>
+            <div style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-secondary);">Seam Gassiness Degree</div>
+            <div id="md-gassiness" style="font-size:13px; font-weight:600; color:var(--text-primary); margin-top:2px;">—</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Active Operational Findings & Directives</label>
+          <div id="md-reason" style="background:#FFFFFF; border:1px solid var(--border); border-radius:var(--radius-sm); padding:12px; font-size:13px; color:var(--text-primary); line-height:1.4;">—</div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="window.closeModal('mine-drawer-modal')">CLOSE</button>
+        <button type="button" class="btn btn-secondary" onclick="location.href='gis-map.html'">VIEW ON GIS MAP</button>
+        <button type="button" class="btn btn-primary" onclick="location.href='inspections.html'">SCHEDULE INSPECTION</button>
+        <button type="button" class="btn btn-emergency" id="md-btn-emergency">EMERGENCY DISPATCH</button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
