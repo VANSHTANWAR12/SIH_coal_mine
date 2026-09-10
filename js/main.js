@@ -1111,7 +1111,7 @@ window.getCurrentUser = function() {
 
 /* ── 2. Settings Persistence & Application ──────────────── */
 const CG_DEFAULT_SETTINGS = {
-  theme: 'system',
+  theme: 'light',
   language: 'en',
   compactMode: false,
   confirmCritical: true,
