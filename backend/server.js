@@ -332,7 +332,7 @@ async function initServer() {
   });
 
   app.get('/api/mines/:id', (req, res) => {
-    const mine = queryOne('SELECT * FROM mines WHERE id=?', [req.params.id]);
+    const mine = queryOne('SELECT * FROM mines WHERE id=? OR name=?', [req.params.id, req.params.id]);
     if (!mine) return res.status(404).json({ error: 'Mine not found' });
     res.json(mine);
   });
@@ -1175,6 +1175,9 @@ async function initServer() {
       'MCL Bharatpur':     { score: 18, factors: ['Minimal issues'],                                      trend: 'down' },
     });
   });
+
+  /* ── Frontend Static Files ───────────────────────────── */
+  app.use(express.static(path.join(__dirname, '..')));
 
   /* ── 404 ─────────────────────────────────────────────── */
   app.use((req, res) => res.status(404).json({ error: 'Endpoint not found', path: req.path }));

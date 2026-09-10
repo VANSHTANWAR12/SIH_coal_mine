@@ -1,11 +1,21 @@
 import os
 import json
+import re
+import requests
 from typing import TypedDict, List, Dict, Any
 from dotenv import load_dotenv
 
-from langchain_nvidia_ai_endpoints import ChatNVIDIA
-from langchain_core.prompts import ChatPromptTemplate
-from langgraph.graph import StateGraph, END
+try:
+    from langchain_nvidia_ai_endpoints import ChatNVIDIA
+    from langchain_core.prompts import ChatPromptTemplate
+    from langgraph.graph import StateGraph, END
+    HAS_LANGGRAPH = True
+except ImportError:
+    HAS_LANGGRAPH = False
+    ChatNVIDIA = None
+    ChatPromptTemplate = None
+    StateGraph = None
+    END = None
 
 # Load environment variables (expecting NVIDIA_API_KEY)
 load_dotenv()
@@ -17,9 +27,8 @@ class AgentState(TypedDict):
     production_analysis: str
     prescriptions: List[Dict[str, str]]
 
-# Initialize LLM
-# Fallback to a tiny model if key is missing during initialization, but it will error during inference if not valid.
-llm = ChatNVIDIA(model="meta/llama3-70b-instruct") if os.environ.get("NVIDIA_API_KEY") else None
+# Initialize LLM if ChatNVIDIA is available
+llm = ChatNVIDIA(model="meta/llama3-70b-instruct") if (ChatNVIDIA and os.environ.get("NVIDIA_API_KEY")) else None
 
 def safety_analyst_node(state: AgentState):
     """Analyzes the safety profile, risk score, and compliance."""
@@ -47,7 +56,7 @@ def safety_analyst_node(state: AgentState):
     reason = mine.get("reason", "Routine operational hazard surveillance.")
     mtype = mine.get("type", "Opencast")
 
-    if risk in ("Critical", "High") or risk_score >= 65:
+    if str(risk).capitalize() in ("Critical", "High") or risk_score >= 65:
         analysis = (
             f"URGENT SAFETY INTERVENTION: Operational hazard profile at {name} ({mtype}) is elevated "
             f"with risk score {risk_score}/100 and compliance rating {compliance}%. "
@@ -152,7 +161,7 @@ def synthesizer_node(state: AgentState):
     prescriptions = []
 
     # 1. Primary Safety / Hazard Intervention
-    if risk in ("Critical", "High"):
+    if str(risk).capitalize() in ("Critical", "High"):
         prescriptions.append({
             "type": "Immediate Safety Protocol",
             "color": "var(--danger)",
@@ -201,27 +210,118 @@ def synthesizer_node(state: AgentState):
 
     return {"prescriptions": prescriptions}
 
-# Build the LangGraph
-builder = StateGraph(AgentState)
-builder.add_node("safety_analyst", safety_analyst_node)
-builder.add_node("production_analyst", production_analyst_node)
-builder.add_node("synthesizer", synthesizer_node)
+# Build the LangGraph if available
+if HAS_LANGGRAPH and StateGraph:
+    builder = StateGraph(AgentState)
+    builder.add_node("safety_analyst", safety_analyst_node)
+    builder.add_node("production_analyst", production_analyst_node)
+    builder.add_node("synthesizer", synthesizer_node)
 
-builder.set_entry_point("safety_analyst")
-# Run analyses in sequence.
-builder.add_edge("safety_analyst", "production_analyst")
-builder.add_edge("production_analyst", "synthesizer")
-builder.add_edge("synthesizer", END)
+    builder.set_entry_point("safety_analyst")
+    # Run analyses in sequence.
+    builder.add_edge("safety_analyst", "production_analyst")
+    builder.add_edge("production_analyst", "synthesizer")
+    builder.add_edge("synthesizer", END)
 
-strategy_agent = builder.compile()
+    strategy_agent = builder.compile()
+else:
+    strategy_agent = None
+
+def call_nvidia_nemotron_agent(mine: dict) -> list:
+    """
+    Directly queries NVIDIA Nemotron Reasoning API
+    (nvidia/nemotron-3-nano-omni-30b-a3b-reasoning via https://integrate.api.nvidia.com/v1/chat/completions)
+    to synthesize strategic prescriptions.
+    """
+    api_key = os.environ.get("NVIDIA_API_KEY", "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")
+    model = os.environ.get("NVIDIA_MODEL", "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning")
+    invoke_url = os.environ.get("NVIDIA_INVOKE_URL", "https://integrate.api.nvidia.com/v1/chat/completions")
+
+    name = mine.get("name", "Target Mine")
+    sub = mine.get("sub", mine.get("subsidiary", "CIL"))
+    mtype = mine.get("type", mine.get("mine_type", "Opencast"))
+    risk = mine.get("risk", "Medium")
+    risk_score = mine.get("riskScore", 50)
+    compliance = mine.get("compliance", 65)
+    prod = mine.get("prod", f"{mine.get('production', 10)} MTPA")
+    grade = mine.get("grade", mine.get("grade_label", "Thermal Grade"))
+    gassiness = mine.get("gassiness", "Degree I")
+    reason = mine.get("reason", "Routine operational hazard surveillance.")
+
+    prompt = (
+        f"You are the Chief AI Strategy Synthesizer for CoalGuard, the national AI mining governance platform.\n"
+        f"Based on the mine profile below, generate exactly 3-4 strategic prescriptions for the coal mine '{name}'.\n\n"
+        f"Mine Profile:\n"
+        f"- Name: {name} ({sub})\n"
+        f"- Type: {mtype}\n"
+        f"- Risk Level: {risk} (Score: {risk_score}/100)\n"
+        f"- DGMS Statutory Compliance: {compliance}%\n"
+        f"- Annual Output: {prod}\n"
+        f"- Coal Grade: {grade}\n"
+        f"- Seam Gassiness: {gassiness}\n"
+        f"- Observed Telemetry / Context: {reason}\n\n"
+        f"You MUST output ONLY a valid JSON array of objects. Do not include markdown code blocks (like ```json), just the raw JSON array.\n"
+        f"Each object must have the following keys:\n"
+        f"- 'type': A short 2-4 word title (e.g., 'Immediate Safety Protocol', 'Ventilation Surge', 'Production Pacing', 'DGMS Statutory Governance')\n"
+        f"- 'color': CSS variable string: 'var(--danger)' for critical safety, 'var(--amber)' for warnings/governance, 'var(--success)' for production scale, 'var(--info)' for efficiency, 'var(--brand-primary)' for statutory\n"
+        f"- 'bg': Background color matching the text color: 'var(--danger-bg)' for danger, '#FEF3C7' for amber, 'var(--success-bg)' for success, '#E0E7FF' for primary\n"
+        f"- 'text': A 2-4 sentence detailed actionable prescription using <strong> HTML tags to bold key directives.\n\n"
+        f"Output the JSON array now:"
+    )
+
+    payload = {
+        "messages": [
+            {"role": "user", "content": prompt}
+        ],
+        "model": model,
+        "max_tokens": 2048,
+        "reasoning_budget": 1024,
+        "temperature": 0.6,
+        "top_p": 0.95
+    }
+
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+    }
+
+    response = requests.post(invoke_url, headers=headers, json=payload, timeout=4)
+    if response.status_code == 200:
+        data = response.json()
+        if "choices" in data and len(data["choices"]) > 0:
+            content = data["choices"][0]["message"].get("content", "").strip()
+            match = re.search(r'\[\s*\{.*\}\s*\]', content, re.DOTALL)
+            clean_json = match.group(0) if match else content
+            prescriptions = json.loads(clean_json)
+            if isinstance(prescriptions, list) and len(prescriptions) > 0:
+                return prescriptions
+    raise ValueError(f"NVIDIA API status code {response.status_code}: {response.text[:120]}")
 
 def run_strategy_agent(mine_data: dict) -> list:
-    """Entry point to run the graph and return prescriptions."""
-    # Re-initialize LLM here in case the key was added dynamically
-    global llm
-    if not llm and os.environ.get("NVIDIA_API_KEY"):
-        llm = ChatNVIDIA(model="meta/llama3-70b-instruct")
+    """Entry point to run the NVIDIA Nemotron reasoning agent and return prescriptions."""
+    # 1. Primary: Direct invocation of the NVIDIA Nemotron reasoning model
+    try:
+        prescriptions = call_nvidia_nemotron_agent(mine_data)
+        if prescriptions and len(prescriptions) > 0:
+            return prescriptions
+    except Exception as err:
+        print(f"NVIDIA Nemotron call failed ({err}), falling back to domain logic agent.")
 
+    # 2. Secondary: LangGraph agent or domain-expert synthesizer fallback
     initial_state = {"mine_data": mine_data, "safety_analysis": "", "production_analysis": "", "prescriptions": []}
-    result = strategy_agent.invoke(initial_state)
-    return result["prescriptions"]
+    if strategy_agent is not None:
+        try:
+            result = strategy_agent.invoke(initial_state)
+            if result.get("prescriptions"):
+                return result["prescriptions"]
+        except Exception as e:
+            print(f"LangGraph invoke failed ({e}), using fallback node execution.")
+
+    s1 = safety_analyst_node(initial_state)
+    initial_state.update(s1 or {})
+    s2 = production_analyst_node(initial_state)
+    initial_state.update(s2 or {})
+    s3 = synthesizer_node(initial_state)
+    return s3.get("prescriptions", [])
+

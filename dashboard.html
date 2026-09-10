@@ -279,7 +279,7 @@
             <td>${riskBadge}</td>
             <td>${m.production.toFixed(1)}</td>
             <td>${inspStr}</td>
-            <td><button class="btn btn-secondary btn-sm" onclick="window.openMineDrawer('${m.name}')">View Drawer</button></td>
+            <td><button class="btn btn-secondary btn-sm" onclick="window.openMineDrawer('${m.id || m.name}')">View Drawer</button></td>
           `;
           tbody.appendChild(tr);
         });
@@ -308,30 +308,40 @@
       }
 
       // ── Production Bar Chart
-      const prodData = DB_STATS.subsidiaries.map(sub => ({
-        sub, sum: MINES_BY_SUB[sub].reduce((acc, m) => acc + (m.production || 0), 0)
-      })).sort((a,b) => b.sum - a.sum).slice(0, 5);
+      const prodCanvas = document.getElementById('prodChart');
+      if (typeof Chart !== 'undefined' && prodCanvas && prodCanvas.getContext) {
+        const prodData = DB_STATS.subsidiaries.map(sub => ({
+          sub, sum: MINES_BY_SUB[sub].reduce((acc, m) => acc + (m.production || 0), 0)
+        })).sort((a,b) => b.sum - a.sum).slice(0, 5);
 
-      const ctxProd = document.getElementById('prodChart').getContext('2d');
-      new Chart(ctxProd, {
-        type: 'bar',
-        data: {
-          labels: prodData.map(d => d.sub),
-          datasets: [{ label:'Production (MT)', data: prodData.map(d => +d.sum.toFixed(1)), backgroundColor:'#176B45', borderRadius:4 }]
-        },
-        options: { indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ x:{display:false, grid:{display:false}}, y:{grid:{display:false}} } }
-      });
+        const ctxProd = prodCanvas.getContext('2d');
+        if (ctxProd) {
+          new Chart(ctxProd, {
+            type: 'bar',
+            data: {
+              labels: prodData.map(d => d.sub),
+              datasets: [{ label:'Production (MT)', data: prodData.map(d => +d.sum.toFixed(1)), backgroundColor:'#176B45', borderRadius:4 }]
+            },
+            options: { indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ x:{display:false, grid:{display:false}}, y:{grid:{display:false}} } }
+          });
+        }
+      }
 
       // ── Risk Donut Chart
-      const ctxRisk = document.getElementById('riskChart').getContext('2d');
-      new Chart(ctxRisk, {
-        type: 'doughnut',
-        data: {
-          labels: ['Critical', 'High Risk', 'Safe/Medium'],
-          datasets: [{ data:[DB_STATS.critical, DB_STATS.high, DB_STATS.medium], backgroundColor:['#C9362B','#E6A23C','#EAF1EE'], borderWidth:0, hoverOffset:4 }]
-        },
-        options: { responsive:true, maintainAspectRatio:false, cutout:'75%', plugins:{legend:{position:'bottom'}} }
-      });
+      const riskCanvas = document.getElementById('riskChart');
+      if (typeof Chart !== 'undefined' && riskCanvas && riskCanvas.getContext) {
+        const ctxRisk = riskCanvas.getContext('2d');
+        if (ctxRisk) {
+          new Chart(ctxRisk, {
+            type: 'doughnut',
+            data: {
+              labels: ['Critical', 'High Risk', 'Safe/Medium'],
+              datasets: [{ data:[DB_STATS.critical, DB_STATS.high, DB_STATS.medium], backgroundColor:['#C9362B','#E6A23C','#EAF1EE'], borderWidth:0, hoverOffset:4 }]
+            },
+            options: { responsive:true, maintainAspectRatio:false, cutout:'75%', plugins:{legend:{position:'bottom'}} }
+          });
+        }
+      }
 
       // ── Live Operational Alerts
       const alertsContainer = document.getElementById('live-alerts-container');
@@ -391,9 +401,39 @@
       }
     });
 
-    window.openMineDrawer = function(mineName) {
-      if (typeof REAL_MINES === 'undefined') return;
-      const m = REAL_MINES.find(x => x.name === mineName);
+    window.openMineDrawer = async function(mineIdOrName) {
+      if (typeof REAL_MINES === 'undefined' && typeof mineIdOrName === 'undefined') return;
+      let m = (typeof REAL_MINES !== 'undefined')
+        ? REAL_MINES.find(x => x.id === mineIdOrName || x.name === mineIdOrName)
+        : null;
+
+      // Query existing backend mine data
+      try {
+        const res = await fetch(`http://localhost:3001/api/mines/${encodeURIComponent(mineIdOrName)}`);
+        if (res.ok) {
+          const backendMine = await res.json();
+          if (backendMine) {
+            const capRisk = backendMine.risk ? (backendMine.risk.charAt(0).toUpperCase() + backendMine.risk.slice(1).toLowerCase()) : (m && m.risk);
+            m = Object.assign({}, m || {}, {
+              id: backendMine.id,
+              name: backendMine.name,
+              sub: backendMine.subsidiary || (m && m.sub) || 'CIL',
+              type: backendMine.mine_type || (m && m.type) || 'Opencast',
+              lat: backendMine.lat !== undefined ? backendMine.lat : (m && m.lat),
+              lng: backendMine.lng !== undefined ? backendMine.lng : (m && m.lng),
+              risk: capRisk || 'Medium',
+              compliance: backendMine.compliance !== undefined ? backendMine.compliance : (m && m.compliance),
+              production: backendMine.production !== undefined ? backendMine.production : (m && m.production),
+              grade: backendMine.grade_label || (m && m.grade) || 'Thermal Grade',
+              gassiness: backendMine.gassiness || (m && m.gassiness) || (backendMine.mine_type === 'Underground' ? 'Degree II' : 'N/A (Opencast)'),
+              reason: (m && m.reason) || `Statutory parameters and telemetry nominal under DGMS oversight at ${backendMine.name}.`
+            });
+          }
+        }
+      } catch (err) {
+        console.warn('Backend mine lookup failed, using local database:', err);
+      }
+
       if (!m) return;
 
       document.getElementById('md-title').textContent = m.name;
@@ -409,10 +449,15 @@
       document.getElementById('md-gassiness').textContent = m.gassiness || (m.type === 'Underground' ? 'Degree II' : 'N/A (Opencast)');
       document.getElementById('md-reason').textContent = m.reason || 'Operational status nominal under DGMS statutory supervision.';
 
-      document.getElementById('md-btn-emergency').onclick = () => {
-        window.closeModal('mine-drawer-modal');
-        window.openEmergencyDispatchModal(m.name);
-      };
+      const emergencyBtn = document.getElementById('md-btn-emergency');
+      if (emergencyBtn) {
+        emergencyBtn.onclick = () => {
+          window.closeModal('mine-drawer-modal');
+          if (typeof window.openEmergencyDispatchModal === 'function') {
+            window.openEmergencyDispatchModal(m.name);
+          }
+        };
+      }
 
       window.openModal('mine-drawer-modal');
     };
