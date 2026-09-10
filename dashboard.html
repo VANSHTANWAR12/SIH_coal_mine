@@ -259,8 +259,16 @@
 
       // ── Populate Mine Network Table from REAL_MINES
       const tbody = document.getElementById('mine-table-tbody');
-      if (tbody) {
-        const sorted = [...REAL_MINES].sort((a,b) => b.riskScore - a.riskScore).slice(0, 15);
+      const chips = document.querySelectorAll('.filter-chips .chip');
+
+      function renderTable(filterSub = 'All Mines') {
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        const filtered = filterSub === 'All Mines' 
+          ? REAL_MINES 
+          : REAL_MINES.filter(m => m.sub === filterSub);
+          
+        const sorted = [...filtered].sort((a,b) => b.riskScore - a.riskScore).slice(0, 15);
         const today = new Date();
         sorted.forEach((m, idx) => {
           const compClass  = m.compliance >= 80 ? 'badge-success' : m.compliance >= 65 ? 'badge-warning' : 'badge-danger';
@@ -284,6 +292,18 @@
           tbody.appendChild(tr);
         });
       }
+
+      if (chips.length > 0) {
+        chips.forEach(chip => {
+          chip.addEventListener('click', (e) => {
+            chips.forEach(c => c.classList.remove('active'));
+            e.target.classList.add('active');
+            renderTable(e.target.textContent.trim());
+          });
+        });
+      }
+
+      renderTable('All Mines');
 
       // ── Populate Subsidiary Table
       const subTbody = document.getElementById('subsidiary-tbody');
