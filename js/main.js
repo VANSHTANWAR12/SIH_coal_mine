@@ -851,14 +851,8 @@ function injectSidebar() {
 
   placeholder.innerHTML = `
 <div class="sidebar" id="sidebar">
-  <div class="sidebar-logo">
-    <div class="logo-icon">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
-    </div>
-    <div class="logo-text">
-      <span class="logo-name">CoalGuard</span>
-      <span class="logo-sub">National Mining Operations</span>
-    </div>
+  <div class="sidebar-logo" style="justify-content: center; padding: 24px 0; background: transparent; border-bottom: none;">
+    <img src="logo/logo.png" alt="CoalGuard Logo" style="width: 160px; height: auto; object-fit: contain; background: transparent;">
   </div>
   <nav class="sidebar-nav">${navHTML}</nav>
   <div class="sidebar-footer" style="position:relative;">
