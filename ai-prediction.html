@@ -767,7 +767,7 @@
         const o2 = parseFloat(document.getElementById('val-o2').textContent) || 20.0;
         const dust = parseFloat(document.getElementById('val-dust').textContent) || 50;
         
-        const response = await fetch('http://localhost:8000/prescribe/ventilation', {
+        const response = await fetch('/prescribe/ventilation', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -814,7 +814,7 @@
     
     function startSSE() {
       if (sseSource) sseSource.close();
-      const url = `http://localhost:8000/simulate/live-feed?mine=${encodeURIComponent(currentMine)}&incident=${isIncidentActive}`;
+      const url = `/simulate/live-feed?mine=${encodeURIComponent(currentMine)}&incident=${isIncidentActive}`;
       sseSource = new EventSource(url);
       
       sseSource.onmessage = (event) => {

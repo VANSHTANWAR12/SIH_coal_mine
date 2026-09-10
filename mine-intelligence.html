@@ -671,7 +671,7 @@
             alert: mine.reason ? mine.reason.split(';')[0] : ''
           };
 
-          const res = await fetch('http://localhost:8000/prescribe/strategy', {
+          const res = await fetch('/prescribe/strategy', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)

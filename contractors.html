@@ -966,7 +966,7 @@
 
       // Fetch from backend API to retrieve structured violations and explainable factors
       try {
-        const res = await fetch(`http://localhost:3001/api/contractors/${encodeURIComponent(identifier)}`);
+        const res = await fetch(`/api/contractors/${encodeURIComponent(identifier)}`);
         if (res.ok) {
           const apiData = await res.json();
           ct = { ...(ct || {}), ...apiData };
@@ -1372,7 +1372,7 @@
       };
 
       try {
-        const res = await fetch('http://localhost:3001/api/contractors', {
+        const res = await fetch('/api/contractors', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'x-user': 'DGMS Officer' },
           body: JSON.stringify(payload)
@@ -1454,7 +1454,7 @@
       };
 
       try {
-        await fetch(`http://localhost:3001/api/contractors/${encodeURIComponent(id)}`, {
+        await fetch(`/api/contractors/${encodeURIComponent(id)}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json', 'x-user': 'DGMS Officer' },
           body: JSON.stringify(payload)

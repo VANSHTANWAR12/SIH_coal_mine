@@ -378,7 +378,7 @@ window.injectEmergencyDispatchModal = function() {
         mineSelect.appendChild(opt);
       });
     } else {
-      fetch('http://localhost:3001/api/mines')
+      fetch('/api/mines')
         .then(r => r.json())
         .then(mines => {
           mines.forEach(m => {
@@ -468,7 +468,7 @@ window.submitEmergencyDispatch = async function() {
   };
 
   try {
-    const res = await fetch('http://localhost:3001/api/emergency-dispatch', {
+    const res = await fetch('/api/emergency-dispatch', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -582,7 +582,7 @@ window.openEmergencyDispatchDetails = async function(dispatchId) {
   if (!dispatchId) return;
 
   try {
-    const res = await fetch(`http://localhost:3001/api/emergency-dispatch/${dispatchId}`);
+    const res = await fetch(`/api/emergency-dispatch/${dispatchId}`);
     if (!res.ok) throw new Error(`Could not load details for ${dispatchId}`);
     const d = await res.json();
 
@@ -696,7 +696,7 @@ window.openEmergencyDispatchDetails = async function(dispatchId) {
 window.updateEmergencyDispatchStatus = async function(dispatchId, newStatus) {
   const notes = (document.getElementById('edd-action-notes')?.value || '').trim();
   try {
-    const res = await fetch(`http://localhost:3001/api/emergency-dispatch/${dispatchId}/status`, {
+    const res = await fetch(`/api/emergency-dispatch/${dispatchId}/status`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
@@ -732,7 +732,7 @@ window.fetchAndRenderEmergencyDispatches = async function() {
   const badge = document.getElementById('ed-live-badge');
 
   try {
-    const res = await fetch('http://localhost:3001/api/emergency-dispatches');
+    const res = await fetch('/api/emergency-dispatches');
     if (!res.ok) return;
     const dispatches = await res.json();
 
@@ -2099,8 +2099,8 @@ function injectUserProfileModals() {
                 <div><strong>User Agent:</strong> <span id="cg-si-ua">-</span></div>
                 <div><strong>Resolution:</strong> <span id="cg-si-res">-</span></div>
                 <div><strong>Local Time:</strong> <span id="cg-si-time">-</span></div>
-                <div><strong>API Gateway:</strong> <span style="color:var(--success);">Connected (http://localhost:3001)</span></div>
-                <div><strong>AI Analytics:</strong> <span style="color:var(--success);">Online (http://localhost:8000)</span></div>
+                <div><strong>API Gateway:</strong> <span style="color:var(--success);">Connected ()</span></div>
+                <div><strong>AI Analytics:</strong> <span style="color:var(--success);">Online ()</span></div>
               </div>
             </div>
           </div>

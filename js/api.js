@@ -3,8 +3,8 @@
    ========================================================== */
 
 const API = {
-  BASE: 'http://localhost:3001/api',
-  AI:   'http://localhost:8000',
+  BASE: '/api',
+  AI:   '',
 
   async get(path) {
     try {

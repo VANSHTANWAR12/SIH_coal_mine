@@ -673,7 +673,7 @@
     // Open Incident Detail Modal with persisted photo evidence
     window.viewIncidentDetails = async function(incidentId) {
       try {
-        const res = await fetch(`http://localhost:3001/api/incidents/${incidentId}`);
+        const res = await fetch(`/api/incidents/${incidentId}`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const d = await res.json();
 
@@ -699,7 +699,7 @@
 
         if (d.photo_url) {
           photoBadge.style.display = 'inline-block';
-          const fullUrl = `http://localhost:3001${d.photo_url}`;
+          const fullUrl = `${d.photo_url}`;
           photoCont.innerHTML = `
             <div style="display:flex; flex-direction:column; align-items:center; gap:12px;">
               <a href="${fullUrl}" target="_blank" title="Click to view full resolution" style="display:block; max-width:100%; text-decoration:none;">
@@ -735,7 +735,7 @@
       if (!feedContainer) return;
 
       try {
-        const res = await fetch('http://localhost:3001/api/incidents');
+        const res = await fetch('/api/incidents');
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const incidents = await res.json();
 
@@ -857,7 +857,7 @@
       }
 
       try {
-        const res = await fetch('http://localhost:3001/api/incidents', {
+        const res = await fetch('/api/incidents', {
           method: 'POST',
           headers: { 'x-user': 'Field Inspector A. Sharma' },
           body: formData

@@ -322,7 +322,7 @@
 
     async function loadComplianceData() {
       try {
-        const res = await fetch('http://localhost:3001/api/compliance');
+        const res = await fetch('/api/compliance');
         if (res.ok) {
           const data = await res.json();
           if (Array.isArray(data) && data.length > 0) {
@@ -528,7 +528,7 @@
       };
 
       try {
-        const res = await fetch(`http://localhost:3001/api/compliance/${id}`, {
+        const res = await fetch(`/api/compliance/${id}`, {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
@@ -605,7 +605,7 @@
       };
 
       try {
-        const res = await fetch('http://localhost:3001/api/compliance', {
+        const res = await fetch('/api/compliance', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

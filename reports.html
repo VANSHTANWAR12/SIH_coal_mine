@@ -310,7 +310,7 @@
     async function loadAuditRecords() {
       const container = document.getElementById('audit-chain-container');
       try {
-        const res = await fetch('http://localhost:3001/api/audit');
+        const res = await fetch('/api/audit');
         if (res.ok) {
           const data = await res.json();
           if (Array.isArray(data) && data.length > 0) {
@@ -389,7 +389,7 @@
       let rec = window._AUDIT_RECORDS.find(r => String(r.id) === String(auditId));
 
       try {
-        const res = await fetch(`http://localhost:3001/api/audit/${auditId}`);
+        const res = await fetch(`/api/audit/${auditId}`);
         if (res.ok) {
           rec = await res.json();
         }
@@ -442,7 +442,7 @@
       const box = document.getElementById('aud-verify-result-box');
 
       try {
-        const res = await fetch(`http://localhost:3001/api/audit/verify/${id}`, { method: 'POST' });
+        const res = await fetch(`/api/audit/verify/${id}`, { method: 'POST' });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
 

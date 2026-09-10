@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "https://<YOUR_RENDER_BACKEND_URL>/api/:path*" },
+    { "source": "/ai/:path*", "destination": "https://<YOUR_RENDER_AI_URL>/:path*" },
+    { "source": "/simulate/:path*", "destination": "https://<YOUR_RENDER_AI_URL>/simulate/:path*" },
+    { "source": "/prescribe/:path*", "destination": "https://<YOUR_RENDER_AI_URL>/prescribe/:path*" }
+  ]
+}

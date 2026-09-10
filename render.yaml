@@ -1,0 +1,24 @@
+services:
+  # 1. Node.js Backend API
+  - type: web
+    name: coalguard-backend
+    env: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3001
+
+  # 2. Python FastAPI AI Engine
+  - type: web
+    name: coalguard-ai
+    env: python
+    rootDir: ai-engine
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
