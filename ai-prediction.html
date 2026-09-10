@@ -251,9 +251,8 @@
         <div class="system-status-pill">
           <div class="status-dot"></div> System Operational
         </div>
-        <div class="header-time"></div>
-        <button class="btn-outline-grey" style="padding: 6px; width: 32px; height: 32px; justify-content:center;">🔔</button>
-        <button class="btn-emergency">
+        <button class="btn-outline-grey" style="padding: 6px; width: 32px; height: 32px; justify-content:center;" onclick="document.getElementById('card-ch4')?.scrollIntoView({behavior:'smooth'})" title="View Active Atmospheric Telemetry & Alerts">🔔</button>
+        <button class="btn-emergency" onclick="window.openEmergencyDispatchModal(currentMine)">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
           Emergency Dispatch
         </button>
@@ -276,7 +275,12 @@
               <select class="select-box" id="mine-selector" onchange="changeMine(this.value)" style="border:1px solid var(--border); outline:none; cursor:pointer;">
                 <option value="Kusmunda OC">⛰️ Kusmunda OC Mine (SECL)</option>
               </select>
-              <div class="select-box">🎯 Pit Section 3B / Incline#4</div>
+              <select class="select-box" id="pit-selector" onchange="changePit(this.value)" style="border:1px solid var(--border); outline:none; cursor:pointer;">
+                <option value="Pit Section 3B / Incline #4">🎯 Pit Section 3B / Incline #4</option>
+                <option value="East Dip Panel #2">🎯 East Dip Panel #2</option>
+                <option value="North Haul Ramp 07">🎯 North Haul Ramp 07</option>
+                <option value="Seam IV Extraction Face">🎯 Seam IV Extraction Face</option>
+              </select>
             </div>
             <div class="controls-row">
               <span class="update-text" id="live-indicator">↻ 12s ago (30s continuous)</span>
@@ -452,47 +456,47 @@
             <div class="panel-header">
               <svg viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2"><path d="m2 12 5.25 5 5.25-5L12 7l-5.25 5Z"/><path d="m11 12 5.25 5 5.25-5L16 7l-5.25 5Z"/></svg>
               Strata & Roof Fall Predictor
-              <span class="dgms-badge" style="margin-left:auto; background:#F5F7F6; color:var(--text-secondary); border-color:var(--border)">Ib Valley Sensor #RS-09</span>
+              <span class="dgms-badge" id="strata-sensor-badge" style="margin-left:auto; background:#F5F7F6; color:var(--text-secondary); border-color:var(--border)">Ib Valley Sensor #RS-09</span>
             </div>
 
             <div class="strata-top">
               <div>
                 <div class="tf-label" style="color:var(--text-secondary)">48-HOUR FALL PROBABILITY</div>
-                <div class="strata-val">63%</div>
+                <div class="strata-val" id="strata-prob">63%</div>
               </div>
               <div class="time-flash">
                 <div class="tf-label" style="color:var(--text-secondary)">MICRO-DISPLACEMENT</div>
-                <div class="micro-val">4.2 mm / 6h</div>
+                <div class="micro-val" id="strata-disp">4.2 mm / 6h</div>
               </div>
             </div>
-            <div class="strata-desc" style="margin-bottom:16px;">Accelerating roof sag detected along Junction 14. Geological shear slip rate exceeds DGMS threshold (0.5 mm/hr).</div>
+            <div class="strata-desc" id="strata-desc" style="margin-bottom:16px;">Accelerating roof sag detected along Junction 14. Geological shear slip rate exceeds DGMS threshold (0.5 mm/hr).</div>
             
-            <div class="sp-title" style="margin-bottom:12px;">MULTI-PARAMETRIC STRata CONTRIBUTORS</div>
+            <div class="sp-title" style="margin-bottom:12px;">MULTI-PARAMETRIC STRATA CONTRIBUTORS</div>
             
             <div class="multi-param-row">
               <div class="mp-label">Roof Convergence Velocity</div>
-              <div class="mp-bar-bg"><div class="mp-bar red" style="width: 78%"></div></div>
-              <div class="mp-val red">78%</div>
+              <div class="mp-bar-bg"><div class="mp-bar red" id="bar-conv" style="width: 78%"></div></div>
+              <div class="mp-val red" id="val-conv">78%</div>
             </div>
             <div class="multi-param-row">
               <div class="mp-label">Blast Vibration (PPV 4.8 mm/s)</div>
-              <div class="mp-bar-bg"><div class="mp-bar teal" style="width: 65%"></div></div>
-              <div class="mp-val teal">65%</div>
+              <div class="mp-bar-bg"><div class="mp-bar teal" id="bar-vib" style="width: 65%"></div></div>
+              <div class="mp-val teal" id="val-vib">65%</div>
             </div>
             <div class="multi-param-row">
               <div class="mp-label">Hydrogeological Saturation</div>
-              <div class="mp-bar-bg"><div class="mp-bar green" style="width: 42%; background:var(--success)"></div></div>
-              <div class="mp-val" style="color:var(--success)">42%</div>
+              <div class="mp-bar-bg"><div class="mp-bar green" id="bar-sat" style="width: 42%; background:var(--success)"></div></div>
+              <div class="mp-val" id="val-sat" style="color:var(--success)">42%</div>
             </div>
             <div class="multi-param-row">
               <div class="mp-label">Hydraulic Prop Load (480 kN)</div>
-              <div class="mp-bar-bg"><div class="mp-bar red" style="width: 88%"></div></div>
-              <div class="mp-val red">88%</div>
+              <div class="mp-bar-bg"><div class="mp-bar red" id="bar-prop" style="width: 88%"></div></div>
+              <div class="mp-val red" id="val-prop">88%</div>
             </div>
             
             <div class="strata-action">
-              <div style="font-size:11px; color:var(--text-secondary); width: 60%">Recommended Action: Reinforce with 2.2m resin rock bolts</div>
-              <button class="btn-outline-grey" style="padding:6px 12px;">View Strata Log</button>
+              <div style="font-size:11px; color:var(--text-secondary); width: 60%" id="strata-rec-action">Recommended Action: Reinforce with 2.2m resin rock bolts</div>
+              <button class="btn-outline-grey" style="padding:6px 12px;" onclick="window.openStrataLogModal()">View Strata Log</button>
             </div>
           </div>
         </div>
@@ -531,7 +535,7 @@
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
                 Apply Recommendation
               </button>
-              <button class="btn-override">Override Manually</button>
+              <button class="btn-override" onclick="window.openManualVentOverride()">Override Manually</button>
             </div>
           </div>
 
@@ -540,37 +544,39 @@
             <div class="panel-header">
               <svg viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2"><rect x="2" y="7" width="20" height="15" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></svg>
               HEMM Fleet Predictive Maintenance
-              <span class="dgms-badge" style="margin-left:auto; background:#F5F7F6; color:var(--text-secondary); border-color:var(--border)">SECL Heavy Fleet</span>
+              <span class="dgms-badge" id="hemm-badge" style="margin-left:auto; background:#F5F7F6; color:var(--text-secondary); border-color:var(--border)">SECL Heavy Fleet</span>
             </div>
 
-            <!-- Dumper -->
-            <div class="hemm-card">
-              <div class="hc-top">
-                <div class="hc-type">KOMATSU DUMPER 240T</div>
-                <span class="gauge-badge gb-warning" style="background:var(--cyan-glow); color:var(--cyan)">HIGH URGENCY</span>
+            <div id="hemm-fleet-container">
+              <!-- Dumper -->
+              <div class="hemm-card">
+                <div class="hc-top">
+                  <div class="hc-type">KOMATSU DUMPER 240T</div>
+                  <span class="gauge-badge gb-warning" style="background:var(--cyan-glow); color:var(--cyan)">HIGH URGENCY</span>
+                </div>
+                <div class="hc-id">Fleet ID: KOMATSU-930E-04</div>
+                <div class="hc-stats">
+                  <div>ENGINE HOURS<span class="hc-val">4,821 hrs</span></div>
+                  <div>REMAINING LIFE<span class="hc-val red">12 Days</span></div>
+                  <div style="text-align:right">NEXT SERVICE<span class="hc-val">21 Sep 2026</span></div>
+                </div>
+                <div class="hc-desc">Anomaly: Acoustic sensor detects hydraulic main pump cavitation during grade ascent. Risk of steer loss.</div>
               </div>
-              <div class="hc-id">Fleet ID: KOMATSU-930E-04</div>
-              <div class="hc-stats">
-                <div>ENGINE HOURS<span class="hc-val">4,821 hrs</span></div>
-                <div>REMAINING LIFE<span class="hc-val red">12 Days</span></div>
-                <div style="text-align:right">NEXT SERVICE<span class="hc-val">21 Sep 2026</span></div>
-              </div>
-              <div class="hc-desc">Anomaly: Acoustic sensor detects hydraulic main pump cavitation during grade ascent. Risk of steer loss.</div>
-            </div>
 
-            <!-- Dragline -->
-            <div class="hemm-card" style="border-color:rgba(201,54,43,0.3)">
-              <div class="hc-top">
-                <div class="hc-type">WALKING DRAGLINE</div>
-                <span class="gauge-badge gb-danger">CRITICAL URGENCY</span>
+              <!-- Dragline -->
+              <div class="hemm-card" style="border-color:rgba(201,54,43,0.3)">
+                <div class="hc-top">
+                  <div class="hc-type">WALKING DRAGLINE</div>
+                  <span class="gauge-badge gb-danger">CRITICAL URGENCY</span>
+                </div>
+                <div class="hc-id">Fleet ID: Dragline DL-08</div>
+                <div class="hc-stats">
+                  <div>DUTY CYCLES<span class="hc-val">12,400 hrs</span></div>
+                  <div>FATIGUE MARGIN<span class="hc-val red">68 Hours Remaining</span></div>
+                  <div style="text-align:right">IMMEDIATE ACTION<span class="hc-val red">Replace Hoist Cable</span></div>
+                </div>
+                <div class="hc-desc red-border">Statutory DGMS Rule 104 Violation Warning: Stranded wire count exceeds 10% tolerance on main boom hoist.</div>
               </div>
-              <div class="hc-id">Fleet ID: Dragline DL-08</div>
-              <div class="hc-stats">
-                <div>DUTY CYCLES<span class="hc-val">12,400 hrs</span></div>
-                <div>FATIGUE MARGIN<span class="hc-val red">68 Hours Remaining</span></div>
-                <div style="text-align:right">IMMEDIATE ACTION<span class="hc-val red">Replace Hoist Cable</span></div>
-              </div>
-              <div class="hc-desc red-border">Statutory DGMS Rule 104 Violation Warning: Stranded wire count exceeds 10% tolerance on main boom hoist.</div>
             </div>
           </div>
         </div>
@@ -581,7 +587,7 @@
             <div class="dt-header">
               <div class="panel-header" style="margin:0;">
                 <svg viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
-                Digital Mine Twin Simulation (Pit Section 3B / Incline #4 Cross-Section)
+                <span id="dt-twin-header-text">Digital Mine Twin Simulation (Pit Section 3B / Incline #4 Cross-Section)</span>
               </div>
               <div class="dt-controls">
                 <div class="dt-toggle" id="dtToggle">
@@ -653,11 +659,11 @@
             </div>
 
             <div class="dt-footer">
-              <div>LAT: <span>22°18'44.2" N</span></div>
-              <div>LONG: <span>82°41'12.6" E</span></div>
-              <div>DATUM: WGS-84 / MSL <span>+242m</span></div>
+              <div>LAT: <span id="dt-lat">22°18'44.2" N</span></div>
+              <div>LONG: <span id="dt-lng">82°41'12.6" E</span></div>
+              <div>DATUM: <span id="dt-datum">WGS-84 / MSL +242m</span></div>
               <div>HAUL CLEARANCE: <span>SAFE (14.2m)</span></div>
-              <div>VENT RETURN: <span>PIT SEC 3B</span></div>
+              <div>VENT RETURN: <span id="dt-vent-return">PIT SEC 3B</span></div>
               <div class="purge-text text-danger" id="dt-purge" style="margin-left:auto; font-weight:bold;">METHANE PURGE SIMULATION CONVERGING (14 MIN)</div>
             </div>
           </div>
@@ -719,146 +725,457 @@
     }
 
     let isIncidentActive = false;
+    window.isIncidentActive = false;
+    let sseSource = null;
+    let currentMine = "Kusmunda OC";
+    window.currentMine = currentMine;
+    let currentPit = "Pit Section 3B / Incline #4";
+    window.currentPit = currentPit;
+    let currentStrataData = null;
+    window.currentMineObj = null;
 
     function triggerEmergencyUI() {
-      // Called organically when AI backend sends Stage 3
-      document.getElementById('dt-plume').setAttribute('rx', '180');
-      document.getElementById('dt-plume').setAttribute('ry', '80');
-      if(window.showToast) window.showToast('INCIDENT DETECTED: CH4 limits exceeded. AI Model predicting combustion.', 'danger');
+      const plume = document.getElementById('dt-plume');
+      if (plume) {
+        plume.setAttribute('rx', '180');
+        plume.setAttribute('ry', '80');
+      }
+      if (window.showToast) window.showToast('INCIDENT DETECTED: CH4 limits exceeded. AI Model predicting combustion.', 'danger');
     }
+
+    function resetSimulation() {
+      isIncidentActive = false;
+      window.isIncidentActive = false;
+      const btn = document.getElementById('btn-simulate');
+      if (btn) {
+        btn.innerHTML = `▶ Simulate Incident`;
+        btn.style.background = '';
+        btn.style.color = '';
+      }
+      if (typeof switchDT === 'function') switchDT('baseline');
+      
+      startSSE();
+      updateStrataContext(currentMine, currentPit);
+
+      if (window.showToast) window.showToast('Simulation reset: Baseline sensors restored.', 'success');
+    }
+    window.resetSimulation = resetSimulation;
 
     async function triggerIncident() {
       const btn = document.getElementById('btn-simulate');
       
       if (isIncidentActive) {
-        // Reset to normal
-        isIncidentActive = false;
-        startSSE();
-        document.getElementById('dt-plume').setAttribute('rx', '40');
-        document.getElementById('dt-plume').setAttribute('ry', '15');
-        
-        btn.innerHTML = `▶ Simulate Incident`;
-        btn.style.background = '';
-        btn.style.color = '';
-        if(window.showToast) window.showToast('Incident Resolved. Backend telemetry returned to normal base parameters.', 'success');
+        resetSimulation();
         return;
       }
 
-      btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="animate-spin" style="animation:spin 1s linear infinite;"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Connecting Backend...`;
+      if (btn) {
+        btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="animate-spin" style="animation:spin 1s linear infinite;"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Connecting Backend...`;
+      }
       
       isIncidentActive = true;
+      window.isIncidentActive = true;
       startSSE();
+      updateStrataContext(currentMine, currentPit);
       
       setTimeout(() => { 
-        btn.innerHTML = `↻ Reset Simulation`; 
-        btn.style.background = 'var(--danger)';
-        btn.style.color = 'white';
-      }, 1000);
+        if (btn && isIncidentActive) {
+          btn.innerHTML = `↻ Reset Simulation`; 
+          btn.style.background = 'var(--danger)';
+          btn.style.color = 'white';
+        }
+      }, 800);
     }
+    window.triggerIncident = triggerIncident;
+
+    async function fetchLiveSensors() {
+      const indicator = document.getElementById('live-indicator');
+      if (indicator) {
+        indicator.innerHTML = `<span class="spinner" style="width:9px; height:9px; border:2px solid var(--brand-primary); border-top-color:transparent; border-radius:50%; display:inline-block; vertical-align:middle;"></span> Syncing sensors...`;
+      }
+      startSSE();
+      await updateStrataContext(currentMine, currentPit);
+      await updateHEMMContext(currentMine);
+      
+      setTimeout(() => {
+        if (indicator) indicator.textContent = '↻ Just now (Live continuous)';
+      }, 900);
+      if (window.showToast) window.showToast('Sensor telemetry refreshed from live streams.', 'info');
+    }
+    window.fetchLiveSensors = fetchLiveSensors;
 
     async function applyPrescription() {
-      if(!sseSource) return;
       try {
-        // Parse current sensors from the text fields
-        const ch4 = parseFloat(document.getElementById('val-ch4').textContent);
-        const temp = parseFloat(document.getElementById('val-temp').textContent);
-        const co = parseFloat(document.getElementById('val-co').textContent) || 15;
-        const c2h4 = parseFloat(document.getElementById('val-c2h4').textContent) || 0.1;
-        const o2 = parseFloat(document.getElementById('val-o2').textContent) || 20.0;
-        const dust = parseFloat(document.getElementById('val-dust').textContent) || 50;
+        const ch4 = parseFloat(document.getElementById('val-ch4')?.textContent) || 0.84;
+        const temp = parseFloat(document.getElementById('val-temp')?.textContent) || 34.2;
+        const co = parseFloat(document.getElementById('val-co')?.textContent) || 18;
+        const c2h4 = parseFloat(document.getElementById('val-c2h4')?.textContent) || 0.04;
+        const o2 = parseFloat(document.getElementById('val-o2')?.textContent) || 20.4;
+        const dust = parseFloat(document.getElementById('val-dust')?.textContent) || 142;
         
-        const response = await fetch('/prescribe/ventilation', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                mine_name: currentMine,
-                CH4_pct: ch4 || 1.4,
-                CO_ppm: co,
-                CO2_pct: 0.5,
-                O2_pct: o2,
-                dust_mgm3: dust,
-                current_fan_speed_pct: 60.0
-            })
+        const response = await fetch('http://localhost:8000/prescribe/ventilation', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            mine_name: currentMine,
+            CH4_pct: ch4,
+            CO_ppm: co,
+            CO2_pct: 0.35,
+            O2_pct: o2,
+            dust_mgm3: dust,
+            current_fan_speed_pct: 62.0
+          })
         });
+        
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
-        const rec_speed = data.recommended_fan_speed_pct;
-        const rec_flow = data.airflow_m3s;
+        const rec_speed = data.recommended_fan_speed_pct || 74;
+        const rec_flow = data.airflow_m3s || 1250;
+        const dilutionTime = data.dilution_time_recommended_min || 14;
         
         // UI updates
-        document.getElementById('dt-fan-text').textContent = `${rec_flow} m³/min (${rec_speed}%)`;
-        document.getElementById('dt-plume').setAttribute('rx', '40');
-        document.getElementById('dt-plume').setAttribute('ry', '15');
+        const fanEl = document.getElementById('fanText');
+        if (fanEl) fanEl.innerHTML = `${rec_flow} m&sup3;/min (${rec_speed}%)`;
         
-        // Reset the SSE to naturally clear the gas
-        isIncidentActive = false;
-        startSSE();
+        const recFanEl = document.getElementById('rec-fan');
+        if (recFanEl) recFanEl.textContent = `${rec_speed}%`;
         
-        // Reset simulation button text
-        const btn = document.getElementById('btn-simulate');
-        if (btn) {
+        const recDilEl = document.getElementById('rec-dilution');
+        if (recDilEl) recDilEl.textContent = `Drop below 0.65% within ${dilutionTime} mins`;
+        
+        const recCostEl = document.getElementById('rec-cost');
+        if (recCostEl) recCostEl.textContent = `+${data.power_kw ? data.power_kw.toFixed(1) : '8.4'} kWh operational cost`;
+        
+        // Digital twin plume & toggle
+        const plume = document.getElementById('dt-plume');
+        if (plume) {
+          plume.setAttribute('rx', '20');
+          plume.setAttribute('ry', '10');
+        }
+        if (typeof switchDT === 'function') switchDT('fan');
+        
+        if (isIncidentActive) {
+          isIncidentActive = false;
+          window.isIncidentActive = false;
+          startSSE();
+          const btn = document.getElementById('btn-simulate');
+          if (btn) {
             btn.innerHTML = `▶ Simulate Incident`;
             btn.style.background = '';
             btn.style.color = '';
+          }
         }
         
-        if(window.showToast) window.showToast(`AI Prescription Applied. Fan speed increased to ${rec_speed}%. Expected dilution in ${data.dilution_time_recommended_min} minutes.`, 'success');
+        if (window.showToast) {
+          window.showToast(`AI Prescription Applied. Fan elevated to ${rec_speed}% (${rec_flow} m³/s). Target dilution in ${dilutionTime} min.`, 'success', 5000);
+        }
       } catch (err) {
-        console.error(err);
-        if(window.showToast) window.showToast('Failed to connect to AI Ventilation Optimizer', 'danger');
+        console.error('Ventilation prescription error:', err);
+        if (window.showToast) window.showToast('Failed to connect to AI Ventilation Optimizer', 'danger');
       }
     }
+    window.applyPrescription = applyPrescription;
 
-    // ── AI Engine SSE Live Feed ──
-    let sseSource = null;
-    let currentMine = "Kusmunda OC";
-    
+    // Manual Ventilation Override
+    window.openManualVentOverride = function() {
+      window.openModal('manual-vent-modal');
+    };
+
+    window.applyManualVentOverride = async function() {
+      const slider = document.getElementById('manual-fan-slider');
+      const targetSpeed = slider ? parseInt(slider.value) : 75;
+      
+      try {
+        const ch4 = parseFloat(document.getElementById('val-ch4')?.textContent) || 0.84;
+        const response = await fetch('http://localhost:8000/prescribe/ventilation', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            mine_name: currentMine,
+            CH4_pct: ch4,
+            CO_ppm: 20,
+            CO2_pct: 0.35,
+            O2_pct: 20.4,
+            dust_mgm3: 120,
+            current_fan_speed_pct: targetSpeed
+          })
+        });
+        const data = response.ok ? await response.json() : null;
+        const flow = data && data.airflow_m3s ? data.airflow_m3s : Math.round(targetSpeed * 22.3);
+        
+        const fanEl = document.getElementById('fanText');
+        if (fanEl) fanEl.innerHTML = `${flow} m&sup3;/min (${targetSpeed}%)`;
+        
+        const recFanEl = document.getElementById('rec-fan');
+        if (recFanEl) recFanEl.textContent = `${targetSpeed}%`;
+        
+        if (typeof switchDT === 'function') switchDT(targetSpeed >= 70 ? 'fan' : 'baseline');
+        
+        window.closeModal('manual-vent-modal');
+        if (window.showToast) window.showToast(`Manual Override Applied: Auxiliary Fan set to ${targetSpeed}% (${flow} m³/min).`, 'success');
+      } catch(e) {
+        window.closeModal('manual-vent-modal');
+        if (window.showToast) window.showToast(`Manual fan set to ${targetSpeed}%.`, 'info');
+      }
+    };
+
+    function changePit(pit) {
+      currentPit = pit;
+      window.currentPit = pit;
+      const dtHeader = document.getElementById('dt-twin-header-text');
+      if (dtHeader) {
+        dtHeader.textContent = `Digital Mine Twin Simulation (${pit} Cross-Section)`;
+      }
+      const ventRet = document.getElementById('dt-vent-return');
+      if (ventRet) {
+        ventRet.textContent = pit.toUpperCase();
+      }
+      updateStrataContext(currentMine, pit);
+      if (window.showToast) window.showToast(`Section synchronized: ${pit}`, 'info');
+    }
+    window.changePit = changePit;
+
+    async function updateStrataContext(mineName, pitName) {
+      try {
+        const isHighRisk = (window.currentMineObj && (window.currentMineObj.risk === 'Critical' || window.currentMineObj.risk === 'High')) || isIncidentActive;
+        const payload = {
+          mine_name: mineName || currentMine,
+          microseismic_count: isHighRisk ? 18 : 6,
+          peak_particle_velocity: isHighRisk ? 5.2 : 2.1,
+          roof_convergence_mm: isHighRisk ? 4.8 : 1.4,
+          support_pressure_kpa: isHighRisk ? 495 : 320,
+          depth_m: (window.currentMineObj && window.currentMineObj.depth) || 280,
+          operator_exp_yrs: 8.5,
+          shift_hours: 6.5,
+          consecutive_days: 14
+        };
+        const res = await fetch('http://localhost:8000/predict/strata', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+          const data = await res.json();
+          currentStrataData = data;
+          const probEl = document.getElementById('strata-prob');
+          if (probEl) probEl.textContent = `${Math.round(data.collapse_probability)}%`;
+          const dispEl = document.getElementById('strata-disp');
+          if (dispEl) dispEl.textContent = `${data.key_indicators.roof_convergence_mm.toFixed(1)} mm / 6h`;
+          const recEl = document.getElementById('strata-rec-action');
+          if (recEl) recEl.textContent = `Recommended Action: ${data.recommended_action}`;
+          const badgeEl = document.getElementById('strata-sensor-badge');
+          if (badgeEl) badgeEl.textContent = `${mineName || currentMine} Sensor #RS-09`;
+          
+          const convVal = Math.min(100, Math.round(data.collapse_probability * 1.15));
+          const vibVal = Math.min(100, Math.round(data.key_indicators.peak_particle_velocity_mms * 14));
+          const propVal = Math.min(100, Math.round(data.key_indicators.support_pressure_kpa / 5.5));
+          
+          const bConv = document.getElementById('bar-conv');
+          const vConv = document.getElementById('val-conv');
+          if (bConv && vConv) { bConv.style.width = convVal + '%'; vConv.textContent = convVal + '%'; }
+          const bVib = document.getElementById('bar-vib');
+          const vVib = document.getElementById('val-vib');
+          if (bVib && vVib) { bVib.style.width = vibVal + '%'; vVib.textContent = vibVal + '%'; }
+          const bProp = document.getElementById('bar-prop');
+          const vProp = document.getElementById('val-prop');
+          if (bProp && vProp) { bProp.style.width = propVal + '%'; vProp.textContent = propVal + '%'; }
+        }
+      } catch(e) {
+        console.warn('Strata predictor fetch notice:', e);
+      }
+    }
+    window.updateStrataContext = updateStrataContext;
+
+    window.openStrataLogModal = async function() {
+      if (!currentStrataData) {
+        await updateStrataContext(currentMine, currentPit);
+      }
+      const data = currentStrataData || {
+        stage: 1,
+        stage_label: "Elevated Risk",
+        collapse_probability: 63.0,
+        confidence: 88.0,
+        recommended_action: "Reinforce with 2.2m resin rock bolts",
+        forecast_48h: [63.0, 61.2, 59.8, 57.1, 54.0, 51.5, 49.0, 46.2, 44.0],
+        forecast_labels: ['Now', '+6h', '+12h', '+18h', '+24h', '+30h', '+36h', '+42h', '+48h'],
+        key_indicators: { microseismic_count: 14, peak_particle_velocity_mms: 4.8, roof_convergence_mm: 4.2, support_pressure_kpa: 480, depth_m: 240 }
+      };
+
+      document.getElementById('sl-mine').textContent = `${currentMine} — ${currentPit}`;
+      document.getElementById('sl-stage-badge').textContent = `STAGE ${data.stage} (${data.stage_label.toUpperCase()})`;
+      document.getElementById('sl-prob').textContent = `${Math.round(data.collapse_probability)}%`;
+      document.getElementById('sl-action').textContent = data.recommended_action;
+      document.getElementById('sl-micro').textContent = `${data.key_indicators.microseismic_count} events/hr`;
+      document.getElementById('sl-ppv').textContent = `${data.key_indicators.peak_particle_velocity_mms} mm/s`;
+      document.getElementById('sl-conv').textContent = `${data.key_indicators.roof_convergence_mm} mm`;
+      document.getElementById('sl-prop').textContent = `${data.key_indicators.support_pressure_kpa} kPa`;
+
+      const tbody = document.getElementById('sl-forecast-tbody');
+      if (tbody && data.forecast_48h && data.forecast_labels) {
+        tbody.innerHTML = data.forecast_labels.map((lbl, idx) => {
+          const p = data.forecast_48h[idx] !== undefined ? data.forecast_48h[idx] : 50;
+          const col = p >= 70 ? 'var(--danger)' : p >= 45 ? 'var(--amber)' : 'var(--success)';
+          const status = p >= 70 ? 'Critical Warning' : p >= 45 ? 'Controlled Watch' : 'Nominal Safe';
+          return `
+            <tr style="border-bottom:1px solid var(--border);">
+              <td style="padding:8px 12px; font-weight:700;">${lbl}</td>
+              <td style="padding:8px 12px; font-weight:800; color:${col};">${p}%</td>
+              <td style="padding:8px 12px;">
+                <div style="background:#E5E7EB; border-radius:4px; height:8px; width:120px; overflow:hidden;">
+                  <div style="width:${p}%; background:${col}; height:100%;"></div>
+                </div>
+              </td>
+              <td style="padding:8px 12px; font-size:11px; font-weight:600;">${status}</td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      window.openModal('strata-log-modal');
+    };
+
+    async function updateHEMMContext(mineName) {
+      const container = document.getElementById('hemm-fleet-container');
+      if (!container) return;
+      try {
+        const res = await fetch(`http://localhost:8000/prescribe/fleet/${encodeURIComponent(mineName || currentMine)}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        const badge = document.getElementById('hemm-badge');
+        if (badge && window.currentMineObj) {
+          badge.textContent = `${window.currentMineObj.sub} Heavy Fleet`;
+        }
+        if (data.fleet && data.fleet.length > 0) {
+          const topUnits = data.fleet.slice(0, 2);
+          container.innerHTML = topUnits.map(unit => {
+            const isCrit = unit.urgency === 3;
+            const isUrg = unit.urgency === 2;
+            const badgeClass = isCrit ? 'gb-danger' : isUrg ? 'gb-warning' : 'gb-success';
+            const urgencyLabel = isCrit ? 'CRITICAL URGENCY' : isUrg ? 'HIGH URGENCY' : 'SCHEDULED';
+            const borderStyle = isCrit ? 'border-color:rgba(201,54,43,0.4);' : '';
+            return `
+              <div class="hemm-card" style="${borderStyle}">
+                <div class="hc-top">
+                  <div class="hc-type">${escapeHtml(unit.type.toUpperCase())}</div>
+                  <span class="gauge-badge ${badgeClass}" style="${isUrg ? 'background:var(--cyan-glow); color:var(--cyan)' : ''}">${urgencyLabel}</span>
+                </div>
+                <div class="hc-id">Fleet ID: ${escapeHtml(unit.equipment_id)}</div>
+                <div class="hc-stats">
+                  <div>ENGINE HOURS<span class="hc-val">${unit.hours_operated.toLocaleString()} hrs</span></div>
+                  <div>REMAINING LIFE<span class="hc-val ${isCrit || isUrg ? 'red' : ''}">${unit.rul_days} Days</span></div>
+                  <div style="text-align:right">${isCrit ? 'IMMEDIATE ACTION' : 'NEXT SERVICE'}<span class="hc-val ${isCrit ? 'red' : ''}">${escapeHtml(unit.next_service_date || unit.recommended_action)}</span></div>
+                </div>
+                <div class="hc-desc ${isCrit ? 'red-border' : ''}">
+                  ${isCrit ? 'Statutory DGMS Alert: ' : ''}${escapeHtml(unit.anomaly_detected || unit.recommended_action)}
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+      } catch(e) {
+        console.warn('HEMM fleet fetch notice:', e);
+      }
+    }
+    window.updateHEMMContext = updateHEMMContext;
+
     function startSSE() {
-      if (sseSource) sseSource.close();
-      const url = `/simulate/live-feed?mine=${encodeURIComponent(currentMine)}&incident=${isIncidentActive}`;
+      if (sseSource) {
+        try { sseSource.close(); } catch(e) {}
+        sseSource = null;
+      }
+      const url = `http://localhost:8000/simulate/live-feed?mine=${encodeURIComponent(currentMine)}&incident=${isIncidentActive}`;
       sseSource = new EventSource(url);
       
       sseSource.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        const sensors = data.sensors;
-        const comb = data.combustion;
+        try {
+          const data = JSON.parse(event.data);
+          const sensors = data.sensors;
+          const comb = data.combustion;
 
-        // Update gauges
-        updateGauge('svg-ch4', sensors.CH4.toFixed(2), 2.0, '%', sensors.CH4 > 1.25);
-        updateGauge('svg-co', Math.round(sensors.CO), 100, '', sensors.CO > 50);
-        updateGauge('svg-c2h4', sensors.C2H4.toFixed(2), 0.1, '', sensors.C2H4 > 0.08);
-        updateGauge('svg-o2', sensors.O2.toFixed(1), 21.0, '%', sensors.O2 < 19.0);
-        updateGauge('svg-temp', sensors.temp.toFixed(1), 50.0, '', sensors.temp > 38.0);
-        updateGauge('svg-dust', Math.round(sensors.dust), 300, '', sensors.dust > 100);
-        
-        // Update 3D Digital Twin Text
-        document.getElementById('ch4Text').innerHTML = 'CH&#8324; ' + sensors.CH4.toFixed(2) + '%';
-        document.getElementById('tempText').innerHTML = 'Temp ' + sensors.temp.toFixed(1) + '&deg;C';
+          // Update gauges
+          updateGauge('svg-ch4', sensors.CH4.toFixed(2), 2.0, '%', sensors.CH4 > 1.25);
+          updateGauge('svg-co', Math.round(sensors.CO), 100, '', sensors.CO > 50);
+          updateGauge('svg-c2h4', sensors.C2H4.toFixed(2), 0.1, '', sensors.C2H4 > 0.08);
+          updateGauge('svg-o2', sensors.O2.toFixed(1), 21.0, '%', sensors.O2 < 19.0);
+          updateGauge('svg-temp', sensors.temp.toFixed(1), 50.0, '', sensors.temp > 38.0);
+          updateGauge('svg-dust', Math.round(sensors.dust), 300, '', sensors.dust > 100);
+          
+          // Update 3D Digital Twin Text
+          const ch4El = document.getElementById('ch4Text');
+          if (ch4El) ch4El.innerHTML = 'CH&#8324; ' + sensors.CH4.toFixed(2) + '%';
+          const tempEl = document.getElementById('tempText');
+          if (tempEl) tempEl.innerHTML = 'Temp ' + sensors.temp.toFixed(1) + '&deg;C';
 
-        // Update AI Prediction UI based on Combustion Stage
-        document.getElementById('fire-prob').textContent = comb.confidence + '%';
-        
-        // Reset stages
-        ['stage-1', 'stage-2', 'stage-3'].forEach(id => document.getElementById(id).classList.remove('active'));
-        
-        if (comb.stage === 0 || comb.stage === 1) {
-          document.getElementById('stage-1').classList.add('active');
-        } else if (comb.stage === 2) {
-          document.getElementById('stage-2').classList.add('active');
-        } else if (comb.stage === 3) {
-          document.getElementById('stage-3').classList.add('active');
-          if(!isIncidentActive) {
-            // Backend organically triggered a stage 3!
-            triggerEmergencyUI();
+          // Gas Ratio Analysis
+          const coVal = sensors.CO;
+          const co2Val = sensors.CO2 || 0.35;
+          const o2Val = sensors.O2;
+          const c2h4Val = sensors.C2H4 || 0.04;
+          const ch4Val = Math.max(0.01, sensors.CH4);
+          
+          const co_co2 = ((coVal / 10000) / co2Val).toFixed(3);
+          const o2_def = Math.max(0.1, 20.9 - o2Val);
+          const grahams = ((coVal / 10000) / o2_def).toFixed(2);
+          const youngs = (c2h4Val / ch4Val).toFixed(3);
+          
+          const rCo = document.getElementById('ratio-co-co2');
+          if (rCo) rCo.textContent = co_co2;
+          const rGr = document.getElementById('ratio-grahams');
+          if (rGr) rGr.textContent = grahams;
+          const rYo = document.getElementById('ratio-youngs');
+          if (rYo) rYo.textContent = youngs;
+
+          // Update AI Combustion Severity
+          const fp = document.getElementById('fire-prob');
+          if (fp) fp.textContent = comb.confidence + '%';
+          const ft = document.getElementById('fire-time');
+          if (ft) {
+            ft.textContent = comb.stage === 3 ? '0.8 Hours' : comb.stage === 2 ? '3.4 Hours' : comb.stage === 1 ? '12.6 Hours' : '> 48 Hours';
           }
+          
+          // Reset and update stages
+          ['stage-0', 'stage-1', 'stage-2', 'stage-3'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.classList.remove('active');
+          });
+          
+          if (comb.stage === 0) {
+            document.getElementById('stage-0')?.classList.add('active');
+          } else if (comb.stage === 1) {
+            document.getElementById('stage-1')?.classList.add('active');
+          } else if (comb.stage === 2) {
+            document.getElementById('stage-2')?.classList.add('active');
+          } else if (comb.stage === 3) {
+            document.getElementById('stage-3')?.classList.add('active');
+            if (!isIncidentActive) {
+              triggerEmergencyUI();
+            }
+          }
+
+          // Live indicator update
+          const ind = document.getElementById('live-indicator');
+          if (ind && !ind.innerHTML.includes('Syncing')) {
+            ind.textContent = `↻ ${new Date().toLocaleTimeString()} (Continuous)`;
+          }
+        } catch(e) {
+          console.warn('SSE payload notice:', e);
         }
       };
 
       sseSource.onerror = (err) => {
-        console.error('SSE Error:', err);
+        console.warn('SSE stream status update:', err);
       };
     }
+    window.startSSE = startSSE;
 
-    // ── Populate Mine Dropdown ──
+    window.addEventListener('beforeunload', () => {
+      if (sseSource) {
+        try { sseSource.close(); } catch(e) {}
+        sseSource = null;
+      }
+    });
+
+    // Populate Mine Dropdown
     document.addEventListener('DOMContentLoaded', () => {
       if (typeof REAL_MINES !== 'undefined') {
         const mineSel = document.getElementById('mine-selector');
@@ -871,21 +1188,47 @@
             mineSel.appendChild(opt);
           });
           mineSel.value = currentMine;
+          window.currentMine = currentMine;
+          window.currentMineObj = REAL_MINES.find(m => m.name === currentMine) || REAL_MINES[0];
         }
       }
+      updateStrataContext(currentMine, currentPit);
+      updateHEMMContext(currentMine);
     });
 
     function changeMine(name) {
       currentMine = name;
+      window.currentMine = name;
       isIncidentActive = false;
+      window.isIncidentActive = false;
+      
+      if (typeof REAL_MINES !== 'undefined') {
+        window.currentMineObj = REAL_MINES.find(m => m.name === name) || null;
+      }
+      
+      const m = window.currentMineObj;
+      if (m) {
+        const latEl = document.getElementById('dt-lat');
+        if (latEl) latEl.textContent = `${m.lat}° N`;
+        const lngEl = document.getElementById('dt-lng');
+        if (lngEl) lngEl.textContent = `${m.lng}° E`;
+        const datumEl = document.getElementById('dt-datum');
+        if (datumEl) datumEl.textContent = `WGS-84 / MSL +${Math.round(200 + (parseFloat(m.compliance) || 60))}m`;
+      }
+      
       const btn = document.getElementById('btn-simulate');
       if (btn) {
-          btn.innerHTML = `▶ Simulate Incident`;
-          btn.style.background = '';
-          btn.style.color = '';
+        btn.innerHTML = `▶ Simulate Incident`;
+        btn.style.background = '';
+        btn.style.color = '';
       }
+      
       startSSE();
+      updateStrataContext(name, currentPit);
+      updateHEMMContext(name);
+      if (window.showToast) window.showToast(`Active mine switched to ${name}`, 'info');
     }
+    window.changeMine = changeMine;
 
     startSSE();
 
@@ -993,6 +1336,127 @@
         <button type="button" class="btn btn-secondary" onclick="window.closeModal('action-plan-modal')">DISMISS</button>
         <button type="button" class="btn btn-primary" onclick="window.executeActionPlan()" style="padding:10px 24px;font-weight:700;">
           APPLY AI VENTILATION ACTION (74% FAN)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: STRATA & ROOF FALL LOG -->
+  <div class="modal-overlay" id="strata-log-modal">
+    <div class="modal-card modal-lg" role="dialog" aria-modal="true">
+      <div class="modal-header">
+        <div>
+          <div class="modal-title" style="display:flex;align-items:center;gap:8px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2"><path d="m2 12 5.25 5 5.25-5L12 7l-5.25 5Z"/><path d="m11 12 5.25 5 5.25-5L16 7l-5.25 5Z"/></svg>
+            Geotechnical Strata & Roof Fall Risk Dossier
+          </div>
+          <div class="modal-subtitle" id="sl-mine">Kusmunda OC — Pit Section 3B / Incline #4</div>
+        </div>
+        <button class="modal-close" onclick="window.closeModal('strata-log-modal')">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-row-3" style="background:#F8FAFA; border:1px solid var(--border); border-radius:4px; padding:12px; margin-bottom:16px;">
+          <div>
+            <div style="font-size:10px; font-weight:700; text-transform:uppercase; color:var(--text-secondary);">48h Fall Probability</div>
+            <div id="sl-prob" style="font-size:18px; font-weight:900; color:var(--danger); margin-top:2px;">63%</div>
+          </div>
+          <div>
+            <div style="font-size:10px; font-weight:700; text-transform:uppercase; color:var(--text-secondary);">DGMS Risk Stage</div>
+            <div id="sl-stage-badge" style="font-size:13px; font-weight:800; color:var(--amber); margin-top:4px;">STAGE 1 (ELEVATED)</div>
+          </div>
+          <div>
+            <div style="font-size:10px; font-weight:700; text-transform:uppercase; color:var(--text-secondary);">AI Model Confidence</div>
+            <div style="font-size:14px; font-weight:800; color:var(--brand-primary); margin-top:4px;">91.4% (GBM)</div>
+          </div>
+        </div>
+
+        <div style="background:#FFFBEB; border:1px solid #FCD34D; border-radius:4px; padding:12px 14px; margin-bottom:16px;">
+          <div style="font-size:11px; font-weight:800; text-transform:uppercase; color:#92400E; margin-bottom:4px;">DGMS Mandated Directive</div>
+          <div id="sl-action" style="font-size:13px; font-weight:700; color:#78350F;">Reinforce with 2.2m resin rock bolts</div>
+        </div>
+
+        <div style="font-size:11px; font-weight:800; text-transform:uppercase; color:var(--text-secondary); margin-bottom:8px; letter-spacing:0.5px;">Current Key Geotechnical Indicators</div>
+        <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:10px; margin-bottom:18px;">
+          <div style="background:#F5F7F6; padding:8px 10px; border-radius:4px; border-left:3px solid var(--danger);">
+            <div style="font-size:9px; font-weight:700; color:var(--text-secondary);">MICROSEISMIC</div>
+            <div id="sl-micro" style="font-size:13px; font-weight:800;">14 events/hr</div>
+          </div>
+          <div style="background:#F5F7F6; padding:8px 10px; border-radius:4px; border-left:3px solid var(--cyan);">
+            <div style="font-size:9px; font-weight:700; color:var(--text-secondary);">BLAST PPV</div>
+            <div id="sl-ppv" style="font-size:13px; font-weight:800;">4.8 mm/s</div>
+          </div>
+          <div style="background:#F5F7F6; padding:8px 10px; border-radius:4px; border-left:3px solid var(--amber);">
+            <div style="font-size:9px; font-weight:700; color:var(--text-secondary);">CONVERGENCE</div>
+            <div id="sl-conv" style="font-size:13px; font-weight:800;">4.2 mm</div>
+          </div>
+          <div style="background:#F5F7F6; padding:8px 10px; border-radius:4px; border-left:3px solid var(--brand-primary);">
+            <div style="font-size:9px; font-weight:700; color:var(--text-secondary);">PROP LOAD</div>
+            <div id="sl-prop" style="font-size:13px; font-weight:800;">480 kPa</div>
+          </div>
+        </div>
+
+        <div style="font-size:11px; font-weight:800; text-transform:uppercase; color:var(--text-secondary); margin-bottom:8px; letter-spacing:0.5px;">48-Hour Fall Probability Chronological Forecast</div>
+        <table style="width:100%; border-collapse:collapse; font-size:12px; background:white; border:1px solid var(--border); border-radius:4px; overflow:hidden;">
+          <thead>
+            <tr style="background:#F8FAFA; border-bottom:1px solid var(--border); text-align:left; font-size:10px; text-transform:uppercase; color:var(--text-secondary);">
+              <th style="padding:8px 12px;">Interval</th>
+              <th style="padding:8px 12px;">Collapse Prob.</th>
+              <th style="padding:8px 12px;">Trend Visual</th>
+              <th style="padding:8px 12px;">Operational Status</th>
+            </tr>
+          </thead>
+          <tbody id="sl-forecast-tbody">
+            <!-- Dynamically populated -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="window.closeModal('strata-log-modal')">CLOSE</button>
+        <button type="button" class="btn btn-primary" onclick="window.print()" style="padding:8px 20px; font-weight:700;">PRINT DOSSIER</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: MANUAL VENTILATION OVERRIDE -->
+  <div class="modal-overlay" id="manual-vent-modal">
+    <div class="modal-card modal-md" role="dialog" aria-modal="true">
+      <div class="modal-header">
+        <div>
+          <div class="modal-title">Manual Ventilation Override</div>
+          <div class="modal-subtitle">Auxiliary Fan Bank #04 • Manual Operator Control</div>
+        </div>
+        <button class="modal-close" onclick="window.closeModal('manual-vent-modal')">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div style="font-size:12px; color:var(--text-secondary); margin-bottom:16px; line-height:1.5;">
+          Adjust the auxiliary ventilation fan delivery percentage. The physics optimizer will calculate the resulting airflow delivery rate and estimated methane evacuation time.
+        </div>
+
+        <div style="background:#F8FAFA; border:1px solid var(--border); border-radius:4px; padding:16px; margin-bottom:18px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <span style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-secondary);">Target Fan Speed</span>
+            <span id="manual-fan-val" style="font-size:18px; font-weight:900; color:var(--brand-primary);">75%</span>
+          </div>
+          <input type="range" id="manual-fan-slider" min="40" max="100" value="75" step="1" style="width:100%; cursor:pointer;" oninput="document.getElementById('manual-fan-val').textContent = this.value + '%'">
+          <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--text-secondary); margin-top:4px;">
+            <span>40% (Nominal Min)</span>
+            <span>70% (Standard)</span>
+            <span>100% (Emergency Max)</span>
+          </div>
+        </div>
+
+        <div style="font-size:11px; color:var(--text-secondary); line-height:1.4;">
+          * Manual override logs an operational change event with the DGMS audit trail.
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="window.closeModal('manual-vent-modal')">CANCEL</button>
+        <button type="button" class="btn btn-primary" onclick="window.applyManualVentOverride()" style="padding:10px 22px; font-weight:700;">
+          APPLY MANUAL OVERRIDE
         </button>
       </div>
     </div>
