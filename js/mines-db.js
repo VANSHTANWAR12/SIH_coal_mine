@@ -190,13 +190,14 @@ const REAL_MINES = REAL_MINES_RAW.map((m, idx) => {
   }
 
   return {
-    id, name: m.name, subsidiary: sub,
+    id, name: m.name, sub: sub, subsidiary: sub,
     type: m.type,
     state: hq.state,
     lat: coord.lat, lng: coord.lng,
-    risk: m.risk.toLowerCase(),
+    risk: m.risk, // keep original casing (Critical/High/Medium/Low)
     riskScore: Math.min(100, Math.max(10, riskScore)),
     production: prodMT,
+    prod: m.prod, // alias for mine-intelligence.html
     productionLabel: m.prod,
     grade: m.grade,
     gcvBand, gcvKcal,
@@ -210,9 +211,9 @@ const REAL_MINES = REAL_MINES_RAW.map((m, idx) => {
 /* ── Summary stats ──────────────────────────────────────── */
 const DB_STATS = {
   total:    REAL_MINES.length,
-  critical: REAL_MINES.filter(m=>m.risk==='critical').length,
-  high:     REAL_MINES.filter(m=>m.risk==='high').length,
-  medium:   REAL_MINES.filter(m=>m.risk==='medium').length,
+  critical: REAL_MINES.filter(m=>m.risk==='Critical').length,
+  high:     REAL_MINES.filter(m=>m.risk==='High').length,
+  medium:   REAL_MINES.filter(m=>m.risk==='Medium').length,
   underground: REAL_MINES.filter(m=>m.type==='Underground').length,
   opencast:    REAL_MINES.filter(m=>m.type==='Opencast').length,
   mixed:       REAL_MINES.filter(m=>m.type==='Mixed').length,
@@ -224,3 +225,135 @@ const MINES_BY_SUB = {};
 DB_STATS.subsidiaries.forEach(s => {
   MINES_BY_SUB[s] = REAL_MINES.filter(m => m.subsidiary === s);
 });
+
+/* ── Contractor Companies Pool ───────────────────────────── */
+const _CONTRACTOR_POOL = [
+  { name:'Jai Bharat Mining Co.',          type:'Heavy Earth Moving',     baseComp:82 },
+  { name:'Vishwakarma Infrastructure Ltd.',type:'Civil & Structural',     baseComp:88 },
+  { name:'SureSafe Systems Pvt. Ltd.',     type:'Safety Equipment',       baseComp:94 },
+  { name:'Rawat Explosives Services',      type:'Blasting & Drilling',    baseComp:77 },
+  { name:'Bharat Labour Corp',             type:'Manpower Supply',        baseComp:65 },
+  { name:'GreenTech Environmental',        type:'Environmental Services', baseComp:91 },
+  { name:'National Conveyor Systems',      type:'Material Handling',      baseComp:79 },
+  { name:'Eastern Mining Contractors',     type:'Coal Extraction',        baseComp:71 },
+  { name:'Singareni Heavy Equipment Co.',  type:'HEMM Operations',        baseComp:85 },
+  { name:'Central Coal Transport Ltd.',    type:'Coal Transport',         baseComp:69 },
+  { name:'Odisha Bulk Carriers',           type:'Bulk Transport',         baseComp:76 },
+  { name:'Apex Surface Miners India',      type:'Surface Mining',         baseComp:89 },
+  { name:'Deccan Mining Services',         type:'Mining Operations',      baseComp:84 },
+  { name:'Jharkhand Drilling Corp',        type:'Exploration & Drilling', baseComp:68 },
+  { name:'MP Coal Handlers Pvt. Ltd.',     type:'Coal Handling',          baseComp:73 },
+  { name:'Bengal Mining Infrastructure',   type:'Infrastructure Works',   baseComp:81 },
+];
+
+/* ── Contractors DB (generated from real mines) ──────────── */
+const CONTRACTORS_DB = (() => {
+  const today = new Date();
+  const addDays = (base, n) => { const d = new Date(base); d.setDate(d.getDate() + n); return d; };
+  const fmtDate = d => d.toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
+
+  const result = [];
+  let poolIdx = 0;
+
+  DB_STATS.subsidiaries.forEach(sub => {
+    const mines = MINES_BY_SUB[sub];
+    const numContractors = mines.length > 5 ? 2 : 1;
+
+    for (let i = 0; i < numContractors; i++) {
+      const co = _CONTRACTOR_POOL[poolIdx % _CONTRACTOR_POOL.length];
+      poolIdx++;
+
+      const assignedMines = mines.slice(i * 4, i * 4 + 4);
+      if (assignedMines.length === 0) continue;
+
+      const avgMineComp = Math.round(assignedMines.reduce((a, m) => a + m.compliance, 0) / assignedMines.length);
+      const comp = Math.max(30, Math.min(98, Math.round((co.baseComp + avgMineComp) / 2)));
+
+      // Workers scale with total production of assigned mines
+      const totalProd = assignedMines.reduce((a, m) => a + m.production, 0);
+      const workers = Math.max(60, Math.round(totalProd * 75 + 80));
+
+      // Expiry: vary across contractors
+      const expDays = (poolIdx % 5 === 0) ? 12 : (poolIdx % 3 === 0) ? 38 : 60 + (poolIdx * 41 % 280);
+      const expiry = fmtDate(addDays(today, expDays));
+      const status = expDays <= 30 ? 'expiring' : 'active';
+      const violations = comp < 65 ? (Math.floor(poolIdx * 3 % 10) + 5)
+                       : comp < 80 ? (Math.floor(poolIdx % 5))
+                       : (Math.floor(poolIdx % 3));
+
+      result.push({
+        id: `CT${String(result.length + 1).padStart(3,'0')}`,
+        name: co.name,
+        type: co.type,
+        subsidiary: sub,
+        mines: assignedMines.map(m => m.name),
+        primaryMine: assignedMines[0].name,
+        workers,
+        compliance: comp,
+        expiry,
+        status,
+        violations,
+      });
+    }
+  });
+  return result;
+})();
+
+/* ── Inspections DB (generated from real mines) ──────────── */
+const _INSP_TYPES    = ['Safety (DGMS)', 'Environmental', 'Production Audit', 'Labour', 'Statutory', 'Fire Safety', 'Ventilation Check'];
+const _INSP_NAMES    = ['V. Kumar', 'S. Reddy', 'A. Patel', 'R. Sharma', 'M. Singh', 'P. Rao', 'K. Nair', 'B. Joshi', 'L. Verma', 'N. Das'];
+
+const INSPECTIONS_DB = (() => {
+  const today = new Date();
+  const addDays = (base, n) => { const d = new Date(base); d.setDate(d.getDate() + n); return d; };
+  const fmtDate  = d => d.toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
+
+  const selected = [
+    ...REAL_MINES.filter(m => m.risk === 'Critical').slice(0, 5),
+    ...REAL_MINES.filter(m => m.risk === 'High').slice(0, 9),
+    ...REAL_MINES.filter(m => m.risk === 'Medium').slice(0, 6),
+  ];
+
+  return selected.map((mine, idx) => {
+    const daysOffset = 6 - idx * 2; // ranges from +6 to -34 days
+    const date = addDays(today, daysOffset);
+
+    let status, findings, critical;
+    if (daysOffset > 1) {
+      status = 'Scheduled'; findings = 0; critical = 0;
+    } else if (daysOffset === 0 || daysOffset === 1) {
+      status = 'In Progress'; findings = 0; critical = 0;
+    } else if (mine.compliance < 60 && daysOffset < -10) {
+      status = 'Overdue'; findings = 3 + (idx % 5); critical = 1 + (idx % 2);
+    } else {
+      status = 'Completed';
+      findings = mine.risk === 'Critical' ? 8 + (idx % 6) : mine.risk === 'High' ? 3 + (idx % 5) : idx % 4;
+      critical = mine.risk === 'Critical' ? 1 + (idx % 3) : mine.risk === 'High' ? idx % 2 : 0;
+    }
+
+    return {
+      id: `INS-2026-${String(900 + idx).padStart(4,'0')}`,
+      type: _INSP_TYPES[idx % _INSP_TYPES.length],
+      mine: mine.name,
+      subsidiary: mine.sub,
+      inspector: _INSP_NAMES[idx % _INSP_NAMES.length],
+      date: fmtDate(date),
+      dateRaw: date,
+      daysOffset,
+      status,
+      findings,
+      critical,
+      compliance: mine.compliance,
+      risk: mine.risk,
+      reason: mine.reason,
+    };
+  });
+})();
+
+/* ── Live Time Helper ────────────────────────────────────── */
+function getLiveTimeString() {
+  const now = new Date();
+  const date = now.toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric', timeZone:'Asia/Kolkata' });
+  const time = now.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', timeZone:'Asia/Kolkata', hour12:false });
+  return `${date}<br>${time} IST`;
+}

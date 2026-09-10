@@ -59,7 +59,7 @@
           <a href="#" class="header-link active">SECL Operational Zone</a>
         </div>
         <div class="system-status-pill"><div class="status-dot"></div> System Operational</div>
-        <div class="header-time">09 Sep 2026<br>03:35 IST</div>
+        <div class="header-time"></div>
         <button class="btn-emergency">Emergency Dispatch</button>
       </header>
 
@@ -85,7 +85,7 @@
                 <div class="rc-title">DGMS Daily Return (Form-IV)</div>
                 <div class="rc-desc">Statutory daily safety, attendance, and ventilation return for Directorate General of Mines Safety.</div>
                 <div class="report-form">
-                  <select><option>Select Mine</option><option>Kusmunda OC</option></select>
+                  <select id="sel-mine-1"><option>Select Mine</option></select>
                   <select><option>Date: Today</option></select>
                 </div>
                 <button class="btn btn-primary" style="width:100%" onclick="window.showToast('Generating Form-IV PDF...', 'info')">Generate PDF</button>
@@ -98,7 +98,7 @@
                 <div class="rc-title">Weekly Safety Audit</div>
                 <div class="rc-desc">Comprehensive compilation of all internal safety inspections and corrective action closures.</div>
                 <div class="report-form">
-                  <select><option>Select Subsidiary</option><option>SECL</option></select>
+                  <select id="sel-sub-1"><option>Select Subsidiary</option></select>
                   <select><option>Week: Sep 02 - Sep 08</option></select>
                 </div>
                 <button class="btn btn-primary" style="width:100%">Generate PDF</button>
@@ -111,7 +111,7 @@
                 <div class="rc-title">Subsidiary Production</div>
                 <div class="rc-desc">Daily/Monthly coal dispatch and production figures verified against contractor logs.</div>
                 <div class="report-form">
-                  <select><option>Select Subsidiary</option><option>SECL</option></select>
+                  <select id="sel-sub-2"><option>Select Subsidiary</option></select>
                   <select><option>Period: Sept 2026 (MTD)</option></select>
                 </div>
                 <button class="btn btn-primary" style="width:100%">Generate PDF</button>
@@ -124,7 +124,7 @@
                 <div class="rc-title">Environmental Compliance</div>
                 <div class="rc-desc">MoEFCC formatted report covering PM10/PM2.5, effluent discharge, and noise levels.</div>
                 <div class="report-form">
-                  <select><option>Select Mine</option><option>Dipka OC</option></select>
+                  <select id="sel-mine-2"><option>Select Mine</option></select>
                   <select><option>Period: Q3 2026</option></select>
                 </div>
                 <button class="btn btn-primary" style="width:100%">Generate PDF</button>
@@ -224,5 +224,35 @@
   </div>
 
   <script src="js/main.js"></script>
+  <script src="js/mines-db.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if(typeof REAL_MINES !== 'undefined') {
+        const mineSelects = [document.getElementById('sel-mine-1'), document.getElementById('sel-mine-2')];
+        const subSelects = [document.getElementById('sel-sub-1'), document.getElementById('sel-sub-2')];
+
+        // Unique subsidiaries
+        const subs = [...new Set(REAL_MINES.map(m => m.subsidiary))].sort();
+
+        mineSelects.forEach(sel => {
+          REAL_MINES.forEach(m => {
+            const opt = document.createElement('option');
+            opt.value = m.id;
+            opt.textContent = m.name;
+            sel.appendChild(opt);
+          });
+        });
+
+        subSelects.forEach(sel => {
+          subs.forEach(s => {
+            const opt = document.createElement('option');
+            opt.value = s;
+            opt.textContent = s;
+            sel.appendChild(opt);
+          });
+        });
+      }
+    });
+  </script>
 </body>
 </html>

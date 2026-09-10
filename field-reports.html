@@ -72,7 +72,7 @@
           <option>Regional</option>
         </select>
 
-        <div class="header-time">09 Sep 2026<br>03:35 IST</div>
+        <div class="header-time"></div>
       </header>
 
       <main class="page-wrapper">
@@ -119,10 +119,12 @@
                   Time: 09 Sep 2026, 03:36 IST
                 </div>
 
-                <div class="phone-form-group">
-                  <label>Mine Location</label>
-                  <select class="phone-input"><option>Kusmunda OC Mine</option></select>
-                </div>
+                  <div class="phone-form-group">
+                    <label>Mine Location</label>
+                    <select class="phone-input" id="mine-location-select">
+                      <option value="">Select Mine...</option>
+                    </select>
+                  </div>
                 
                 <div class="phone-form-group">
                   <label>Incident Type</label>
@@ -178,7 +180,9 @@
                 <div id="tab-attendance" class="phone-tab-content" style="display:none;">
                   <div class="phone-form-group">
                     <label>Contractor/Vendor</label>
-                    <select class="phone-input"><option>ABC Mining Services</option><option>Deep Earth Drillers</option></select>
+                    <select class="phone-input" id="contractor-select">
+                      <option value="">Select Contractor...</option>
+                    </select>
                   </div>
                   <div class="phone-form-group">
                     <label>Shift</label>
@@ -204,48 +208,8 @@
           <!-- SECTION 2: LIVE FIELD FEED -->
           <div>
             <h3 class="text-sm font-bold mb-4">Live Field Feed</h3>
-            <div class="feed-list">
-              <div class="feed-item warning">
-                <div class="fi-time">2 min ago</div>
-                <div class="fi-type">Safety Observation</div>
-                <div class="fi-meta">
-                  <span>Mine:</span> Kusmunda OC<br>
-                  <span>Submitted by:</span> Field Inspector R. Singh<br>
-                  <span>Location:</span> GPS 23.4218° N, 82.2194° E<br>
-                  <span>Issue:</span> Dust suppression spray offline at Junction B.
-                </div>
-              </div>
-
-              <div class="feed-item">
-                <div class="fi-time">14 min ago</div>
-                <div class="fi-type">Shift Attendance Sync</div>
-                <div class="fi-meta">
-                  <span>Mine:</span> Gevra OC<br>
-                  <span>Submitted by:</span> Biometric Kiosk 04<br>
-                  <span>Data:</span> 142 workers present, 3 absent.
-                </div>
-              </div>
-
-              <div class="feed-item danger">
-                <div class="fi-time">42 min ago</div>
-                <div class="fi-type">Incident Report</div>
-                <div class="fi-meta">
-                  <span>Mine:</span> Brajrajnagar<br>
-                  <span>Submitted by:</span> Shift Overman<br>
-                  <span>Type:</span> Equipment Failure (Dumper)<br>
-                  <span class="badge badge-danger mt-2">HIGH SEVERITY</span>
-                </div>
-              </div>
-
-              <div class="feed-item">
-                <div class="fi-time">1 hr ago</div>
-                <div class="fi-type">Safety Observation</div>
-                <div class="fi-meta">
-                  <span>Mine:</span> Jhanjra UG<br>
-                  <span>Submitted by:</span> Ventilation Officer<br>
-                  <span>Issue:</span> Auxiliary fan vibrating excessively. Maintenance logged.
-                </div>
-              </div>
+            <div class="feed-list" id="live-field-feed">
+              <!-- Populated by JS from REAL_MINES -->
             </div>
           </div>
 
@@ -256,6 +220,7 @@
   </div>
 
   <script src="js/main.js"></script>
+  <script src="js/mines-db.js"></script>
   <script>
     function switchPhoneTab(tabId, el) {
       document.querySelectorAll('.ptab').forEach(t => t.classList.remove('active'));
@@ -263,6 +228,100 @@
       document.querySelectorAll('.phone-tab-content').forEach(c => c.style.display = 'none');
       document.getElementById('tab-' + tabId).style.display = 'block';
     }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      if (typeof REAL_MINES === 'undefined') return;
+
+      // ── Populate Mine Location dropdown with all 79 real mines
+      const mineSelect = document.getElementById('mine-location-select');
+      if (mineSelect) {
+        [...REAL_MINES].sort((a,b) => a.name.localeCompare(b.name)).forEach(m => {
+          const opt = document.createElement('option');
+          opt.value = m.name;
+          opt.textContent = `${m.name} (${m.sub})`;
+          mineSelect.appendChild(opt);
+        });
+      }
+
+      // ── Populate Contractor dropdown from CONTRACTORS_DB
+      const contractorSelect = document.getElementById('contractor-select');
+      if (contractorSelect && typeof CONTRACTORS_DB !== 'undefined') {
+        CONTRACTORS_DB.forEach(ct => {
+          const opt = document.createElement('option');
+          opt.value = ct.name;
+          opt.textContent = `${ct.name} (${ct.subsidiary})`;
+          contractorSelect.appendChild(opt);
+        });
+      }
+
+      // ── Populate Live Field Feed from real mine data
+      const feedContainer = document.getElementById('live-field-feed');
+      if (feedContainer) {
+        const feedMines = [
+          ...REAL_MINES.filter(m => m.risk === 'Critical').slice(0, 3),
+          ...REAL_MINES.filter(m => m.risk === 'High').slice(0, 3),
+          ...REAL_MINES.filter(m => m.type === 'Underground').slice(0, 2),
+        ];
+        const FEED_TYPES = [
+          { type:'Incident Report',       cls:'danger', icon:'INCIDENT',    reporters:['Shift Overman', 'Safety Officer', 'Control Room'] },
+          { type:'Safety Observation',    cls:'warning',icon:'SAFETY OBV',  reporters:['Field Inspector', 'Site Engineer', 'Ventilation Officer'] },
+          { type:'Shift Attendance Sync', cls:'',       icon:'ATTENDANCE',  reporters:['Biometric Kiosk', 'Attendance System', 'Shift Supervisor'] },
+        ];
+        const ISSUES = [
+          'Dust suppression system offline. Manual watering initiated.',
+          'Auxiliary fan vibrating excessively. Maintenance logged.',
+          'Equipment failure (Dumper) — unit grounded.',
+          'Roof movement detected in section. Temporary evacuation in progress.',
+          'Methane alert at 1.2% — area evacuated per protocol.',
+          'Workers present, 3 absent. Replacement arranged.',
+        ];
+        const times = ['2 min ago', '14 min ago', '31 min ago', '42 min ago', '1 hr ago', '1.5 hr ago', '2 hr ago', '3 hr ago'];
+        feedMines.forEach((mine, idx) => {
+          const ft = FEED_TYPES[idx % FEED_TYPES.length];
+          const div = document.createElement('div');
+          div.className = `feed-item ${ft.cls}`;
+          div.innerHTML = `
+            <div class="fi-time">${times[idx % times.length]}</div>
+            <div class="fi-type">${ft.type}</div>
+            <div class="fi-meta">
+              <span>Mine:</span> ${mine.name}<br>
+              <span>Submitted by:</span> ${ft.reporters[idx % ft.reporters.length]}<br>
+              <span>Location:</span> GPS ${mine.lat.toFixed(4)}° N, ${mine.lng.toFixed(4)}° E<br>
+              <span>Issue:</span> ${ISSUES[idx % ISSUES.length]}
+              ${ft.cls === 'danger' ? '<br><span class="badge badge-danger mt-2">HIGH SEVERITY</span>' : ''}
+            </div>
+          `;
+          feedContainer.appendChild(div);
+        });
+      }
+
+      // ── Live feed simulator (adds new events from real mines periodically)
+      const feedContainer2 = document.getElementById('live-field-feed');
+      const liveEvents = [
+        ...REAL_MINES.filter(m => m.risk === 'Critical').map(m => ({ type:'Incident', label:'INCIDENT LOG', color:'danger', user:'Control Room', desc:`${m.reason.split(';')[0]} — action initiated.`, mine:m.name })),
+        ...REAL_MINES.filter(m => m.risk === 'High').slice(0,5).map(m => ({ type:'Observation', label:'SAFETY OBV', color:'warning', user:'Field Inspector', desc:`Risk factor observed: ${m.reason.split(';')[0]}.`, mine:m.name })),
+        ...REAL_MINES.filter(m => m.type === 'Underground').slice(0,4).map(m => ({ type:'Attendance', label:'ATTENDANCE', color:'info', user:'Biometric System', desc:`Shift check-in at ${m.name}: workers logged in.`, mine:m.name })),
+      ];
+      setInterval(() => {
+        if (!feedContainer2) return;
+        const ev = liveEvents[Math.floor(Math.random() * liveEvents.length)];
+        const timeStr = new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+        const div = document.createElement('div');
+        div.className = `feed-item ${ev.color === 'danger' ? 'danger' : ev.color === 'warning' ? 'warning' : ''}`;
+        div.style.cssText = 'opacity:0;transform:translateY(-10px);transition:all 0.35s ease';
+        div.innerHTML = `
+          <div class="fi-time">${timeStr}</div>
+          <div class="fi-type">${ev.type}</div>
+          <div class="fi-meta"><span>Mine:</span> ${ev.mine}<br><span>By:</span> ${ev.user}<br>${ev.desc}</div>
+        `;
+        feedContainer2.prepend(div);
+        void div.offsetWidth;
+        div.style.opacity = '1';
+        div.style.transform = 'translateY(0)';
+        if (feedContainer2.children.length > 10) feedContainer2.removeChild(feedContainer2.lastChild);
+      }, 7000);
+    });
+  </script>
 
     // Dynamic Live Feed Simulator
     document.addEventListener('DOMContentLoaded', () => {

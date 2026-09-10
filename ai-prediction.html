@@ -257,9 +257,7 @@
         <div class="system-status-pill">
           <div class="status-dot"></div> System Operational
         </div>
-        <div class="header-time">
-          09 Sep 2026<br>03:35 IST
-        </div>
+        <div class="header-time"></div>
         <button class="btn-outline-grey" style="padding: 6px; width: 32px; height: 32px; justify-content:center;">🔔</button>
         <button class="btn-emergency">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
@@ -281,7 +279,9 @@
           </div>
           <div class="controls-right">
             <div class="controls-row">
-              <div class="select-box">⛰️ Kusmunda OC Mine (SECL)</div>
+              <select class="select-box" id="mine-selector" onchange="changeMine(this.value)" style="border:1px solid var(--border); outline:none; cursor:pointer;">
+                <option value="Kusmunda OC">⛰️ Kusmunda OC Mine (SECL)</option>
+              </select>
               <div class="select-box">🎯 Pit Section 3B / Incline#4</div>
             </div>
             <div class="controls-row">
@@ -641,18 +641,18 @@
             </svg>
 
             <!-- HTML Overlays -->
-            <div class="dt-overlay">
+            <div class="dt-overlay" style="z-index:10; cursor:grab;">
               CROSS SECTION: <span>NORTH 22° 14' E</span><br>
               BENCH 1-4: <span>OVERBURDEN (SANDSTONE/SHALE)</span><br>
               SEAM G8: <span>THICKNESS 0.8m (METALLURGICAL COAL)</span>
             </div>
 
-            <div class="dt-label" style="position: absolute; top: 130px; left: 160px; background: white; padding: 6px; border-radius: 2px;">
+            <div class="dt-label" style="position: absolute; top: 130px; left: 160px; background: white; padding: 6px; border-radius: 2px; z-index:10; cursor:grab; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
                 <div class="dtl-header"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> FAN AUX-02</div>
                 <div class="dtl-value" id="fanText">1,050 m&sup3;/min (62%)</div>
             </div>
 
-            <div class="dt-label" style="position: absolute; top: 180px; left: 450px; background: white; padding: 6px; border-radius: 2px;">
+            <div class="dt-label" style="position: absolute; top: 180px; left: 450px; background: white; padding: 6px; border-radius: 2px; z-index:10; cursor:grab; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
                 <div class="dtl-header" style="color:var(--danger)">&#9679; HOTSPOT #04</div>
                 <div class="dtl-value text-xl"><span id="ch4Text">CH&#8324; 0.84%</span> &middot; <span id="tempText">Temp 34.2&deg;C</span></div>
                 <div class="dtl-sub">INCLINE 4 GOAF INTERFACE</div>
@@ -674,6 +674,7 @@
   </div>
 
   <script src="js/main.js"></script>
+  <script src="js/mines-db.js"></script>
   <script src="js/api.js"></script>
   <script>
     function switchDT(state) {
@@ -863,7 +864,64 @@
       };
     }
 
+    // ── Populate Mine Dropdown ──
+    document.addEventListener('DOMContentLoaded', () => {
+      if (typeof REAL_MINES !== 'undefined') {
+        const mineSel = document.getElementById('mine-selector');
+        if (mineSel) {
+          mineSel.innerHTML = '';
+          [...REAL_MINES].sort((a,b) => a.name.localeCompare(b.name)).forEach(m => {
+            const opt = document.createElement('option');
+            opt.value = m.name;
+            opt.textContent = `⛰️ ${m.name} (${m.sub})`;
+            mineSel.appendChild(opt);
+          });
+          mineSel.value = currentMine;
+        }
+      }
+    });
+
+    function changeMine(name) {
+      currentMine = name;
+      isIncidentActive = false;
+      const btn = document.getElementById('btn-simulate');
+      if (btn) {
+          btn.innerHTML = `▶ Simulate Incident`;
+          btn.style.background = '';
+          btn.style.color = '';
+      }
+      startSSE();
+    }
+
     startSSE();
+
+    // ── Draggable UI Elements ──
+    document.querySelectorAll('.dt-label, .dt-overlay').forEach(el => {
+      let isDragging = false, startX, startY, initialX, initialY;
+      
+      el.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        el.style.cursor = 'grabbing';
+        startX = e.clientX;
+        startY = e.clientY;
+        initialX = el.offsetLeft;
+        initialY = el.offsetTop;
+        e.preventDefault(); // Prevent text selection
+      });
+
+      document.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        el.style.left = (initialX + dx) + 'px';
+        el.style.top = (initialY + dy) + 'px';
+      });
+
+      document.addEventListener('mouseup', () => {
+        isDragging = false;
+        el.style.cursor = 'grab';
+      });
+    });
   </script>
 </body>
 </html>

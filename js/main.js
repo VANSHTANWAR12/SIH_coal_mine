@@ -188,4 +188,21 @@ document.addEventListener('DOMContentLoaded', () => {
       window.showToast('EMERGENCY DISPATCH ACTIVATED. Alerting all SECL field units and DGMS HQ.', 'danger', 5000);
     });
   }
+
+  // ── Live Clock (replaces all hardcoded header times)
+  startLiveClock();
 });
+
+/* ── Live Clock ─────────────────────────────────────────── */
+function startLiveClock() {
+  const el = document.querySelector('.header-time');
+  if (!el) return;
+  const tick = () => {
+    const now = new Date();
+    const date = now.toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric', timeZone:'Asia/Kolkata' });
+    const time = now.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', timeZone:'Asia/Kolkata', hour12:false });
+    el.innerHTML = `${date}<br>${time} IST`;
+  };
+  tick();
+  setInterval(tick, 1000);
+}

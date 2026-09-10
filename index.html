@@ -144,8 +144,8 @@
       </form>
 
       <div class="system-footer">
-        <div class="status-item"><div class="dot green"></div> 79 Mines Connected</div>
-        <div class="status-item"><div class="dot amber"></div> 23 Active Alerts</div>
+        <div class="status-item"><div class="dot green"></div> <span id="idx-total-mines">79</span> Mines Connected</div>
+        <div class="status-item"><div class="dot amber"></div> <span id="idx-active-alerts">23</span> Active Alerts</div>
         <div class="status-item"><div class="dot green"></div> AI Engine Operational</div>
         <div class="status-item"><div class="dot green"></div> GIS Services Operational</div>
       </div>
@@ -153,7 +153,16 @@
   </div>
 
   <script src="js/api.js"></script>
+  <script src="js/mines-db.js"></script>
   <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (typeof REAL_MINES !== 'undefined') {
+        const total = REAL_MINES.length;
+        const alerts = REAL_MINES.filter(m => m.risk === 'Critical' || m.risk === 'High').length;
+        document.getElementById('idx-total-mines').textContent = total;
+        document.getElementById('idx-active-alerts').textContent = alerts;
+      }
+    });
     let selectedRole = 'Mine Official';
 
     function selectRole(role, el) {

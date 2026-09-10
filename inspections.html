@@ -60,7 +60,7 @@
           <a href="#" class="header-link active">SECL Operational Zone</a>
         </div>
         <div class="system-status-pill"><div class="status-dot"></div> System Operational</div>
-        <div class="header-time">09 Sep 2026<br>03:35 IST</div>
+        <div class="header-time"></div>
         <button class="btn-emergency">Emergency Dispatch</button>
       </header>
 
@@ -77,11 +77,11 @@
 
         <!-- SECTION 1: KPIs -->
         <div class="kpi-grid-5">
-          <div class="kpi-card"><div class="kpi-val text-success">42</div><div class="kpi-label">Completed</div></div>
-          <div class="kpi-card"><div class="kpi-val" style="color:var(--info)">18</div><div class="kpi-label">Scheduled</div></div>
-          <div class="kpi-card"><div class="kpi-val" style="color:var(--brand-primary)">7</div><div class="kpi-label">In Progress</div></div>
-          <div class="kpi-card" style="border-bottom:3px solid var(--danger)"><div class="kpi-val text-danger">5</div><div class="kpi-label">Critical Findings</div></div>
-          <div class="kpi-card"><div class="kpi-val text-danger">3</div><div class="kpi-label">Overdue</div></div>
+          <div class="kpi-card"><div class="kpi-val text-success" id="insp-completed">-</div><div class="kpi-label">Completed</div></div>
+          <div class="kpi-card"><div class="kpi-val" style="color:var(--info)" id="insp-scheduled">-</div><div class="kpi-label">Scheduled</div></div>
+          <div class="kpi-card"><div class="kpi-val" style="color:var(--brand-primary)" id="insp-inprogress">-</div><div class="kpi-label">In Progress</div></div>
+          <div class="kpi-card" style="border-bottom:3px solid var(--danger)"><div class="kpi-val text-danger" id="insp-critical">-</div><div class="kpi-label">Critical Findings</div></div>
+          <div class="kpi-card"><div class="kpi-val text-danger" id="insp-overdue">-</div><div class="kpi-label">Overdue</div></div>
         </div>
 
         <div class="layout-grid">
@@ -121,36 +121,8 @@
           <!-- SECTION 4: CORRECTIVE ACTIONS -->
           <div>
             <h3 class="text-sm font-bold mb-4">Open Corrective Actions</h3>
-            <div class="ca-list">
-              <div class="ca-card critical">
-                <div class="ca-priority critical">CRITICAL</div>
-                <div class="ca-issue">Roof support deficiency detected in Panel 4A. Immediate reinforcement required.</div>
-                <div class="ca-meta">
-                  <span><strong>Mine:</strong> Brajrajnagar</span>
-                  <span><strong>Assigned To:</strong> R. Singh (Mgr)</span>
-                  <span class="text-danger font-bold">Due: 11 Sep 2026</span>
-                </div>
-                <div class="ca-progress">
-                  <div class="pb-bg"><div class="pb-fill" style="width:70%"></div></div>
-                  <div class="pb-text"><span>Progress</span><span>70%</span></div>
-                </div>
-                <button class="btn btn-secondary btn-sm" style="width:100%; margin-top:8px;">View Action</button>
-              </div>
-
-              <div class="ca-card high">
-                <div class="ca-priority high">HIGH</div>
-                <div class="ca-issue">Excessive coal dust accumulation on main haul road.</div>
-                <div class="ca-meta">
-                  <span><strong>Mine:</strong> Kusmunda OC</span>
-                  <span><strong>Assigned To:</strong> Contractor A</span>
-                  <span><strong>Due:</strong> 14 Sep 2026</span>
-                </div>
-                <div class="ca-progress">
-                  <div class="pb-bg"><div class="pb-fill" style="width:20%"></div></div>
-                  <div class="pb-text"><span>Progress</span><span>20%</span></div>
-                </div>
-                <button class="btn btn-secondary btn-sm" style="width:100%; margin-top:8px;">View Action</button>
-              </div>
+            <div class="ca-list" id="ca-list">
+              <!-- Populated by JS from REAL_MINES critical risk mines -->
             </div>
           </div>
         </div>
@@ -173,43 +145,9 @@
                   <th>Actions</th>
                 </tr>
               </thead>
-              <tbody>
-                <tr>
-                  <td class="font-bold">INS-088</td><td>Safety (DGMS)</td><td>Gevra OC</td><td>V. Kumar</td>
-                  <td class="font-bold">09 Sep 2026</td>
-                  <td><span class="badge badge-warning">In Progress</span></td>
-                  <td>-</td><td>-</td>
-                  <td><button class="btn btn-secondary btn-sm">Join Sync</button></td>
-                </tr>
-                <tr>
-                  <td class="font-bold">INS-087</td><td>Environmental</td><td>Dipka OC</td><td>S. Reddy</td>
-                  <td class="font-bold">09 Sep 2026</td>
-                  <td><span class="badge badge-warning">In Progress</span></td>
-                  <td>-</td><td>-</td>
-                  <td><button class="btn btn-secondary btn-sm">Join Sync</button></td>
-                </tr>
-                <tr>
-                  <td class="font-bold">INS-086</td><td>Safety</td><td>Jhanjra UG</td><td>A. Patel</td>
-                  <td class="font-bold">08 Sep 2026</td>
-                  <td><span class="badge badge-danger">Overdue</span></td>
-                  <td>-</td><td>-</td>
-                  <td><button class="btn btn-secondary btn-sm text-danger">Escalate</button></td>
-                </tr>
-                <tr>
-                  <td class="font-bold">INS-084</td><td>Safety (Special)</td><td>Brajrajnagar</td><td>R. Sharma</td>
-                  <td class="font-bold">04 Sep 2026</td>
-                  <td><span class="badge badge-success">Completed</span></td>
-                  <td>14</td><td class="text-danger font-bold">1</td>
-                  <td><button class="btn btn-secondary btn-sm">View Report</button></td>
-                </tr>
-                <tr>
-                  <td class="font-bold">INS-083</td><td>Production</td><td>Kusmunda OC</td><td>HQ Audit Team</td>
-                  <td class="font-bold">02 Sep 2026</td>
-                  <td><span class="badge badge-success">Completed</span></td>
-                  <td>3</td><td>0</td>
-                  <td><button class="btn btn-secondary btn-sm">View Report</button></td>
-                </tr>
-              </tbody>
+          <tbody id="inspection-tbody">
+            <!-- Dynamically populated -->
+          </tbody>
             </table>
           </div>
         </div>
@@ -219,5 +157,87 @@
   </div>
 
   <script src="js/main.js"></script>
-</body>
+  <script src="js/mines-db.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (typeof INSPECTIONS_DB === 'undefined') return;
+
+      // ── Populate KPIs from INSPECTIONS_DB
+      document.getElementById('insp-completed').textContent  = INSPECTIONS_DB.filter(i => i.status === 'Completed').length;
+      document.getElementById('insp-scheduled').textContent  = INSPECTIONS_DB.filter(i => i.status === 'Scheduled').length;
+      document.getElementById('insp-inprogress').textContent = INSPECTIONS_DB.filter(i => i.status === 'In Progress').length;
+      document.getElementById('insp-critical').textContent   = INSPECTIONS_DB.reduce((acc, i) => acc + i.critical, 0);
+      document.getElementById('insp-overdue').textContent    = INSPECTIONS_DB.filter(i => i.status === 'Overdue').length;
+
+      // ── Populate inspection table
+      const tbody = document.getElementById('inspection-tbody');
+      if (tbody) {
+        INSPECTIONS_DB.slice(0, 12).forEach(ins => {
+          const statusClass = ins.status === 'Completed' ? 'badge-success'
+                            : ins.status === 'In Progress' ? 'badge-warning'
+                            : ins.status === 'Overdue' ? 'badge-danger'
+                            : 'badge-info';
+          const actionBtn = ins.status === 'In Progress' ? '<button class="btn btn-secondary btn-sm" onclick="window.mockAction(this,\'Sync joined\')">Join Sync</button>'
+                          : ins.status === 'Overdue'     ? '<button class="btn btn-secondary btn-sm text-danger" onclick="window.mockAction(this,\'Escalation sent\')">Escalate</button>'
+                          : ins.status === 'Scheduled'   ? '<button class="btn btn-secondary btn-sm" onclick="window.mockAction(this,\'Inspection briefed\')">Brief</button>'
+                          : '<button class="btn btn-secondary btn-sm" onclick="window.mockAction(this,\'Report viewed\')">View Report</button>';
+          const findingsCell = ins.findings > 0 ? ins.findings : '-';
+          const critCell     = ins.critical > 0 ? `<span class="text-danger font-bold">${ins.critical}</span>` : (ins.status === 'Completed' ? '0' : '-');
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td class="font-bold">${ins.id}</td>
+            <td>${ins.type}</td>
+            <td>${ins.mine}</td>
+            <td>${ins.inspector}</td>
+            <td class="font-bold">${ins.date}</td>
+            <td><span class="badge ${statusClass}">${ins.status}</span></td>
+            <td>${findingsCell}</td>
+            <td>${critCell}</td>
+            <td>${actionBtn}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      // ── Populate Corrective Actions from highest-risk mines
+      const caList = document.getElementById('ca-list');
+      if (caList) {
+        const today = new Date();
+        const critMines = REAL_MINES.filter(m => m.risk === 'Critical').slice(0, 3);
+        const highMines = REAL_MINES.filter(m => m.risk === 'High').slice(0, 2);
+        const actionMines = [...critMines, ...highMines];
+        const ASSIGNED = ['V. Kumar (Mine Mgr)', 'S. Reddy (EHS Dept)', 'A. Patel (Safety Off.)', 'R. Sharma (Contractor)', 'M. Singh (Shift Overman)'];
+        const CA_ISSUES = [
+          'Immediate strata reinforcement required in active panels.',
+          'Excess dust accumulation on main haul road — spray system offline.',
+          'Ventilation fan efficiency drop detected — airflow below threshold.',
+          'Methane sensor calibration overdue — manual monitoring initiated.',
+          'HEMM brake failure reported — unit grounded pending inspection.',
+        ];
+        actionMines.forEach((mine, idx) => {
+          const priority = mine.risk === 'Critical' ? 'critical' : 'high';
+          const prog = [70, 20, 45, 10, 60][idx % 5];
+          const dueDate = new Date(today); dueDate.setDate(dueDate.getDate() + [2, 5, 7, 3, 8][idx % 5]);
+          const dueFmt  = dueDate.toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
+          const div = document.createElement('div');
+          div.className = `ca-card ${priority}`;
+          div.innerHTML = `
+            <div class="ca-priority ${priority}">${priority.toUpperCase()}</div>
+            <div class="ca-issue">${CA_ISSUES[idx % CA_ISSUES.length]}</div>
+            <div class="ca-meta">
+              <span><strong>Mine:</strong> ${mine.name}</span>
+              <span><strong>Assigned To:</strong> ${ASSIGNED[idx % ASSIGNED.length]}</span>
+              <span class="${priority === 'critical' ? 'text-danger font-bold' : ''}"><strong>Due:</strong> ${dueFmt}</span>
+            </div>
+            <div class="ca-progress">
+              <div class="pb-bg"><div class="pb-fill" style="width:${prog}%"></div></div>
+              <div class="pb-text"><span>Progress</span><span>${prog}%</span></div>
+            </div>
+            <button class="btn btn-secondary btn-sm" style="width:100%; margin-top:8px;" onclick="window.mockAction(this,'Action details opened')">View Action</button>
+          `;
+          caList.appendChild(div);
+        });
+      }
+    });
+  </script>
 </html>

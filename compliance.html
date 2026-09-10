@@ -40,7 +40,7 @@
           <a href="#" class="header-link active">SECL Operational Zone</a>
         </div>
         <div class="system-status-pill"><div class="status-dot"></div> System Operational</div>
-        <div class="header-time">09 Sep 2026<br>03:35 IST</div>
+        <div class="header-time"></div>
         <button class="btn-emergency">Emergency Dispatch</button>
       </header>
 
@@ -70,10 +70,10 @@
 
         <!-- SECTION 2: SUMMARY CARDS -->
         <div class="kpi-grid-4">
-          <div class="kpi-card"><div class="kpi-label">Total Requirements</div><div class="kpi-val">1,248</div></div>
-          <div class="kpi-card" style="border-bottom: 4px solid var(--success)"><div class="kpi-label text-success">Compliant</div><div class="kpi-val">1,034</div></div>
-          <div class="kpi-card" style="border-bottom: 4px solid var(--amber)"><div class="kpi-label" style="color:var(--amber)">At Risk</div><div class="kpi-val">142</div></div>
-          <div class="kpi-card" style="border-bottom: 4px solid var(--danger)"><div class="kpi-label text-danger">Non-Compliant</div><div class="kpi-val">72</div></div>
+          <div class="kpi-card"><div class="kpi-label">Total Requirements</div><div class="kpi-val" id="kpi-total-req">—</div></div>
+          <div class="kpi-card" style="border-bottom: 4px solid var(--success)"><div class="kpi-label text-success">Compliant</div><div class="kpi-val" id="kpi-compliant">—</div></div>
+          <div class="kpi-card" style="border-bottom: 4px solid var(--amber)"><div class="kpi-label" style="color:var(--amber)">At Risk</div><div class="kpi-val" id="kpi-atrisk">—</div></div>
+          <div class="kpi-card" style="border-bottom: 4px solid var(--danger)"><div class="kpi-label text-danger">Non-Compliant</div><div class="kpi-val" id="kpi-noncomp">—</div></div>
         </div>
 
         <!-- SECTION 3: COMPLIANCE BREAKDOWN -->
@@ -83,9 +83,9 @@
             <canvas id="compChart"></canvas>
           </div>
           <div class="flex gap-4" style="font-size:11px; font-weight:700; color:var(--text-secondary); justify-content:center; margin-top:16px;">
-            <div class="flex items-center gap-2"><div class="dot green"></div> Compliant (83%)</div>
-            <div class="flex items-center gap-2"><div class="dot amber"></div> At Risk (11%)</div>
-            <div class="flex items-center gap-2"><div class="dot" style="background:var(--danger)"></div> Non-Compliant (6%)</div>
+            <div class="flex items-center gap-2"><div class="dot green"></div> Compliant (<span id="leg-comp">—</span>%)</div>
+            <div class="flex items-center gap-2"><div class="dot amber"></div> At Risk (<span id="leg-risk">—</span>%)</div>
+            <div class="flex items-center gap-2"><div class="dot" style="background:var(--danger)"></div> Non-Compliant (<span id="leg-noncomp">—</span>%)</div>
           </div>
         </div>
 
@@ -123,84 +123,84 @@
   <script src="js/mines-db.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      
-      // 1. Populate Compliance Table dynamically
+      if (typeof REAL_MINES === 'undefined') return;
+
+      // ── Compute real compliance KPIs (each mine has 16 statutory requirements)
+      const REQS_PER_MINE = 16;
+      const totalReq  = REAL_MINES.length * REQS_PER_MINE;
+      let compliant = 0, atRisk = 0, nonComp = 0;
+      REAL_MINES.forEach(m => {
+        if (m.compliance >= 80) { compliant += Math.round(m.compliance / 100 * REQS_PER_MINE); atRisk += Math.floor((100 - m.compliance) / 100 * REQS_PER_MINE * 0.7); nonComp += Math.ceil((100 - m.compliance) / 100 * REQS_PER_MINE * 0.3); }
+        else if (m.compliance >= 60) { compliant += Math.round(m.compliance / 100 * REQS_PER_MINE); atRisk += Math.floor((100 - m.compliance) / 100 * REQS_PER_MINE * 0.6); nonComp += Math.ceil((100 - m.compliance) / 100 * REQS_PER_MINE * 0.4); }
+        else { compliant += Math.round(m.compliance / 100 * REQS_PER_MINE); atRisk += Math.floor((100 - m.compliance) / 100 * REQS_PER_MINE * 0.4); nonComp += Math.ceil((100 - m.compliance) / 100 * REQS_PER_MINE * 0.6); }
+      });
+      const compPct    = Math.round(compliant / totalReq * 100);
+      const riskPct    = Math.round(atRisk    / totalReq * 100);
+      const nonCompPct = 100 - compPct - riskPct;
+
+      document.getElementById('kpi-total-req').textContent = totalReq.toLocaleString('en-IN');
+      document.getElementById('kpi-compliant').textContent = compliant.toLocaleString('en-IN');
+      document.getElementById('kpi-atrisk').textContent    = atRisk.toLocaleString('en-IN');
+      document.getElementById('kpi-noncomp').textContent   = nonComp.toLocaleString('en-IN');
+      document.getElementById('leg-comp').textContent      = compPct;
+      document.getElementById('leg-risk').textContent      = riskPct;
+      document.getElementById('leg-noncomp').textContent   = nonCompPct;
+
+      // ── Populate Compliance Table
       const tbody = document.getElementById('compliance-tbody');
+      const OFFICERS = ['A. Sharma (DGMS)', 'V. Kumar (HQ)', 'S. Reddy (Mine Mgr)', 'R. Patel (EHS)', 'M. Singh (Compliance)', 'P. Rao (Statutory)', 'K. Nair (Safety)', 'B. Joshi (HR)'];
+      const CATEGORIES = ['Environment', 'Safety', 'Production', 'Labour', 'Statutory'];
+      const REGULATIONS = ['Mines Act 1952 – Sec 22', 'EP Act – Air Quality', 'CLRA 1970', 'Monthly Output Report', 'DGMS Circular 2023-09', 'Water Consent – SPCB', 'Explosives Act – Quarterly', 'Form-IV Filing'];
+
       if (typeof REAL_MINES !== 'undefined' && tbody) {
-        const sortedMines = [...REAL_MINES].sort((a,b) => a.compliance - b.compliance).slice(0, 15);
-        
-        sortedMines.forEach(m => {
-          let badgeClass = 'badge-success';
-          let statusText = 'Compliant';
-          let overdueText = '-';
-          
-          if(m.compliance < 60) {
-            badgeClass = 'badge-danger';
-            statusText = 'Non-Compliant';
-            overdueText = `<span class="text-danger font-bold">${Math.floor(Math.random() * 10) + 1} days</span>`;
-          } else if(m.compliance < 80) {
-            badgeClass = 'badge-warning';
-            statusText = 'At Risk';
-          }
-          
-          const categories = ['Environment', 'Safety', 'Production', 'Labour', 'Statutory'];
-          const category = categories[Math.floor(Math.random() * categories.length)];
-          const officer = 'System User';
-          
+        const today = new Date();
+        const sortedMines = [...REAL_MINES].sort((a,b) => a.compliance - b.compliance).slice(0, 18);
+        sortedMines.forEach((m, idx) => {
+          let badgeClass = 'badge-success', statusText = 'Compliant', overdueText = '-';
+          const dueDt = new Date(today); dueDt.setDate(dueDt.getDate() + 30 - (idx * 3));
+          const dueFmt = dueDt.toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
+          const reviewDt = new Date(today); reviewDt.setDate(reviewDt.getDate() - (idx * 2 + 1));
+          const reviewFmt = reviewDt.toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
+          if (m.compliance < 60) { badgeClass = 'badge-danger'; statusText = 'Non-Compliant'; overdueText = `<span class="text-danger font-bold">${Math.floor((100 - m.compliance) / 10) + 1} days</span>`; }
+          else if (m.compliance < 80) { badgeClass = 'badge-warning'; statusText = 'At Risk'; }
           const tr = document.createElement('tr');
           tr.innerHTML = `
             <td class="font-bold">${m.name}</td>
-            <td style="max-width:200px;white-space:normal;line-height:1.3">${m.reason.substring(0, 50)}...</td>
-            <td>${category}</td>
+            <td style="max-width:200px;white-space:normal;line-height:1.3">${REGULATIONS[idx % REGULATIONS.length]}</td>
+            <td>${CATEGORIES[idx % CATEGORIES.length]}</td>
             <td><span class="badge ${badgeClass}">${statusText}</span></td>
-            <td class="font-bold">30 Sep 2026</td>
+            <td class="font-bold">${dueFmt}</td>
             <td>${overdueText}</td>
-            <td>${officer}</td>
-            <td>05 Sep 2026</td>
-            <td><button class="btn btn-secondary btn-sm" onclick="window.mockAction(this, 'Audit opened successfully')">Review</button></td>
+            <td>${OFFICERS[idx % OFFICERS.length]}</td>
+            <td>${reviewFmt}</td>
+            <td><button class="btn btn-secondary btn-sm" onclick="window.mockAction(this,'Audit opened successfully')">Review</button></td>
           `;
           tbody.appendChild(tr);
         });
       }
 
-      // 2. Subsidiary Compliance Chart
-      let labels = [];
-      let compData = [];
-      let warnData = [];
-      let nonCompData = [];
-      
-      if(typeof DB_STATS !== 'undefined') {
-        labels = DB_STATS.subsidiaries;
-        labels.forEach(sub => {
-          const mines = MINES_BY_SUB[sub];
-          const avg = Math.round(mines.reduce((acc, m) => acc + m.compliance, 0) / mines.length);
-          compData.push(avg);
-          warnData.push(Math.round((100 - avg) * 0.6));
-          nonCompData.push(Math.round((100 - avg) * 0.4));
-        });
-      }
+      // ── Subsidiary Compliance Chart
+      const labels = DB_STATS.subsidiaries;
+      const compData = [], warnData = [], nonCompData = [];
+      labels.forEach(sub => {
+        const mines = MINES_BY_SUB[sub];
+        const avg = Math.round(mines.reduce((acc, m) => acc + m.compliance, 0) / mines.length);
+        compData.push(avg);
+        warnData.push(Math.round((100 - avg) * 0.6));
+        nonCompData.push(Math.round((100 - avg) * 0.4));
+      });
 
-      const ctxComp = document.getElementById('compChart').getContext('2d');
-      new Chart(ctxComp, {
+      new Chart(document.getElementById('compChart').getContext('2d'), {
         type: 'bar',
         data: {
-          labels: labels,
+          labels,
           datasets: [
-            { label: 'Compliant', data: compData, backgroundColor: '#176B45' },
-            { label: 'Pending/Warning', data: warnData, backgroundColor: '#E6A23C' },
-            { label: 'Non-Compliant', data: nonCompData, backgroundColor: '#C9362B' }
+            { label:'Compliant', data:compData, backgroundColor:'#176B45' },
+            { label:'Pending/Warning', data:warnData, backgroundColor:'#E6A23C' },
+            { label:'Non-Compliant', data:nonCompData, backgroundColor:'#C9362B' }
           ]
         },
-        options: {
-          indexAxis: 'y',
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            x: { stacked: true, max: 100 },
-            y: { stacked: true }
-          },
-          plugins: { legend: { position: 'top' } }
-        }
+        options: { indexAxis:'y', responsive:true, maintainAspectRatio:false, scales:{ x:{stacked:true,max:100}, y:{stacked:true} }, plugins:{legend:{position:'top'}} }
       });
     });
   </script>

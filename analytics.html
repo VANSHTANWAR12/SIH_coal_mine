@@ -52,7 +52,7 @@
           <a href="#" class="header-link active">SECL Operational Zone</a>
         </div>
         <div class="system-status-pill"><div class="status-dot"></div> AI Engine Operational</div>
-        <div class="header-time">09 Sep 2026<br>03:35 IST</div>
+        <div class="header-time"></div>
         <button class="btn-emergency">Emergency Dispatch</button>
       </header>
 
@@ -114,7 +114,7 @@
               <div class="ac-title">Unplanned Ventilation Drop</div>
               <div class="ac-conf">94% Confidence</div>
             </div>
-            <div class="ac-desc">Main fan flow rate at Gevra Shaft 2 dropped by 18% over a 3-minute window without manual operator input.</div>
+            <div class="ac-desc" id="anomaly-ventilation">Main fan flow rate dropped by 18% over a 3-minute window without manual operator input.</div>
             <button class="btn btn-secondary btn-sm" style="width:100%">Investigate Log</button>
           </div>
 
@@ -123,7 +123,7 @@
               <div class="ac-title">Gas Ratio Deviation</div>
               <div class="ac-conf" style="background:var(--danger-bg);color:var(--danger)">98% Confidence</div>
             </div>
-            <div class="ac-desc">Graham's Ratio crossing critical threshold (0.6) at Kusmunda. High probability of spontaneous heating stage progression.</div>
+            <div class="ac-desc" id="anomaly-gas">Graham's Ratio crossing critical threshold (0.6). High probability of spontaneous heating stage progression.</div>
             <button class="btn btn-secondary btn-sm" style="width:100%" onclick="location.href='ai-prediction.html'">Go to Prediction Engine</button>
           </div>
 
@@ -132,7 +132,7 @@
               <div class="ac-title">Contractor Fatigue Pattern</div>
               <div class="ac-conf" style="background:var(--warning-bg);color:var(--amber)">82% Confidence</div>
             </div>
-            <div class="ac-desc">ABC Mining crew at Sector 4 showing clustered erratic equipment telemetry suggestive of operator fatigue.</div>
+            <div class="ac-desc" id="anomaly-fatigue">Mining crew showing clustered erratic equipment telemetry suggestive of operator fatigue.</div>
             <button class="btn btn-secondary btn-sm" style="width:100%">Alert Shift Manager</button>
           </div>
         </div>
@@ -146,27 +146,22 @@
   <script src="js/mines-db.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      // 1. Populate Top Risk Mines from DB
+      // ── Populate Top Risk Mines from DB
       const riskContainer = document.getElementById('risk-list-container');
       if (typeof REAL_MINES !== 'undefined' && riskContainer) {
         const sortedMines = [...REAL_MINES].sort((a,b) => b.riskScore - a.riskScore).slice(0, 5);
-        
         sortedMines.forEach(m => {
           let scoreClass = 'text-success';
           let borderStyle = 'border-left: 4px solid var(--border);';
-          
           if(m.riskScore >= 75) { scoreClass = 'text-danger'; borderStyle = ''; }
-          else if(m.riskScore >= 40) { scoreClass = ''; borderStyle = ''; } // will use amber via inline style if needed, but css handles it if we don't override. Let's just hardcode style.
-          
           let scoreStyle = m.riskScore >= 40 && m.riskScore < 75 ? 'color:var(--amber)' : '';
-          
           const item = document.createElement('div');
           item.className = 'risk-item';
           item.style = borderStyle;
           item.innerHTML = `
             <div>
               <div class="ri-name">${m.name}</div>
-              <div class="ri-meta">${m.reason.substring(0,40)}...</div>
+              <div class="ri-meta">${m.reason.substring(0,45)}...</div>
             </div>
             <div class="ri-score ${scoreClass}" style="${scoreStyle}">${Math.round(m.riskScore)}%</div>
           `;
@@ -174,38 +169,65 @@
         });
       }
 
-      // Radar Chart
-      const ctxRadar = document.getElementById('radarChart').getContext('2d');
-      new Chart(ctxRadar, {
+      // ── Update anomaly descriptions with real mine names
+      if (typeof REAL_MINES !== 'undefined') {
+        const critMines = REAL_MINES.filter(m => m.risk === 'Critical');
+        const highMines = REAL_MINES.filter(m => m.risk === 'High');
+        const ugMines   = REAL_MINES.filter(m => m.type === 'Underground' && m.riskScore > 50);
+        if (ugMines[0])   document.getElementById('anomaly-ventilation').textContent = `Main fan flow rate at ${ugMines[0].name} Shaft dropped by 18% over a 3-minute window without manual operator input.`;
+        if (critMines[0]) document.getElementById('anomaly-gas').textContent = `Graham's Ratio crossing critical threshold (0.6) at ${critMines[0].name}. High probability of spontaneous heating progression.`;
+        if (highMines[0]) document.getElementById('anomaly-fatigue').textContent = `${highMines[0].sub} contractor crew at ${highMines[0].name} showing clustered erratic equipment telemetry suggestive of operator fatigue.`;
+      }
+
+      // ── Radar Chart: compute real values from MINES_BY_SUB
+      if (typeof MINES_BY_SUB === 'undefined') return;
+
+      const computeVector = (mines) => {
+        const n = mines.length;
+        if (n === 0) return [50, 50, 50, 50, 50, 50];
+        const avgRiskScore  = mines.reduce((a, m) => a + m.riskScore, 0) / n;
+        const avgCompliance = mines.reduce((a, m) => a + m.compliance, 0) / n;
+        const pctUG         = mines.filter(m => m.type === 'Underground').length / n * 100;
+        const avgProd       = mines.reduce((a, m) => a + m.production, 0) / n;
+        const maxProd       = Math.max(...REAL_MINES.map(m => m.production));
+        const prodEff       = Math.min(100, avgProd / maxProd * 100);
+        const critPct       = mines.filter(m => m.risk === 'Critical').length / n * 100;
+        return [
+          Math.round(avgRiskScore),           // Spontaneous Combustion risk proxy
+          Math.round(pctUG * 0.8 + critPct),  // Strata Control (UG + critical intensity)
+          Math.round(100 - avgCompliance * 0.5),// Ventilation (inverse of compliance)
+          Math.round(critPct + 20),            // Equipment Degradation (critical intensity)
+          Math.round(avgCompliance),           // Safety Compliance
+          Math.round(prodEff),                 // Production Efficiency
+        ].map(v => Math.max(5, Math.min(100, v)));
+      };
+
+      const seclMines = MINES_BY_SUB['SECL'] || [];
+      const mclMines  = MINES_BY_SUB['MCL']  || [];
+      const seclVec   = computeVector(seclMines);
+      const mclVec    = computeVector(mclMines);
+
+      new Chart(document.getElementById('radarChart').getContext('2d'), {
         type: 'radar',
         data: {
           labels: ['Spontaneous Combustion', 'Strata Control', 'Ventilation', 'Equipment Degradation', 'Safety Compliance', 'Production Efficiency'],
           datasets: [{
-            label: 'SECL Network',
-            data: [85, 70, 60, 45, 90, 75],
+            label: `SECL Network (${seclMines.length} mines)`,
+            data: seclVec,
             backgroundColor: 'rgba(201, 54, 43, 0.2)',
             borderColor: '#C9362B',
             pointBackgroundColor: '#C9362B',
             pointBorderColor: '#fff',
-            pointHoverBackgroundColor: '#fff',
-            pointHoverBorderColor: '#C9362B'
           }, {
-            label: 'MCL Network',
-            data: [40, 50, 45, 60, 85, 80],
+            label: `MCL Network (${mclMines.length} mines)`,
+            data: mclVec,
             backgroundColor: 'rgba(23, 126, 175, 0.2)',
             borderColor: '#177EAF',
             pointBackgroundColor: '#177EAF',
             pointBorderColor: '#fff',
-            pointHoverBackgroundColor: '#fff',
-            pointHoverBorderColor: '#177EAF'
           }]
         },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          elements: { line: { borderWidth: 2 } },
-          plugins: { legend: { position: 'bottom' } }
-        }
+        options: { responsive:true, maintainAspectRatio:false, elements:{ line:{ borderWidth:2 } }, plugins:{ legend:{ position:'bottom' } } }
       });
     });
   </script>

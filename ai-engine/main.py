@@ -23,6 +23,10 @@ from models.combustion_model import get_predictor
 from models.strata_model import get_strata_predictor
 from models.ventilation_optimizer import prescribe_ventilation
 from models.hemm_maintenance import get_hemm_predictor
+from models.strategy_agent import run_strategy_agent
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # ── App Setup ─────────────────────────────────────────────────────────────────
 app = FastAPI(
@@ -248,6 +252,19 @@ def prescribe_vent(payload: VentilationRequest):
     result['timestamp'] = datetime.datetime.utcnow().isoformat()
     result['model'] = 'Physics+Regression Ventilation Optimizer (CoalGuard v2)'
     return result
+
+
+@app.post("/prescribe/strategy")
+def prescribe_strategy(payload: Dict[str, Any]):
+    """
+    LangChain + LangGraph powered AI Specialist Agent.
+    Evaluates safety, production, and synthesizes JSON prescriptions.
+    """
+    try:
+        prescriptions = run_strategy_agent(payload)
+        return {"prescriptions": prescriptions}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/prescribe/maintenance")

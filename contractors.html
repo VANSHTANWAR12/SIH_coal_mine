@@ -56,7 +56,7 @@
           <a href="#" class="header-link active">SECL Operational Zone</a>
         </div>
         <div class="system-status-pill"><div class="status-dot"></div> System Operational</div>
-        <div class="header-time">09 Sep 2026<br>03:35 IST</div>
+        <div class="header-time"></div>
         <button class="btn-emergency">Emergency Dispatch</button>
       </header>
 
@@ -83,69 +83,8 @@
         </div>
 
         <!-- SECTION 2: CONTRACTOR CARDS -->
-        <div class="contractor-grid">
-          <div class="contractor-card">
-            <div class="cc-header">
-              <div>
-                <div class="cc-name">ABC Mining Services</div>
-                <div class="cc-type">Heavy Earth Moving / Mining Ops</div>
-              </div>
-              <div class="cc-gauge success">87%</div>
-            </div>
-            <div class="cc-metrics">
-              <div class="cc-metric"><div class="ccm-val">1,284</div><div class="ccm-label">Workers</div></div>
-              <div class="cc-metric"><div class="ccm-val">Kusmunda</div><div class="ccm-label">Primary Site</div></div>
-            </div>
-            <div class="cc-footer">
-              <div class="flex justify-between items-center">
-                <span>Contract Expires: <strong>28 Oct 2026</strong></span>
-                <span class="badge badge-success">ACTIVE</span>
-              </div>
-              <div class="text-danger font-bold mt-4">3 Open Violations</div>
-            </div>
-          </div>
-
-          <div class="contractor-card">
-            <div class="cc-header">
-              <div>
-                <div class="cc-name">Apex Transport Corp</div>
-                <div class="cc-type">Coal Transportation</div>
-              </div>
-              <div class="cc-gauge warning">74%</div>
-            </div>
-            <div class="cc-metrics">
-              <div class="cc-metric"><div class="ccm-val">450</div><div class="ccm-label">Workers</div></div>
-              <div class="cc-metric"><div class="ccm-val">Gevra OC</div><div class="ccm-label">Primary Site</div></div>
-            </div>
-            <div class="cc-footer">
-              <div class="flex justify-between items-center">
-                <span>Contract Expires: <strong>15 Sep 2026</strong></span>
-                <span class="badge badge-warning">RENEWAL DUE</span>
-              </div>
-              <div class="text-danger font-bold mt-4">8 Open Violations</div>
-            </div>
-          </div>
-
-          <div class="contractor-card" style="border-left: 4px solid var(--danger)">
-            <div class="cc-header">
-              <div>
-                <div class="cc-name">Deep Earth Drillers</div>
-                <div class="cc-type">Exploration & Drilling</div>
-              </div>
-              <div class="cc-gauge danger">42%</div>
-            </div>
-            <div class="cc-metrics">
-              <div class="cc-metric"><div class="ccm-val">120</div><div class="ccm-label">Workers</div></div>
-              <div class="cc-metric"><div class="ccm-val">Jhanjra UG</div><div class="ccm-label">Primary Site</div></div>
-            </div>
-            <div class="cc-footer">
-              <div class="flex justify-between items-center">
-                <span>Contract Expires: <strong>01 Jan 2027</strong></span>
-                <span class="badge badge-danger" style="background:var(--danger);color:white">SUSPENDED</span>
-              </div>
-              <div class="text-danger font-bold mt-4">Critical Safety Violation Active</div>
-            </div>
-          </div>
+        <div class="contractor-grid" id="contractor-cards">
+          <!-- Populated by JS -->
         </div>
 
         <!-- SECTIONS 3 & 4: CHARTS -->
@@ -174,7 +113,7 @@
                 <tr>
                   <th>Contractor Name</th>
                   <th>Type</th>
-                  <th>Mine(s)</th>
+                  <th>Primary Mine(s)</th>
                   <th>Workers</th>
                   <th>Compliance</th>
                   <th>Contract Expiry</th>
@@ -183,31 +122,8 @@
                   <th>Actions</th>
                 </tr>
               </thead>
-              <tbody>
-                <tr>
-                  <td class="font-bold">ABC Mining Services</td><td>Mining Ops</td><td>Kusmunda</td><td>1,284</td>
-                  <td><span class="badge badge-success">87%</span></td><td class="font-bold">28 Oct 2026</td>
-                  <td class="text-danger font-bold">3</td><td><span class="badge badge-success">Active</span></td>
-                  <td><button class="btn btn-secondary btn-sm">Manage</button></td>
-                </tr>
-                <tr>
-                  <td class="font-bold">Global Excavations</td><td>Mining Ops</td><td>Dipka</td><td>820</td>
-                  <td><span class="badge badge-success">82%</span></td><td class="font-bold">12 Dec 2026</td>
-                  <td>0</td><td><span class="badge badge-success">Active</span></td>
-                  <td><button class="btn btn-secondary btn-sm">Manage</button></td>
-                </tr>
-                <tr>
-                  <td class="font-bold">Apex Transport Corp</td><td>Transport</td><td>Gevra</td><td>450</td>
-                  <td><span class="badge badge-warning">74%</span></td><td class="text-danger font-bold">15 Sep 2026</td>
-                  <td class="text-danger font-bold">8</td><td><span class="badge badge-warning">Renewal Due</span></td>
-                  <td><button class="btn btn-secondary btn-sm">Manage</button></td>
-                </tr>
-                <tr>
-                  <td class="font-bold">Deep Earth Drillers</td><td>Exploration</td><td>Jhanjra</td><td>120</td>
-                  <td><span class="badge badge-danger">42%</span></td><td class="font-bold">01 Jan 2027</td>
-                  <td class="text-danger font-bold">14</td><td><span class="badge badge-danger" style="background:var(--danger);color:white">Suspended</span></td>
-                  <td><button class="btn btn-secondary btn-sm">Manage</button></td>
-                </tr>
+              <tbody id="contractor-tbody">
+                <!-- Populated by JS -->
               </tbody>
             </table>
           </div>
@@ -218,42 +134,95 @@
   </div>
 
   <script src="js/main.js"></script>
+  <script src="js/mines-db.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      // Worker Distribution Donut
-      const ctxWorker = document.getElementById('workerChart').getContext('2d');
-      new Chart(ctxWorker, {
+      if (typeof CONTRACTORS_DB === 'undefined') return;
+
+      // ── Render contractor cards (top 6 by workers)
+      const cardGrid = document.getElementById('contractor-cards');
+      if (cardGrid) {
+        const top6 = [...CONTRACTORS_DB].sort((a,b) => b.workers - a.workers).slice(0, 6);
+        top6.forEach(ct => {
+          const gaugeClass = ct.compliance >= 80 ? 'success' : ct.compliance >= 65 ? 'warning' : 'danger';
+          const statusBadge = ct.status === 'expiring'
+            ? '<span class="badge badge-warning">RENEWAL DUE</span>'
+            : ct.compliance < 55
+            ? '<span class="badge badge-danger" style="background:var(--danger);color:white">SUSPENDED</span>'
+            : '<span class="badge badge-success">ACTIVE</span>';
+          const border = ct.compliance < 55 ? 'border-left: 4px solid var(--danger);' : '';
+          const violText = ct.violations > 0
+            ? (ct.violations >= 10 ? `<div class="text-danger font-bold mt-4">Critical Safety Violation Active</div>` : `<div class="text-danger font-bold mt-4">${ct.violations} Open Violations</div>`)
+            : '<div class="text-success font-bold mt-4">No Open Violations</div>';
+          const card = document.createElement('div');
+          card.className = 'contractor-card';
+          card.style = border;
+          card.innerHTML = `
+            <div class="cc-header">
+              <div><div class="cc-name">${ct.name}</div><div class="cc-type">${ct.type}</div></div>
+              <div class="cc-gauge ${gaugeClass}">${ct.compliance}%</div>
+            </div>
+            <div class="cc-metrics">
+              <div class="cc-metric"><div class="ccm-val">${ct.workers.toLocaleString('en-IN')}</div><div class="ccm-label">Workers</div></div>
+              <div class="cc-metric"><div class="ccm-val" style="font-size:12px">${ct.primaryMine}</div><div class="ccm-label">Primary Site</div></div>
+            </div>
+            <div class="cc-footer">
+              <div class="flex justify-between items-center"><span>Contract Expires: <strong>${ct.expiry}</strong></span>${statusBadge}</div>
+              ${violText}
+            </div>
+          `;
+          cardGrid.appendChild(card);
+        });
+      }
+
+      // ── Contractor Table (all contractors)
+      const tbody = document.getElementById('contractor-tbody');
+      if (tbody) {
+        CONTRACTORS_DB.forEach(ct => {
+          const compClass  = ct.compliance >= 80 ? 'badge-success' : ct.compliance >= 65 ? 'badge-warning' : 'badge-danger';
+          const statusBadge = ct.status === 'expiring' ? '<span class="badge badge-warning">Renewal Due</span>'
+                            : ct.compliance < 55 ? '<span class="badge badge-danger">Suspended</span>'
+                            : '<span class="badge badge-success">Active</span>';
+          const expClass = ct.status === 'expiring' ? 'class="text-danger font-bold"' : 'class="font-bold"';
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td class="font-bold">${ct.name}</td>
+            <td>${ct.type}</td>
+            <td style="max-width:140px;white-space:normal;font-size:11px">${ct.mines.slice(0,2).join(', ')}${ct.mines.length > 2 ? ' +' + (ct.mines.length-2) : ''}</td>
+            <td>${ct.workers.toLocaleString('en-IN')}</td>
+            <td><span class="badge ${compClass}">${ct.compliance}%</span></td>
+            <td ${expClass}>${ct.expiry}</td>
+            <td class="${ct.violations > 5 ? 'text-danger font-bold' : ''}">${ct.violations}</td>
+            <td>${statusBadge}</td>
+            <td><button class="btn btn-secondary btn-sm" onclick="window.mockAction(this,'Contractor profile opened')">Manage</button></td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      // ── Worker Distribution Donut (by subsidiary)
+      const workerBySub = DB_STATS.subsidiaries.map(sub => ({
+        sub, workers: CONTRACTORS_DB.filter(c => c.subsidiary === sub).reduce((a,c) => a+c.workers, 0)
+      })).filter(d => d.workers > 0);
+
+      new Chart(document.getElementById('workerChart').getContext('2d'), {
         type: 'doughnut',
         data: {
-          labels: ['Mining Ops', 'Transport', 'Maintenance'],
-          datasets: [{
-            data: [2104, 1250, 846],
-            backgroundColor: ['#176B45', '#177EAF', '#EAF1EE'],
-            borderWidth: 0
-          }]
+          labels: workerBySub.map(d => d.sub),
+          datasets: [{ data: workerBySub.map(d => d.workers), backgroundColor: ['#176B45','#177EAF','#E6A23C','#C9362B','#6B5EA8','#2E8B57','#8B4513','#2F4F4F'], borderWidth:0 }]
         },
-        options: { responsive: true, maintainAspectRatio: false, cutout: '75%', plugins: { legend: { position: 'right' } } }
+        options: { responsive:true, maintainAspectRatio:false, cutout:'70%', plugins:{ legend:{ position:'right', labels:{ font:{ size:10 } } } } }
       });
 
-      // Score Comparison Bar
-      const ctxScore = document.getElementById('scoreChart').getContext('2d');
-      new Chart(ctxScore, {
+      // ── Compliance Score Bar (top 8 contractors by compliance)
+      const top8 = [...CONTRACTORS_DB].sort((a,b) => b.compliance - a.compliance).slice(0, 8);
+      new Chart(document.getElementById('scoreChart').getContext('2d'), {
         type: 'bar',
         data: {
-          labels: ['ABC Mining', 'Global Exc.', 'Apex Transport', 'Deep Earth'],
-          datasets: [{
-            data: [87, 82, 74, 42],
-            backgroundColor: ['#176B45', '#176B45', '#E6A23C', '#C9362B'],
-            borderRadius: 4
-          }]
+          labels: top8.map(c => c.name.split(' ').slice(0,2).join(' ')),
+          datasets: [{ data: top8.map(c => c.compliance), backgroundColor: top8.map(c => c.compliance >= 80 ? '#176B45' : c.compliance >= 65 ? '#E6A23C' : '#C9362B'), borderRadius:4 }]
         },
-        options: {
-          indexAxis: 'y',
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
-          scales: { x: { max: 100, grid:{display:false} }, y: { grid:{display:false} } }
-        }
+        options: { indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ x:{ max:100, grid:{display:false} }, y:{ grid:{display:false}, ticks:{font:{size:10}} } } }
       });
     });
   </script>

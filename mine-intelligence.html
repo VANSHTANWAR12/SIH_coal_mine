@@ -123,10 +123,10 @@
           el.className = 'mine-item';
           el.innerHTML = `
             <div>
-              <div class="mi-name">\${mine.name}</div>
-              <div class="mi-meta"><span>\${mine.sub}</span> • <span>\${mine.type}</span></div>
+              <div class="mi-name">${mine.name}</div>
+              <div class="mi-meta"><span>${mine.sub}</span> &bull; <span>${mine.type}</span></div>
             </div>
-            <div class="risk-badge risk-\${mine.risk}">\${mine.risk}</div>
+            <div class="risk-badge risk-${mine.risk}">${mine.risk}</div>
           `;
           el.addEventListener('click', () => {
             document.querySelectorAll('.mine-item').forEach(i => i.classList.remove('active'));
@@ -138,85 +138,16 @@
       }
 
       // Generate Strategy Brief
-      function generateStrategy(mine) {
+      async function generateStrategy(mine) {
         const panel = document.getElementById('strategyPanel');
         
-        // --- 1. Recommendation Engine Logic ---
-        let prescriptions = [];
-        
-        // Rule 1: Safety First
-        if (mine.risk === 'Critical' || mine.risk === 'High') {
-          prescriptions.push({
-            type: 'Immediate Safety Protocol',
-            color: 'var(--danger)',
-            bg: 'var(--danger-bg)',
-            text: `<strong>Halt non-essential expansion.</strong> Risk score is highly elevated (\${mine.riskScore}/100). Focus resources exclusively on strata support and ventilation monitoring. Production quotas should be secondary until the risk profile stabilizes. \${mine.reason}`
-          });
-        }
-
-        // Rule 2: Efficiency & Quantity Upscaling
-        if ((mine.risk === 'Low' || mine.risk === 'Medium') && (mine.prod.includes('<1.0') || mine.prod.includes('~1.15') || mine.prod.includes('~0.81'))) {
-          prescriptions.push({
-            type: 'Production Upscale Strategy',
-            color: 'var(--success)',
-            bg: 'var(--success-bg)',
-            text: `<strong>Safe to Scale.</strong> Operational safety margins are excellent. Recommend deploying larger HEMM fleets or adding one extra operational shift to boost bulk output. Output is currently constrained by machinery rather than safety limits.`
-          });
-        }
-
-        // Rule 3: Quality Optimization
-        if (mine.gcv > 5500) {
-          prescriptions.push({
-            type: 'Quality Optimization',
-            color: 'var(--brand-primary)',
-            bg: '#E0E7FF',
-            text: `<strong>High Grade Coal Detected (\${mine.grade}).</strong> Prioritize selective, precision mining techniques (e.g., Continuous Miners) to maximize GCV retention. Avoid bulk explosive blasting that could cause excessive fine generation or contamination.`
-          });
-        } else if (mine.gcv < 3500) {
-            prescriptions.push({
-            type: 'Bulk Processing Route',
-            color: 'var(--info)',
-            bg: 'var(--info-bg)',
-            text: `<strong>Lower Grade Thermal Coal.</strong> Focus purely on bulk extraction efficiency and dispatch logistics. Washery optimization is recommended before dispatch to nearby thermal power plants.`
-          });
-        }
-
-        // Rule 4: Governance & Compliance
-        if (mine.compliance < 70) {
-          prescriptions.push({
-            type: 'Governance Intervention',
-            color: 'var(--amber)',
-            bg: '#FEF3C7',
-            text: `<strong>Statutory Risk Warning.</strong> Compliance score is critically low (\${mine.compliance}%). Immediate contractor safety audit and review of pending DGMS clearances required. Implement automated biometric gating to restrict unauthorized contractor entry.`
-          });
-        }
-
-        // NEW Rule 5: Stripping Ratio Optimization
-        if (mine.type === 'Opencast' && parseFloat(mine.strippingRatio) >= 3.0) {
-          prescriptions.push({
-            type: 'Overburden Cost Reduction',
-            color: 'var(--amber)',
-            bg: '#FEF3C7',
-            text: `<strong>High Stripping Ratio (\${mine.strippingRatio} cu.m/t).</strong> Overburden removal costs are severely impacting profitability. Transition from Shovel-Dumper combination to high-capacity Draglines to drastically reduce OBR cost per tonne.`
-          });
-        }
-
-        // NEW Rule 6: OMS / Labor Productivity
-        if ((mine.type === 'Opencast' && parseFloat(mine.oms) < 14.0) || (mine.type === 'Underground' && parseFloat(mine.oms) < 1.0)) {
-           prescriptions.push({
-            type: 'Workforce Productivity',
-            color: 'var(--info)',
-            bg: 'var(--info-bg)',
-            text: `<strong>Low Output per Manshift (OMS: \${mine.oms} t).</strong> Labor productivity is lagging below baseline. Recommend immediate mechanization upgrade (deploy \${mine.type === 'Opencast' ? 'Surface Miners' : 'Continuous Miners'}) and comprehensive contractor workforce optimization.`
-          });
-        }
-
-        // --- 2. Render UI ---
-        let html = \`
+        // --- 1. Render Base UI & Loading State ---
+        const riskColor = mine.risk === 'Critical' ? 'var(--danger)' : mine.risk === 'High' ? 'var(--amber)' : 'var(--text-primary)';
+        let html = `
           <div class="sp-header">
             <div>
-              <div class="sp-title">\${mine.name}</div>
-              <div class="sp-subtitle">\${mine.sub} • \${mine.type} • Geo-coordinates: \${mine.coords.lat}, \${mine.coords.lng}</div>
+              <div class="sp-title">${mine.name}</div>
+              <div class="sp-subtitle">${mine.sub} &bull; ${mine.type} &bull; Geo-coordinates: ${mine.lat}, ${mine.lng}</div>
             </div>
             <button class="btn btn-primary" onclick="window.mockAction(this, 'Strategy PDF Exported to HQ')">Export Strategy Report</button>
           </div>
@@ -225,19 +156,19 @@
           <div class="kpi-grid-4">
             <div class="kpi-box">
               <div class="kpi-box-label">Risk Profile</div>
-              <div class="kpi-box-val" style="color: \${mine.risk === 'Critical'? 'var(--danger)' : mine.risk === 'High'? 'var(--amber)' : 'var(--text-primary)'}">\${mine.risk}</div>
+              <div class="kpi-box-val" style="color: ${riskColor}">${mine.risk}</div>
             </div>
             <div class="kpi-box">
               <div class="kpi-box-label">Compliance Index</div>
-              <div class="kpi-box-val">\${mine.compliance}%</div>
+              <div class="kpi-box-val">${mine.compliance}%</div>
             </div>
             <div class="kpi-box">
               <div class="kpi-box-label">Production Bracket</div>
-              <div class="kpi-box-val" style="font-size:16px">\${mine.prod}</div>
+              <div class="kpi-box-val" style="font-size:16px">${mine.prod}</div>
             </div>
             <div class="kpi-box">
               <div class="kpi-box-label">Coal Grade</div>
-              <div class="kpi-box-val" style="font-size:16px">\${mine.grade}</div>
+              <div class="kpi-box-val" style="font-size:16px">${mine.grade}</div>
             </div>
           </div>
 
@@ -245,15 +176,15 @@
           <div class="kpi-grid-4">
             <div class="kpi-box">
               <div class="kpi-box-label">Mechanization Type</div>
-              <div class="kpi-box-val" style="font-size:14px">\${mine.mechanization || 'Conventional'}</div>
+              <div class="kpi-box-val" style="font-size:14px">${mine.mechanization || 'Conventional'}</div>
             </div>
             <div class="kpi-box">
               <div class="kpi-box-label">OMS (Output per Manshift)</div>
-              <div class="kpi-box-val">\${mine.oms || 'N/A'} <span style="font-size:12px; color:var(--text-secondary); font-weight:600">tonnes</span></div>
+              <div class="kpi-box-val">${mine.oms || 'N/A'} <span style="font-size:12px; color:var(--text-secondary); font-weight:600">tonnes</span></div>
             </div>
             <div class="kpi-box">
               <div class="kpi-box-label">Stripping Ratio (OBR)</div>
-              <div class="kpi-box-val">\${mine.strippingRatio || 'N/A'} <span style="font-size:12px; color:var(--text-secondary); font-weight:600">cu.m/t</span></div>
+              <div class="kpi-box-val">${mine.strippingRatio || 'N/A'} <span style="font-size:12px; color:var(--text-secondary); font-weight:600">cu.m/t</span></div>
             </div>
           </div>
 
@@ -262,30 +193,52 @@
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m2 10 10 4 10-4-10-4Z"/><path d="m2 14 10 4 10-4"/><path d="m2 18 10 4 10-4"/></svg>
               AI-Generated Strategy Prescriptions
             </div>
-            <div class="prescriptions-list">
-        \`;
-
-        prescriptions.forEach(p => {
-          html += \`
-            <div class="prescription-card" style="border-left-color: \${p.color};">
-              <div class="pc-header">
-                <span class="pc-type" style="background: \${p.bg}; color: \${p.color};">\${p.type}</span>
+            <div id="prescriptions-container">
+              <div style="padding: 32px; text-align: center; color: var(--text-secondary);">
+                 <svg class="spinner" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation: spin 1s linear infinite; margin-bottom: 12px; opacity:0.5;"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="32" stroke-linecap="round" /></svg>
+                 <div>LangGraph AI Agent is analyzing safety and production data...</div>
+                 <style>@keyframes spin { 100% { transform: rotate(360deg); } }</style>
               </div>
-              <div class="pc-body">\${p.text}</div>
-            </div>
-          \`;
-        });
-
-        if(prescriptions.length === 0) {
-            html += \`<div style="padding:16px; color:var(--text-secondary); text-align:center;">No high-priority strategic interventions required at this time. Standard operating procedures apply.</div>\`;
-        }
-
-        html += \`
             </div>
           </div>
-        \`;
-
+        `;
         panel.innerHTML = html;
+
+        // --- 2. Fetch from LLM Backend ---
+        try {
+          const res = await fetch('http://localhost:8000/prescribe/strategy', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(mine)
+          });
+          const data = await res.json();
+          const prescriptions = data.prescriptions || [];
+
+          let phtml = '<div class="prescriptions-list">';
+          prescriptions.forEach(p => {
+            phtml += `
+              <div class="prescription-card" style="border-left-color: ${p.color};">
+                <div class="pc-header">
+                  <span class="pc-type" style="background: ${p.bg}; color: ${p.color};">${p.type}</span>
+                </div>
+                <div class="pc-body">${p.text}</div>
+              </div>
+            `;
+          });
+          if(prescriptions.length === 0) {
+              phtml += `<div style="padding:16px; color:var(--text-secondary); text-align:center;">No high-priority strategic interventions required at this time. Standard operating procedures apply.</div>`;
+          }
+          phtml += '</div>';
+          document.getElementById('prescriptions-container').innerHTML = phtml;
+
+        } catch (err) {
+          document.getElementById('prescriptions-container').innerHTML = `
+            <div style="padding:16px; color:var(--danger); text-align:center; background: var(--danger-bg); border-radius:8px;">
+              <strong>Connection Error</strong><br>
+              Failed to connect to AI Engine Backend (localhost:8000). Make sure it is running and the NVIDIA API Key is configured.
+            </div>
+          `;
+        }
       }
 
       // Init

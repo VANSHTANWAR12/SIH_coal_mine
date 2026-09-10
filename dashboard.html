@@ -67,7 +67,7 @@
         <div class="system-status-pill">
           <div class="status-dot"></div> System Operational
         </div>
-        <div class="header-time">09 Sep 2026<br>03:35 IST</div>
+        <div class="header-time" id="live-clock"></div>
         <button class="btn-outline-grey" style="padding: 6px; width: 32px; height: 32px; justify-content:center;">🔔</button>
         <button class="btn-emergency">Emergency Dispatch</button>
       </header>
@@ -152,42 +152,8 @@
                   <th>Actions</th>
                 </tr>
               </thead>
-              <tbody>
-                <tr>
-                  <td class="font-bold">Kusmunda OC</td><td>SECL</td><td>Opencast</td>
-                  <td><span class="badge badge-warning">81%</span></td>
-                  <td><span class="badge badge-danger">CRITICAL</span></td>
-                  <td>38.2</td><td>04 Sep 2026</td>
-                  <td><button class="btn btn-secondary btn-sm">View Drawer</button></td>
-                </tr>
-                <tr>
-                  <td class="font-bold">Gevra OC</td><td>SECL</td><td>Opencast</td>
-                  <td><span class="badge badge-success">94%</span></td>
-                  <td><span class="badge badge-warning">HIGH</span></td>
-                  <td>45.1</td><td>02 Sep 2026</td>
-                  <td><button class="btn btn-secondary btn-sm">View Drawer</button></td>
-                </tr>
-                <tr>
-                  <td class="font-bold">Jhanjra UG</td><td>ECL</td><td>Underground</td>
-                  <td><span class="badge badge-danger">68%</span></td>
-                  <td><span class="badge badge-danger">CRITICAL</span></td>
-                  <td>2.4</td><td>12 Aug 2026</td>
-                  <td><button class="btn btn-secondary btn-sm">View Drawer</button></td>
-                </tr>
-                <tr>
-                  <td class="font-bold">Dipka OC</td><td>SECL</td><td>Opencast</td>
-                  <td><span class="badge badge-success">91%</span></td>
-                  <td><span class="badge badge-success">HEALTHY</span></td>
-                  <td>31.0</td><td>28 Aug 2026</td>
-                  <td><button class="btn btn-secondary btn-sm">View Drawer</button></td>
-                </tr>
-                <tr>
-                  <td class="font-bold">Brajrajnagar</td><td>MCL</td><td>Opencast</td>
-                  <td><span class="badge badge-success">88%</span></td>
-                  <td><span class="badge badge-success">HEALTHY</span></td>
-                  <td>14.2</td><td>01 Sep 2026</td>
-                  <td><button class="btn btn-secondary btn-sm">View Drawer</button></td>
-                </tr>
+              <tbody id="mine-table-tbody">
+                <!-- Populated by JS -->
               </tbody>
             </table>
           </div>
@@ -252,20 +218,44 @@
     document.addEventListener('DOMContentLoaded', () => {
       if(typeof DB_STATS === 'undefined') return;
 
-      // Populate Subsidiary Table
-      const tbody = document.getElementById('subsidiary-tbody');
+      // ── Populate Mine Network Table from REAL_MINES
+      const tbody = document.getElementById('mine-table-tbody');
       if (tbody) {
+        const sorted = [...REAL_MINES].sort((a,b) => b.riskScore - a.riskScore).slice(0, 15);
+        const today = new Date();
+        sorted.forEach((m, idx) => {
+          const compClass  = m.compliance >= 80 ? 'badge-success' : m.compliance >= 65 ? 'badge-warning' : 'badge-danger';
+          const riskBadge  = m.risk === 'Critical' ? '<span class="badge badge-danger">CRITICAL</span>'
+                           : m.risk === 'High'     ? '<span class="badge badge-warning">HIGH</span>'
+                           : '<span class="badge badge-success">HEALTHY</span>';
+          // Simulated last inspection: stagger backwards from today
+          const inspDate = new Date(today); inspDate.setDate(inspDate.getDate() - (idx * 3 + 2));
+          const inspStr  = inspDate.toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td class="font-bold">${m.name}</td>
+            <td>${m.sub}</td>
+            <td>${m.type}</td>
+            <td><span class="badge ${compClass}">${m.compliance}%</span></td>
+            <td>${riskBadge}</td>
+            <td>${m.production.toFixed(1)}</td>
+            <td>${inspStr}</td>
+            <td><button class="btn btn-secondary btn-sm" onclick="window.mockAction(this,'Mine drawer opened')">View Drawer</button></td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      // ── Populate Subsidiary Table
+      const subTbody = document.getElementById('subsidiary-tbody');
+      if (subTbody) {
         DB_STATS.subsidiaries.forEach(sub => {
           const mines = MINES_BY_SUB[sub];
           const count = mines.length;
           const avgComp = Math.round(mines.reduce((acc, m) => acc + m.compliance, 0) / count);
-          const critSites = mines.filter(m => m.risk === 'critical').length;
-          const openViol = Math.round(Math.random() * 20); // Simulated open violations for demo
-          
-          let compBadge = 'badge-success';
-          if(avgComp < 80) compBadge = 'badge-danger';
-          else if(avgComp < 90) compBadge = 'badge-warning';
-
+          const critSites = mines.filter(m => m.risk === 'Critical').length;
+          const openViol = mines.filter(m => m.compliance < 70).length;
+          let compBadge = avgComp >= 80 ? 'badge-success' : avgComp >= 65 ? 'badge-warning' : 'badge-danger';
           const tr = document.createElement('tr');
           tr.innerHTML = `
             <td class="font-bold">${sub}</td>
@@ -274,162 +264,82 @@
             <td class="${critSites > 0 ? 'text-danger font-bold' : ''}">${critSites}</td>
             <td>${openViol}</td>
           `;
-          tbody.appendChild(tr);
+          subTbody.appendChild(tr);
         });
       }
 
-      // Calculate Production by Subsidiary
-      const prodData = DB_STATS.subsidiaries.map(sub => {
-        const sum = MINES_BY_SUB[sub].reduce((acc, m) => acc + (m.production || 0), 0);
-        return { sub, sum };
-      }).sort((a,b) => b.sum - a.sum).slice(0,5);
+      // ── Production Bar Chart
+      const prodData = DB_STATS.subsidiaries.map(sub => ({
+        sub, sum: MINES_BY_SUB[sub].reduce((acc, m) => acc + (m.production || 0), 0)
+      })).sort((a,b) => b.sum - a.sum).slice(0, 5);
 
-      // Production Bar Chart
       const ctxProd = document.getElementById('prodChart').getContext('2d');
       new Chart(ctxProd, {
         type: 'bar',
         data: {
           labels: prodData.map(d => d.sub),
-          datasets: [{
-            label: 'Production (MT)',
-            data: prodData.map(d => d.sum.toFixed(2)),
-            backgroundColor: '#176B45',
-            borderRadius: 4
-          }]
+          datasets: [{ label:'Production (MT)', data: prodData.map(d => +d.sum.toFixed(1)), backgroundColor:'#176B45', borderRadius:4 }]
         },
-        options: {
-          indexAxis: 'y',
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
-          scales: { x: { display: false, grid:{display:false} }, y: { grid:{display:false} } }
-        }
+        options: { indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ x:{display:false, grid:{display:false}}, y:{grid:{display:false}} } }
       });
 
-      // Risk Donut Chart
+      // ── Risk Donut Chart
       const ctxRisk = document.getElementById('riskChart').getContext('2d');
       new Chart(ctxRisk, {
         type: 'doughnut',
         data: {
           labels: ['Critical', 'High Risk', 'Safe/Medium'],
-          datasets: [{
-            data: [DB_STATS.critical, DB_STATS.high, DB_STATS.medium],
-            backgroundColor: ['#C9362B', '#E6A23C', '#EAF1EE'],
-            borderWidth: 0,
-            hoverOffset: 4
-          }]
+          datasets: [{ data:[DB_STATS.critical, DB_STATS.high, DB_STATS.medium], backgroundColor:['#C9362B','#E6A23C','#EAF1EE'], borderWidth:0, hoverOffset:4 }]
         },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          cutout: '75%',
-          plugins: { legend: { position: 'bottom' } }
-        }
+        options: { responsive:true, maintainAspectRatio:false, cutout:'75%', plugins:{legend:{position:'bottom'}} }
       });
 
-      // --- Dynamic Live Operational Alerts ---
+      // ── Live Operational Alerts
       const alertsContainer = document.getElementById('live-alerts-container');
-      const alertsCountBadge = document.getElementById('live-alerts-count');
-      
-      if (alertsContainer && alertsCountBadge) {
-        let activeAlertsCount = 0;
-        let generatedAlertsHtml = '';
-
-        // Randomize the time ago so it feels "live", but lock it to the real mines.
-        const getRandomTime = (max) => Math.floor(Math.random() * max) + 1;
-
+      const alertsBadge     = document.getElementById('live-alerts-count');
+      if (alertsContainer && alertsBadge) {
+        let count = 0;
+        let html  = '';
+        const rand = (max) => Math.floor(Math.random() * max) + 1;
         REAL_MINES.forEach(mine => {
-          // CRITICAL Risk Alerts
-          if (mine.risk === 'critical') {
-            activeAlertsCount++;
-            generatedAlertsHtml += `
-              <div class="alert-item">
-                <div class="alert-time">${getRandomTime(15)} min ago</div>
-                <div class="alert-content">
-                  <span class="badge badge-danger mb-2">CRITICAL</span>
-                  <div class="alert-title">${mine.reason.split(';')[0] || 'AI detected severe anomaly'}</div>
-                  <div class="alert-meta">${mine.name} • ${mine.subsidiary} Zone</div>
-                </div>
-                <button class="btn btn-secondary alert-action" onclick="window.location.href='mine-intelligence.html'">Investigate</button>
-              </div>
-            `;
-          }
-          // HIGH Risk Alerts
-          else if (mine.risk === 'high') {
-            activeAlertsCount++;
-            generatedAlertsHtml += `
-              <div class="alert-item">
-                <div class="alert-time">${getRandomTime(45) + 15} min ago</div>
-                <div class="alert-content">
-                  <span class="badge badge-warning mb-2" style="background:var(--amber);color:white">HIGH RISK</span>
-                  <div class="alert-title">${mine.reason.split(';')[0] || 'Elevated risk parameters detected'}</div>
-                  <div class="alert-meta">${mine.name} • ${mine.type} Operations</div>
-                </div>
-                <button class="btn btn-secondary alert-action" onclick="window.location.href='mine-intelligence.html'">Review</button>
-              </div>
-            `;
-          }
-          // COMPLIANCE Alerts
-          else if (mine.compliance < 60) {
-            activeAlertsCount++;
-            generatedAlertsHtml += `
-              <div class="alert-item">
-                <div class="alert-time">${getRandomTime(120)} min ago</div>
-                <div class="alert-content">
-                  <span class="badge badge-info mb-2">COMPLIANCE</span>
-                  <div class="alert-title">Statutory compliance score critically low (${mine.compliance}%)</div>
-                  <div class="alert-meta">${mine.name} • Needs Audit</div>
-                </div>
-                <button class="btn btn-secondary alert-action" onclick="window.location.href='compliance.html'">Audit</button>
-              </div>
-            `;
+          if (mine.risk === 'Critical') {
+            count++;
+            html += `<div class="alert-item"><div class="alert-time">${rand(15)} min ago</div><div class="alert-content"><span class="badge badge-danger mb-2">CRITICAL</span><div class="alert-title">${mine.reason.split(';')[0]}</div><div class="alert-meta">${mine.name} &bull; ${mine.sub} Zone</div></div><button class="btn btn-secondary alert-action" onclick="location.href='mine-intelligence.html'">Investigate</button></div>`;
+          } else if (mine.risk === 'High') {
+            count++;
+            html += `<div class="alert-item"><div class="alert-time">${rand(45)+15} min ago</div><div class="alert-content"><span class="badge badge-warning mb-2" style="background:var(--amber);color:white">HIGH RISK</span><div class="alert-title">${mine.reason.split(';')[0]}</div><div class="alert-meta">${mine.name} &bull; ${mine.type} Ops</div></div><button class="btn btn-secondary alert-action" onclick="location.href='mine-intelligence.html'">Review</button></div>`;
+          } else if (mine.compliance < 60) {
+            count++;
+            html += `<div class="alert-item"><div class="alert-time">${rand(120)} min ago</div><div class="alert-content"><span class="badge badge-info mb-2">COMPLIANCE</span><div class="alert-title">Statutory compliance score critically low (${mine.compliance}%)</div><div class="alert-meta">${mine.name} &bull; Needs Audit</div></div><button class="btn btn-secondary alert-action" onclick="location.href='compliance.html'">Audit</button></div>`;
           }
         });
-
-        // Set the badge count
-        alertsCountBadge.textContent = \`\${activeAlertsCount} ACTIVE\`;
-        
-        // Render the alerts
-        alertsContainer.innerHTML = generatedAlertsHtml;
+        alertsBadge.textContent = `${count} ACTIVE`;
+        alertsContainer.innerHTML = html;
       }
 
-      // Timeline Live Feed Simulator
+      // ── Timeline Live Feed
       const timeline = document.querySelector('.timeline');
-      const mockTimelineEvents = [
-        { text: 'New Form-IV submitted automatically.', meta: 'System • Lakhanpur OC' },
-        { text: 'Worker Check-in spike detected at shift change.', meta: 'Access Control • Gevra' },
-        { text: 'Contractor safety alert acknowledged.', meta: 'V. Singh • Dipka OC' },
-        { text: 'Ventilation flow adjusted remotely.', meta: 'AI Controller • Kusmunda' }
+      const tlEvents = [
+        ...REAL_MINES.filter(m=>m.risk==='Critical').map(m => ({ text:`Critical alert escalated for ${m.name}.`, meta:`System AI • ${m.sub}` })),
+        ...REAL_MINES.filter(m=>m.risk==='High').slice(0,4).map(m => ({ text:`High-risk observation filed at ${m.name}.`, meta:`Field Inspector • ${m.sub}` })),
+        { text:'New Form-IV submitted automatically.', meta:'System • Lakhanpur OC' },
+        { text:'Worker check-in spike detected at shift change.', meta:'Access Control • Gevra' },
+        { text:'Contractor safety alert acknowledged.', meta:'V. Singh • Dipka OC' },
+        { text:'Ventilation flow adjusted remotely.', meta:'AI Controller • Moonidih' },
       ];
-      
       setInterval(() => {
-        if(!timeline) return;
-        const ev = mockTimelineEvents[Math.floor(Math.random() * mockTimelineEvents.length)];
-        const timeStr = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        
+        if (!timeline) return;
+        const ev = tlEvents[Math.floor(Math.random() * tlEvents.length)];
+        const timeStr = new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
         const item = document.createElement('div');
         item.className = 'tl-item';
-        item.style.opacity = '0';
-        item.style.transform = 'translateY(-10px)';
-        item.style.transition = 'all 0.3s ease';
-        
-        item.innerHTML = `
-          <div class="tl-dot"></div>
-          <div class="tl-time">${timeStr}</div>
-          <div class="tl-text">${ev.text}</div>
-          <div class="tl-meta">${ev.meta}</div>
-        `;
-        
+        item.style.cssText = 'opacity:0;transform:translateY(-10px);transition:all 0.3s ease';
+        item.innerHTML = `<div class="tl-dot"></div><div class="tl-time">${timeStr}</div><div class="tl-text">${ev.text}</div><div class="tl-meta">${ev.meta}</div>`;
         timeline.prepend(item);
-        
-        // Trigger reflow for animation
         void item.offsetWidth;
         item.style.opacity = '1';
         item.style.transform = 'translateY(0)';
-        
-        if (timeline.children.length > 6) {
-          timeline.removeChild(timeline.lastChild);
-        }
+        if (timeline.children.length > 6) timeline.removeChild(timeline.lastChild);
       }, 9000);
     });
   </script>
