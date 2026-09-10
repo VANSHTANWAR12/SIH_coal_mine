@@ -274,8 +274,8 @@ def call_nvidia_nemotron_agent(mine: dict) -> list:
             {"role": "user", "content": prompt}
         ],
         "model": model,
-        "max_tokens": 2048,
-        "reasoning_budget": 1024,
+        "max_tokens": 65536,
+        "reasoning_budget": 16384,
         "temperature": 0.6,
         "top_p": 0.95
     }
